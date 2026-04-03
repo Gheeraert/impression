@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -24,12 +25,21 @@ PAGE_TYPES = {
 
 
 @dataclass(slots=True)
+class AuthorEntry:
+    name: str
+    affiliations: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class SiteMeta:
     title: str
     subtitle: str = ""
     creators: list[str] = field(default_factory=list)
+    creator_role_label: str = "Responsabilité du volume"
     publisher: str = ""
     publication_year: str = ""
+    doi: str = ""
+    site_url: str = ""
 
 
 @dataclass(slots=True)
@@ -39,6 +49,7 @@ class PageDef:
     title: str
     subtitle: str = ""
     authors: list[str] = field(default_factory=list)
+    author_entries: list[AuthorEntry] = field(default_factory=list)
     group_type: str = "chapter"
     page_kind: str = "chapter"
     section_chain: list[str] = field(default_factory=list)
@@ -103,29 +114,76 @@ class SiteStructureBuilder:
             "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='sub'])[1])",
             namespaces=NSMAP,
         )
-        creators = [
-            short_text(" ".join(node.xpath('.//text()')).strip(), 200)
-            for node in tree.xpath(
-                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/*[self::tei:author or self::tei:editor]",
+
+        editor_nodes = tree.xpath("/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor", namespaces=NSMAP)
+        author_nodes = tree.xpath("/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author", namespaces=NSMAP)
+        creator_nodes = editor_nodes or author_nodes
+        creators = [self._personish_text(node) for node in creator_nodes if self._personish_text(node)]
+
+        if editor_nodes:
+            creator_role_label = "Édition scientifique du volume"
+        elif len(creators) == 1:
+            creator_role_label = "Auteur·rice du volume"
+        else:
+            creator_role_label = "Responsabilité du volume"
+
+        publisher = tree.xpath(
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:publisher[normalize-space(.) != ''])[1])",
+            namespaces=NSMAP,
+        )
+        publication_date_raw = tree.xpath(
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[@type='publishing'][normalize-space(.) != ''])[1])",
+            namespaces=NSMAP,
+        )
+        if not publication_date_raw:
+            publication_date_raw = tree.xpath(
+                "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[normalize-space(.) != ''])[1])",
                 namespaces=NSMAP,
             )
-            if " ".join(node.xpath('.//text()')).strip()
-        ]
-        publisher = tree.xpath(
-            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:publisher)[1])",
+        publication_year = self._extract_year(publication_date_raw)
+
+        doi = tree.xpath(
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:idno[translate(@type, 'doi', 'DOI')='DOI' and normalize-space(.) != ''])[1])",
             namespaces=NSMAP,
         )
-        publication_year = tree.xpath(
-            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[@type='publishing'])[1])",
+        if not doi:
+            doi = tree.xpath(
+                "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:ref[translate(@type, 'doi', 'DOI')='DOI' and normalize-space(@target) != '']/@target)[1])",
+                namespaces=NSMAP,
+            )
+        doi = "" if doi in {"#", "-", "##"} else doi
+
+        site_url = tree.xpath(
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:ab[@type='digital_online']//tei:ref[@type='site' and normalize-space(@target) != '']/@target)[1])",
             namespaces=NSMAP,
         )
+        if not site_url:
+            site_url = tree.xpath(
+                "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:ref[@type='site' and normalize-space(@target) != '']/@target)[1])",
+                namespaces=NSMAP,
+            )
+        site_url = "" if site_url in {"#", "-", "##"} else site_url
+
         return SiteMeta(
             title=title or "Livre PURH",
             subtitle=subtitle,
             creators=creators,
+            creator_role_label=creator_role_label,
             publisher=publisher,
             publication_year=publication_year,
+            doi=doi,
+            site_url=site_url,
         )
+
+    def _personish_text(self, node: etree._Element) -> str:
+        text = " ".join(node.xpath('.//tei:persName//text() | .//tei:name//text()', namespaces=NSMAP)).strip()
+        if not text:
+            text = " ".join(node.xpath('.//text()')).strip()
+        return short_text(text, 200) if text else ""
+
+    def _extract_year(self, value: str) -> str:
+        match = re.search(r"(1\d{3}|20\d{2}|21\d{2})", value or "")
+        return match.group(1) if match else (value or "")
 
     def _find_root_group(self, tree: etree._ElementTree) -> etree._Element | None:
         groups = tree.xpath("/tei:TEI/tei:text/tei:group[@type='book'][1]", namespaces=NSMAP)
@@ -181,7 +239,8 @@ class SiteStructureBuilder:
     ) -> PageDef:
         title = self._group_title(group) or self._label_for_group(group.get("type", ""))
         subtitle = (group.get("data-page-subtitle") or "").strip()
-        authors = self._split_authors(group.get("data-page-authors", ""))
+        author_entries = self._split_author_entries(group.get("data-page-authors", ""))
+        authors = [entry.name for entry in author_entries]
         group_type = group.get("type", "chapter")
         page_kind = "article" if authors and group_type == "chapter" else group_type
         if page_kind not in {"article", "chapter"}:
@@ -197,6 +256,7 @@ class SiteStructureBuilder:
             title=title,
             subtitle=subtitle,
             authors=authors,
+            author_entries=author_entries,
             group_type=group_type,
             page_kind=page_kind,
             section_chain=section_chain,
@@ -214,8 +274,17 @@ class SiteStructureBuilder:
         text_head = " ".join(group.xpath("./tei:body/tei:div[1]/tei:head[1]//text()", namespaces=NSMAP)).strip()
         return short_text(text_head, 300)
 
-    def _split_authors(self, value: str) -> list[str]:
-        return [item.strip() for item in value.split("||") if item.strip()]
+    def _split_author_entries(self, value: str) -> list[AuthorEntry]:
+        entries: list[AuthorEntry] = []
+        for raw_entry in value.split("||"):
+            raw_entry = raw_entry.strip()
+            if not raw_entry:
+                continue
+            parts = [part.strip() for part in raw_entry.split("@@")]
+            name = parts[0] if parts else raw_entry
+            affiliations = [part for part in parts[1:] if part]
+            entries.append(AuthorEntry(name=name, affiliations=affiliations))
+        return entries
 
     def _label_for_group(self, group_type: str) -> str:
         labels = {

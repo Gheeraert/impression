@@ -5,12 +5,13 @@ import html
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urljoin
 
 from lxml import etree
 
 from .config import BuildConfig
 from .normalizer import NormalizeReport, TeiNormalizer
-from .site_structure import NavItem, PageDef, SiteMeta, SiteStructureBuilder
+from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
 
@@ -21,6 +22,13 @@ class BuildResult:
     html_path: Path
     normalized_tei_path: Path | None
     report_path: Path
+
+
+@dataclass(slots=True)
+class ThemeAssets:
+    cover_href: str | None = None
+    university_logo_href: str | None = None
+    purh_logo_href: str | None = None
 
 
 class SiteBuilder:
@@ -70,9 +78,10 @@ class SiteBuilder:
             )
 
         site_meta, pages, nav = self.structure_builder.build(tree)
-        self._write_index_page(config.output_dir, site_meta, nav)
+        theme_assets = self._discover_theme_assets(config.output_assets_dir)
+        self._write_index_page(config.output_dir, site_meta, nav, theme_assets)
         for page in pages:
-            self._write_content_page(config.output_dir, tree, site_meta, nav, page)
+            self._write_content_page(config.output_dir, tree, site_meta, nav, page, theme_assets)
 
         report_path = config.output_dir / "build_report.txt"
         report_lines = [
@@ -83,6 +92,12 @@ class SiteBuilder:
             f"Pages générées : {1 + len(pages)}",
         ]
         report_lines.extend(f"- {page.file_name} ← {page.title}" for page in pages)
+        if theme_assets.cover_href:
+            report_lines.append(f"Couverture détectée : {theme_assets.cover_href}")
+        if theme_assets.university_logo_href:
+            report_lines.append(f"Logo université : {theme_assets.university_logo_href}")
+        if theme_assets.purh_logo_href:
+            report_lines.append(f"Logo PURH : {theme_assets.purh_logo_href}")
         report_path.write_text("\n".join(report_lines), encoding="utf-8")
 
         return BuildResult(
@@ -108,22 +123,40 @@ class SiteBuilder:
             else:
                 shutil.copy2(child, dst)
 
-    def _write_index_page(self, output_dir: Path, site_meta: SiteMeta, nav: list[NavItem]) -> None:
+    def _write_index_page(
+        self,
+        output_dir: Path,
+        site_meta: SiteMeta,
+        nav: list[NavItem],
+        theme_assets: ThemeAssets,
+    ) -> None:
         nav_html = self._render_sidebar(nav, current_file_name=None)
-        content = [f'<section class="home-hero"><p class="eyebrow">Livre web PURH</p><h1>{html.escape(site_meta.title)}</h1>']
+        creators_label = html.escape(site_meta.creator_role_label)
+        creators_value = html.escape(" · ".join(site_meta.creators)) if site_meta.creators else ""
+        hero_parts = ['<section class="home-hero">', '<div class="home-hero-grid">']
+        hero_parts.append('<div class="home-hero-text">')
+        hero_parts.append('<p class="eyebrow">Livre web PURH</p>')
+        hero_parts.append(f'<h1>{html.escape(site_meta.title)}</h1>')
         if site_meta.subtitle:
-            content.append(f'<p class="subtitle">{html.escape(site_meta.subtitle)}</p>')
-        if site_meta.creators:
-            content.append(f'<p class="meta-line">{html.escape(" · ".join(site_meta.creators))}</p>')
-        content.append('</section>')
-        content.append('<section class="home-panel"><h2>Sommaire</h2>')
-        content.append(self._render_toc(nav))
-        content.append('</section>')
+            hero_parts.append(f'<p class="subtitle">{html.escape(site_meta.subtitle)}</p>')
+        if creators_value:
+            hero_parts.append(f'<p class="meta-line"><strong>{creators_label}</strong> : {creators_value}</p>')
+        if site_meta.publisher or site_meta.publication_year:
+            meta_bits = [bit for bit in (site_meta.publisher, site_meta.publication_year) if bit]
+            hero_parts.append(f'<p class="meta-line">{" · ".join(html.escape(bit) for bit in meta_bits)}</p>')
+        hero_parts.append('</div>')
+        hero_parts.append(self._render_cover_link(theme_assets, compact=False))
+        hero_parts.append('</div></section>')
+        hero_parts.append('<section class="home-panel"><h2>Sommaire</h2>')
+        hero_parts.append(self._render_toc(nav))
+        hero_parts.append('</section>')
         page_html = self._wrap_html(
             page_title=site_meta.title,
             site_meta=site_meta,
             nav_html=nav_html,
-            content_html=''.join(content),
+            content_html=''.join(hero_parts),
+            theme_assets=theme_assets,
+            page_grid_class='page-grid page-grid--home',
         )
         (output_dir / 'index.html').write_text(page_html, encoding='utf-8')
 
@@ -134,27 +167,24 @@ class SiteBuilder:
         site_meta: SiteMeta,
         nav: list[NavItem],
         page: PageDef,
+        theme_assets: ThemeAssets,
     ) -> None:
         page_group = self._find_page_group(tree, page.node_id)
         if page_group is None:
             return
         fragment_html = self._render_page_fragment(page_group)
         nav_html = self._render_sidebar(nav, current_file_name=page.file_name)
-        page_header = [f'<header class="page-header"><p class="eyebrow">{html.escape(" / ".join(page.section_chain))}</p>' if page.section_chain else '<header class="page-header">']
-        page_header.append(f'<h1>{html.escape(page.title)}</h1>')
-        if page.subtitle:
-            page_header.append(f'<p class="subtitle">{html.escape(page.subtitle)}</p>')
-        if page.authors:
-            page_header.append(f'<p class="page-authors">{html.escape(" · ".join(page.authors))}</p>')
-        page_header.append('</header>')
+        page_header = self._render_page_header(page, theme_assets)
         credits = self._render_credit_block(page, site_meta)
         pager = self._render_prev_next(page, nav)
-        full_content = ''.join(page_header) + fragment_html + credits + pager
+        full_content = page_header + fragment_html + credits + pager
         page_html = self._wrap_html(
             page_title=f"{page.title} — {site_meta.title}",
             site_meta=site_meta,
             nav_html=nav_html,
             content_html=full_content,
+            theme_assets=theme_assets,
+            page_grid_class='page-grid',
         )
         (output_dir / page.file_name).write_text(page_html, encoding='utf-8')
 
@@ -164,10 +194,17 @@ class SiteBuilder:
 
     def _render_page_fragment(self, page_group: etree._Element) -> str:
         cloned = copy.deepcopy(page_group)
+        self._strip_redundant_title_pages(cloned)
         self._renumber_fragment_notes(cloned)
         fragment_tree = etree.ElementTree(cloned)
         result = self.fragment_xslt(fragment_tree, assets_base=etree.XSLT.strparam('assets'))
         return str(result)
+
+    def _strip_redundant_title_pages(self, root: etree._Element) -> None:
+        for title_page in root.xpath(".//tei:front/tei:div[@type='titlePage']", namespaces=NSMAP):
+            parent = title_page.getparent()
+            if parent is not None:
+                parent.remove(title_page)
 
     def _renumber_fragment_notes(self, root: etree._Element) -> None:
         for index, note in enumerate(root.xpath('.//tei:note', namespaces=NSMAP), start=1):
@@ -204,31 +241,114 @@ class SiteBuilder:
     def _render_toc(self, nav: list[NavItem]) -> str:
         return self._render_nav_list(nav)
 
-    def _render_credit_block(self, page: PageDef, site_meta: SiteMeta) -> str:
-        if page.page_kind == 'article' and page.authors:
-            citation = [html.escape(' ; '.join(page.authors)), f'« {html.escape(page.title)} »', f'dans {html.escape(site_meta.title)}']
-            if site_meta.publisher:
-                citation.append(html.escape(site_meta.publisher))
-            if site_meta.publication_year:
-                citation.append(html.escape(site_meta.publication_year))
-            citation.append(f'[page {html.escape(page.file_name)}]')
-            body = (
-                '<section class="credit-box">'
-                '<h2>Crédits et citabilité</h2>'
-                f'<p><strong>Auteur·rice(s)</strong> : {html.escape(" · ".join(page.authors))}</p>'
-                f'<p><strong>Contribution</strong> : {html.escape(page.title)}</p>'
-                f'<p><strong>Pour citer cette contribution</strong> : {". ".join(citation)}.</p>'
-                '</section>'
-            )
-            return body
+    def _render_page_header(self, page: PageDef, theme_assets: ThemeAssets) -> str:
+        parts = ['<header class="page-header">', '<div class="page-header-grid">']
+        parts.append(self._render_cover_link(theme_assets, compact=True))
+        parts.append('<div class="page-header-main">')
+        if page.section_chain:
+            parts.append(f'<p class="eyebrow">{html.escape(" / ".join(page.section_chain))}</p>')
+        parts.append(f'<h1>{html.escape(page.title)}</h1>')
+        if page.subtitle:
+            parts.append(f'<p class="subtitle">{html.escape(page.subtitle)}</p>')
+        if page.author_entries:
+            parts.append(self._render_author_block(page.author_entries))
+        elif page.authors:
+            parts.append(f'<p class="page-authors">{html.escape(" · ".join(page.authors))}</p>')
+        parts.append('</div></div></header>')
+        return ''.join(parts)
 
-        return (
-            '<section class="credit-box">'
-            '<h2>Crédits</h2>'
-            f'<p><strong>Livre</strong> : {html.escape(site_meta.title)}</p>'
-            f'<p><strong>Section</strong> : {html.escape(page.title)}</p>'
-            '</section>'
-        )
+    def _render_author_block(self, author_entries: list[AuthorEntry]) -> str:
+        parts = ['<div class="page-authors">']
+        for entry in author_entries:
+            parts.append('<div class="author-card">')
+            parts.append(f'<div class="author-name">{html.escape(entry.name)}</div>')
+            for affiliation in entry.affiliations:
+                parts.append(f'<div class="author-affiliation">{html.escape(affiliation)}</div>')
+            parts.append('</div>')
+        parts.append('</div>')
+        return ''.join(parts)
+
+    def _render_credit_block(self, page: PageDef, site_meta: SiteMeta) -> str:
+        page_creators = page.authors or site_meta.creators
+        page_creators_label = "Auteur·rice(s) de la contribution" if page.page_kind == "article" else "Auteur·rice(s) du chapitre"
+        if not page.authors and page.page_kind != "article":
+            page_creators_label = site_meta.creator_role_label
+
+        volume_title = site_meta.title
+        if site_meta.subtitle:
+            volume_title = f"{volume_title}. {site_meta.subtitle}"
+
+        role_label = site_meta.creator_role_label
+        volume_creators_text = " ; ".join(site_meta.creators)
+        public_url = self._build_public_page_url(page.file_name, site_meta)
+        doi_value = site_meta.doi.strip()
+        doi_url = self._normalize_doi_url(doi_value) if doi_value else ""
+        cite_heading = {
+            "article": "Pour citer cette contribution",
+            "chapter": "Pour citer ce chapitre",
+        }.get(page.page_kind, "Pour citer cette page")
+
+        suggestion = [html.escape(" ; ".join(page_creators))] if page_creators else []
+        title_bit = page.title
+        if page.subtitle:
+            title_bit += f". {page.subtitle}"
+        suggestion.append(f'« {html.escape(title_bit)} »')
+        host = f'dans <em>{html.escape(volume_title)}</em>'
+        if volume_creators_text and set(page_creators) != set(site_meta.creators):
+            host += f', {html.escape(role_label.lower())} : {html.escape(volume_creators_text)}'
+        suggestion.append(host)
+        if site_meta.publisher:
+            suggestion.append(html.escape(site_meta.publisher))
+        if site_meta.publication_year:
+            suggestion.append(html.escape(site_meta.publication_year))
+        if public_url:
+            suggestion.append(f'URL : <a href="{html.escape(public_url)}">{html.escape(public_url)}</a>')
+        if doi_url:
+            suggestion.append(f'DOI : <a href="{html.escape(doi_url)}">{html.escape(doi_value)}</a>')
+        suggestion.append('consulté le <time class="consultation-date"></time>')
+
+        lines = ['<section class="credit-box">']
+        lines.append('<h2>Crédits et citabilité</h2>')
+        lines.append(f'<p class="credit-kicker">{cite_heading}</p>')
+        lines.append('<dl class="credit-list">')
+        if page_creators:
+            lines.append(f'<div><dt>{html.escape(page_creators_label)}</dt><dd>{html.escape(" ; ".join(page_creators))}</dd></div>')
+        lines.append(f'<div><dt>{"Contribution" if page.page_kind == "article" else "Chapitre"}</dt><dd>{html.escape(page.title)}</dd></div>')
+        if page.subtitle:
+            lines.append(f'<div><dt>Sous-titre</dt><dd>{html.escape(page.subtitle)}</dd></div>')
+        lines.append(f'<div><dt>Volume</dt><dd><em>{html.escape(site_meta.title)}</em></dd></div>')
+        if site_meta.subtitle:
+            lines.append(f'<div><dt>Sous-titre du volume</dt><dd>{html.escape(site_meta.subtitle)}</dd></div>')
+        if volume_creators_text:
+            lines.append(f'<div><dt>{html.escape(role_label)}</dt><dd>{html.escape(volume_creators_text)}</dd></div>')
+        if site_meta.publisher:
+            lines.append(f'<div><dt>Éditeur</dt><dd>{html.escape(site_meta.publisher)}</dd></div>')
+        if site_meta.publication_year:
+            lines.append(f'<div><dt>Année</dt><dd>{html.escape(site_meta.publication_year)}</dd></div>')
+        if public_url:
+            lines.append(f'<div><dt>URL</dt><dd><a href="{html.escape(public_url)}">{html.escape(public_url)}</a></dd></div>')
+        if doi_url:
+            lines.append(f'<div><dt>DOI</dt><dd><a href="{html.escape(doi_url)}">{html.escape(doi_value)}</a></dd></div>')
+        lines.append('<div><dt>Date de consultation</dt><dd><time class="consultation-date"></time></dd></div>')
+        lines.append('</dl>')
+        lines.append(f'<p class="credit-citation"><strong>Référence suggérée</strong> : {". ".join(suggestion)}.</p>')
+        lines.append('</section>')
+        return ''.join(lines)
+
+    def _build_public_page_url(self, file_name: str, site_meta: SiteMeta) -> str:
+        base = site_meta.site_url.strip()
+        if not base:
+            return file_name
+        if base.endswith('.html'):
+            return urljoin(base, file_name)
+        return urljoin(base.rstrip('/') + '/', file_name)
+
+    def _normalize_doi_url(self, doi: str) -> str:
+        if not doi:
+            return ''
+        if doi.startswith('http://') or doi.startswith('https://'):
+            return doi
+        return f'https://doi.org/{doi}'
 
     def _render_prev_next(self, page: PageDef, nav: list[NavItem]) -> str:
         flat: list[tuple[str, str]] = []
@@ -255,31 +375,134 @@ class SiteBuilder:
             if item.children:
                 self._flatten_nav(item.children, flat)
 
-    def _wrap_html(self, page_title: str, site_meta: SiteMeta, nav_html: str, content_html: str) -> str:
-        site_title = html.escape(site_meta.title)
-        subtitle = f'<p class="header-subtitle">{html.escape(site_meta.subtitle)}</p>' if site_meta.subtitle else ''
+    def _render_banner(self, site_meta: SiteMeta, theme_assets: ThemeAssets) -> str:
+        press_label = 'Presses universitaires de Rouen et du Havre'
+        book_label = html.escape(site_meta.title)
+        creator_names = ' · '.join(html.escape(name) for name in site_meta.creators if name)
+        creator_role = ''
+        if site_meta.creators:
+            if 'Édition scientifique' in site_meta.creator_role_label:
+                creator_role = 'Édition scientifique'
+            elif len(site_meta.creators) == 1:
+                creator_role = 'Auteur'
+            else:
+                creator_role = 'Auteurs'
+
+        parts = ['<header class="site-banner">', '<div class="site-banner-inner">']
+        parts.append('<a class="site-banner-home" href="index.html" aria-label="Retour au sommaire">')
+        if theme_assets.purh_logo_href:
+            parts.append(f'<img class="site-logo site-logo--purh" src="{html.escape(theme_assets.purh_logo_href)}" alt="{press_label}">')
+        else:
+            parts.append('<span class="site-logo-text site-logo-text--dark">PURH</span>')
+        parts.append('<div class="site-banner-titles">')
+        parts.append(f'<div class="site-banner-label">{press_label}</div>')
+        parts.append(f'<div class="site-banner-book">{book_label}</div>')
+        if creator_names:
+            parts.append('<div class="site-banner-creators">')
+            if creator_role:
+                parts.append(f'<span class="site-banner-creators-role">{html.escape(creator_role)}</span>')
+            parts.append(f'<span class="site-banner-creators-names">{creator_names}</span>')
+            parts.append('</div>')
+        parts.append('</div>')
+        parts.append('</a>')
+        parts.append('<div class="site-banner-spacer"></div>')
+        if theme_assets.university_logo_href:
+            parts.append(f'<img class="site-logo site-logo--univ" src="{html.escape(theme_assets.university_logo_href)}" alt="Université de Rouen Normandie">')
+        else:
+            parts.append('<span class="site-logo-text site-logo-text--dark site-logo-text--univ">Université de Rouen Normandie</span>')
+        parts.append('</div></header>')
+        return ''.join(parts)
+
+    def _render_cover_link(self, theme_assets: ThemeAssets, compact: bool) -> str:
+        classes = 'book-cover-link book-cover-link--compact' if compact else 'book-cover-link'
+        if theme_assets.cover_href:
+            return (
+                f'<a class="{classes}" href="index.html" title="Retour au sommaire">'
+                f'<img class="book-cover-image" src="{html.escape(theme_assets.cover_href)}" alt="Couverture de l’ouvrage">'
+                '</a>'
+            )
+        return (
+            f'<a class="{classes} book-cover-link--placeholder" href="index.html" title="Retour au sommaire">'
+            '<span class="book-cover-placeholder">Couverture</span>'
+            '</a>'
+        )
+
+    def _discover_theme_assets(self, output_assets_dir: Path) -> ThemeAssets:
+        image_exts = {'.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif'}
+        candidates = [
+            path.relative_to(output_assets_dir).as_posix()
+            for path in output_assets_dir.rglob('*')
+            if path.is_file() and path.suffix.lower() in image_exts
+        ]
+        return ThemeAssets(
+            cover_href=self._pick_asset(candidates, [
+                ['images', 'cover'],
+                ['images', 'couverture'],
+                ['cover'],
+                ['couverture'],
+                ['premiere', 'couv'],
+                ['1ere', 'couv'],
+                ['couv'],
+            ]),
+            university_logo_href=self._pick_asset(candidates, [
+                ['logos', 'universite'],
+                ['logos', 'university'],
+                ['logos', 'urn'],
+                ['universite'],
+                ['university'],
+                ['urn'],
+            ]),
+            purh_logo_href=self._pick_asset(candidates, [
+                ['logos', 'purh'],
+                ['logos', 'presses'],
+                ['purh'],
+                ['presses'],
+            ]),
+        )
+
+    def _pick_asset(self, candidates: list[str], token_sets: list[list[str]]) -> str | None:
+        lowered = [(candidate, candidate.lower()) for candidate in candidates]
+        for tokens in token_sets:
+            for candidate, lower in lowered:
+                if all(token in lower for token in tokens):
+                    return f'assets/{candidate}'
+        return None
+
+    def _wrap_html(
+        self,
+        page_title: str,
+        site_meta: SiteMeta,
+        nav_html: str,
+        content_html: str,
+        theme_assets: ThemeAssets,
+        page_grid_class: str = 'page-grid',
+    ) -> str:
+        banner = self._render_banner(site_meta, theme_assets)
         return f'''<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>{html.escape(page_title)}</title>
-    <link rel="stylesheet" href="assets/site.css"/>
-    <script src="assets/app.js" defer="defer"></script>
-  </head>
-  <body>
-    <header class="site-header">
-      <div class="site-header__inner">
-        <div>
-          <a class="brand" href="index.html">{site_title}</a>
-          {subtitle}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(page_title)}</title>
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+  {banner}
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="site-title"><a href="index.html">{html.escape(site_meta.title)}</a></div>
+      {nav_html}
+    </aside>
+    <main class="content">
+      <div class="{html.escape(page_grid_class)}">
+        <div class="page-main">
+          {content_html}
         </div>
+        <aside class="margin-notes" id="margin-notes" aria-label="Notes marginales"></aside>
       </div>
-    </header>
-    <div class="layout">
-      <aside class="sidebar">{nav_html}</aside>
-      <main class="content-area">{content_html}</main>
-    </div>
-  </body>
+    </main>
+  </div>
+  <script src="assets/app.js"></script>
+</body>
 </html>
 '''

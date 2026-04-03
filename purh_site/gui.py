@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from .config import BuildConfig
+from .local_server import PreviewServer
 from .site_builder import SiteBuilder
 
 
@@ -20,7 +21,11 @@ class App(ttk.Frame):
         self.assets_dir_var = tk.StringVar()
         self.output_dir_var = tk.StringVar()
         self.xml_files: list[Path] = []
+        self.port_var = tk.StringVar(value="8000,8080")
+        self.auto_preview_var = tk.BooleanVar(value=True)
+        self.preview_server: PreviewServer | None = None
         self._build_ui()
+        self.master.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _build_ui(self) -> None:
         self.master.title("PURH — livre web TEI")
@@ -48,26 +53,36 @@ class App(ttk.Frame):
         self._add_path_selector(3, "Dossier assets", self.assets_dir_var, self._choose_assets_dir, "Choisir…")
         self._add_path_selector(4, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
 
+        preview_bar = ttk.Frame(self)
+        preview_bar.grid(row=5, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        ttk.Label(preview_bar, text="Ports de prévisualisation").grid(row=0, column=0, sticky="w")
+        ttk.Entry(preview_bar, textvariable=self.port_var, width=18).grid(row=0, column=1, sticky="w", padx=(8, 16))
+        ttk.Checkbutton(preview_bar, text="Lancer le serveur local et ouvrir le navigateur après build", variable=self.auto_preview_var).grid(row=0, column=2, sticky="w")
+
         helper = ttk.Label(
             self,
-            text="Conseil : placez vos médias dans assets/images, assets/audio et assets/video.",
+            text=(
+                "Convention d’assets : assets/images pour les médias, assets/logos pour les logos ; "
+                "noms conseillés : cover ou couverture, universite ou urn, purh."
+            ),
         )
-        helper.grid(row=5, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        helper.grid(row=6, column=0, columnspan=3, sticky="w", pady=(0, 8))
 
         button_bar = ttk.Frame(self)
-        button_bar.grid(row=6, column=0, columnspan=3, sticky="w", pady=(8, 12))
+        button_bar.grid(row=7, column=0, columnspan=3, sticky="w", pady=(8, 12))
         ttk.Button(button_bar, text="Construire le site", command=self._build).grid(row=0, column=0, padx=(0, 8))
-        ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=1, padx=(0, 8))
-        ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=2)
+        ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0, column=1, padx=(0, 8))
+        ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=2, padx=(0, 8))
+        ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=3)
 
         log_label = ttk.Label(self, text="Journal")
-        log_label.grid(row=7, column=0, sticky="w")
+        log_label.grid(row=8, column=0, sticky="w")
         self.log = tk.Text(self, wrap="word", height=24)
-        self.log.grid(row=8, column=0, columnspan=3, sticky="nsew")
+        self.log.grid(row=9, column=0, columnspan=3, sticky="nsew")
         self.log.configure(state="disabled")
 
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(8, weight=1)
+        self.rowconfigure(9, weight=1)
         self._log("Interface prête.")
 
     def _add_path_selector(self, row: int, label: str, variable: tk.StringVar, browse_command, button_text: str) -> None:
@@ -129,12 +144,16 @@ class App(ttk.Frame):
                 )
                 self._log(f"Site généré : {result.html_path}")
                 self._log(f"Rapport : {result.report_path}")
+                if self.auto_preview_var.get():
+                    self._preview_result(result)
                 return
 
             if self.xml_files:
                 self._log("Build de plusieurs fichiers XML indépendants…")
                 results = self.builder.build_from_many(self.xml_files, output_dir, assets_dir=assets_dir)
                 self._log(f"{len(results)} site(s) généré(s).")
+                if results and self.auto_preview_var.get():
+                    self._preview_result(results[0])
                 return
 
             messagebox.showwarning("Aucun XML", "Choisissez un fichier maître XML ou un ensemble de fichiers XML.")
@@ -142,6 +161,55 @@ class App(ttk.Frame):
             self._log(f"Erreur : {exc}")
             self._log(traceback.format_exc())
             messagebox.showerror("Erreur pendant le build", str(exc))
+
+    def _preview_result(self, result) -> None:
+        ports = self._parse_ports()
+        self._start_preview_server(result.output_dir, result.html_path.name, ports)
+
+    def _preview_existing_site(self) -> None:
+        output_dir_text = self.output_dir_var.get().strip()
+        if not output_dir_text:
+            messagebox.showinfo("Prévisualisation", "Choisissez d'abord un dossier de sortie.")
+            return
+        output_dir = Path(output_dir_text)
+        index_path = output_dir / "index.html"
+        if not index_path.exists():
+            messagebox.showinfo("Prévisualisation", "Aucun index.html n'a été trouvé dans le dossier de sortie.")
+            return
+        self._start_preview_server(output_dir, "index.html", self._parse_ports())
+
+    def _parse_ports(self) -> tuple[int, ...]:
+        raw = self.port_var.get().strip()
+        if not raw:
+            return (8000, 8080)
+        ports: list[int] = []
+        for item in raw.split(','):
+            item = item.strip()
+            if not item:
+                continue
+            try:
+                port = int(item)
+            except ValueError as exc:
+                raise ValueError(f"Port invalide : {item}") from exc
+            if port <= 0 or port > 65535:
+                raise ValueError(f"Port hors limite : {port}")
+            ports.append(port)
+        if not ports:
+            return (8000, 8080)
+        return tuple(ports)
+
+    def _start_preview_server(self, directory: Path, relative_path: str, ports: tuple[int, ...]) -> None:
+        if self.preview_server is not None:
+            self.preview_server.stop()
+        self.preview_server = PreviewServer(directory=directory, preferred_ports=ports)
+        self.preview_server.start()
+        url = self.preview_server.open_in_browser(relative_path)
+        self._log(f"Serveur local : {url}")
+
+    def _on_close(self) -> None:
+        if self.preview_server is not None:
+            self.preview_server.stop()
+        self.master.destroy()
 
     def _open_output_dir(self) -> None:
         value = self.output_dir_var.get().strip()

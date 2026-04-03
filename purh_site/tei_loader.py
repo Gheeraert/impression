@@ -102,11 +102,18 @@ class TeiLoader:
             "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='sub'])[1])",
             namespaces=NSMAP,
         )
-        authors = [
-            " ".join(author.xpath('.//text()')).strip()
-            for author in tree.xpath('/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author', namespaces=NSMAP)
-            if " ".join(author.xpath('.//text()')).strip()
-        ]
+        authors = []
+        for author in tree.xpath('/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author', namespaces=NSMAP):
+            name = " ".join(author.xpath('.//tei:persName//text() | .//tei:name//text()', namespaces=NSMAP)).strip()
+            if not name:
+                name = " ".join(author.xpath('./text()')).strip() or " ".join(author.xpath('.//text()')).strip()
+            affiliations = [
+                " ".join(aff.xpath('.//text()')).strip()
+                for aff in author.xpath('./tei:affiliation', namespaces=NSMAP)
+                if " ".join(aff.xpath('.//text()')).strip()
+            ]
+            if name:
+                authors.append("@@".join([name, *affiliations]))
         return {
             "data-page-title": title,
             "data-page-subtitle": subtitle,

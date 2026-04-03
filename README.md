@@ -15,14 +15,27 @@ Ce prototype prend comme entrée un **fichier maître TEI Métopes** et construi
 
 ## Convention d'assets
 
-Placez vos médias dans un dossier du type :
+Placez vos fichiers dans un dossier du type :
 
 ```text
 assets/
   images/
+    cover.jpg
+    couverture.png
+    ... figures du livre ...
   audio/
   video/
+  logos/
+    universite.svg
+    urn.png
+    purh.svg
 ```
+
+Conventions reconnues par le prototype :
+
+- **couverture** : noms contenant `cover`, `couverture`, `couv` ;
+- **logo université** : noms contenant `universite`, `university` ou `urn` ;
+- **logo PURH** : noms contenant `purh` ou `presses`.
 
 Si un fichier TEI contient par exemple :
 
@@ -48,3 +61,8 @@ Le dossier de sortie contient en général :
 - `assets/` : CSS, JS, médias copiés ;
 - `book.normalized.xml` ;
 - `build_report.txt`.
+
+
+## Prévisualisation locale
+
+Après la génération, l'interface peut démarrer automatiquement un petit serveur local et ouvrir le navigateur sur `http://127.0.0.1:8000/index.html` ou, si ce port est occupé, sur `8080` puis sur un port libre.
