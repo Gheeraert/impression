@@ -62,8 +62,8 @@ class App(ttk.Frame):
         helper = ttk.Label(
             self,
             text=(
-                "Convention d’assets : assets/images pour les médias, assets/logos pour les logos ; "
-                "noms conseillés : cover ou couverture, universite ou urn, purh."
+                "Le dossier choisi sera copié tel quel dans la sortie sous assets/. "
+                "Les chemins d’images indiqués dans le XML font foi ; logos conseillés : cover/couverture, universite/urn, purh."
             ),
         )
         helper.grid(row=6, column=0, columnspan=3, sticky="w", pady=(0, 8))

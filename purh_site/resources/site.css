@@ -95,31 +95,27 @@ a { color: var(--accent); }
 
 .site-banner-book {
   margin-top: 0.34rem;
-  font: 700 clamp(2.05rem, 3vw, 3.35rem)/1.06 Georgia, "Times New Roman", serif;
+  font: 700 clamp(1.52rem, 2.05vw, 2.45rem)/1.06 Georgia, "Times New Roman", serif;
   color: #fff;
 }
 
-.site-banner-creators {
-  margin-top: 0.46rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.45rem 0.75rem;
-  color: rgba(255,255,255,0.9);
+.site-banner-subtitle {
+  margin-top: 0.26rem;
+  font: 600 clamp(1rem, 1.1vw, 1.2rem)/1.28 Georgia, "Times New Roman", serif;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.82);
 }
 
-.site-banner-creators-role {
-  font: 600 0.78rem/1.2 Arial, Helvetica, sans-serif;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.74);
+.site-banner-creators {
+  margin-top: 0.58rem;
+  display: block;
+  color: rgba(255,255,255,0.95);
 }
 
 .site-banner-creators-names {
-  font: 600 clamp(0.95rem, 1.1vw, 1.12rem)/1.25 Georgia, "Times New Roman", serif;
-  font-variant: small-caps;
-  letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.95);
+  font: 600 clamp(1.28rem, 1.58vw, 1.66rem)/1.22 Georgia, "Times New Roman", serif;
+  color: rgba(255,255,255,0.97);
 }
 
 .layout {
@@ -189,9 +185,7 @@ a { color: var(--accent); }
 }
 
 .content {
-  max-width: 1560px;
-  margin: 0 auto;
-  padding: 32px 48px 64px 32px;
+  min-width: 0;
 }
 
 .page-grid {
@@ -466,6 +460,12 @@ figure audio { width: 100%; margin-bottom: 1rem; }
 
 .credit-box h2 {
   margin-top: 0;
+}
+
+.credit-names {
+  margin: 0 0 0.9rem;
+  color: #24384d;
+  font: 600 1.05rem/1.4 Georgia, "Times New Roman", serif;
 }
 
 .credit-list {

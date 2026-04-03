@@ -131,7 +131,6 @@ class SiteBuilder:
         theme_assets: ThemeAssets,
     ) -> None:
         nav_html = self._render_sidebar(nav, current_file_name=None)
-        creators_label = html.escape(site_meta.creator_role_label)
         creators_value = html.escape(" · ".join(site_meta.creators)) if site_meta.creators else ""
         hero_parts = ['<section class="home-hero">', '<div class="home-hero-grid">']
         hero_parts.append('<div class="home-hero-text">')
@@ -140,7 +139,7 @@ class SiteBuilder:
         if site_meta.subtitle:
             hero_parts.append(f'<p class="subtitle">{html.escape(site_meta.subtitle)}</p>')
         if creators_value:
-            hero_parts.append(f'<p class="meta-line"><strong>{creators_label}</strong> : {creators_value}</p>')
+            hero_parts.append(f'<p class="meta-line">{creators_value}</p>')
         if site_meta.publisher or site_meta.publication_year:
             meta_bits = [bit for bit in (site_meta.publisher, site_meta.publication_year) if bit]
             hero_parts.append(f'<p class="meta-line">{" · ".join(html.escape(bit) for bit in meta_bits)}</p>')
@@ -197,7 +196,12 @@ class SiteBuilder:
         self._strip_redundant_title_pages(cloned)
         self._renumber_fragment_notes(cloned)
         fragment_tree = etree.ElementTree(cloned)
-        result = self.fragment_xslt(fragment_tree, assets_base=etree.XSLT.strparam('assets'))
+        result = self.fragment_xslt(
+            fragment_tree,
+            assets_image_base=etree.XSLT.strparam('assets/images'),
+            assets_audio_base=etree.XSLT.strparam('assets/audio'),
+            assets_video_base=etree.XSLT.strparam('assets/video'),
+        )
         return str(result)
 
     def _strip_redundant_title_pages(self, root: etree._Element) -> None:
@@ -270,16 +274,12 @@ class SiteBuilder:
 
     def _render_credit_block(self, page: PageDef, site_meta: SiteMeta) -> str:
         page_creators = page.authors or site_meta.creators
-        page_creators_label = "Auteur·rice(s) de la contribution" if page.page_kind == "article" else "Auteur·rice(s) du chapitre"
-        if not page.authors and page.page_kind != "article":
-            page_creators_label = site_meta.creator_role_label
-
         volume_title = site_meta.title
         if site_meta.subtitle:
             volume_title = f"{volume_title}. {site_meta.subtitle}"
 
-        role_label = site_meta.creator_role_label
         volume_creators_text = " ; ".join(site_meta.creators)
+        role_label = site_meta.creator_role_label
         public_url = self._build_public_page_url(page.file_name, site_meta)
         doi_value = site_meta.doi.strip()
         doi_url = self._normalize_doi_url(doi_value) if doi_value else ""
@@ -312,15 +312,13 @@ class SiteBuilder:
         lines.append(f'<p class="credit-kicker">{cite_heading}</p>')
         lines.append('<dl class="credit-list">')
         if page_creators:
-            lines.append(f'<div><dt>{html.escape(page_creators_label)}</dt><dd>{html.escape(" ; ".join(page_creators))}</dd></div>')
+            lines.append(f'<p class="credit-names">{html.escape(" ; ".join(page_creators))}</p>')
         lines.append(f'<div><dt>{"Contribution" if page.page_kind == "article" else "Chapitre"}</dt><dd>{html.escape(page.title)}</dd></div>')
         if page.subtitle:
             lines.append(f'<div><dt>Sous-titre</dt><dd>{html.escape(page.subtitle)}</dd></div>')
         lines.append(f'<div><dt>Volume</dt><dd><em>{html.escape(site_meta.title)}</em></dd></div>')
         if site_meta.subtitle:
             lines.append(f'<div><dt>Sous-titre du volume</dt><dd>{html.escape(site_meta.subtitle)}</dd></div>')
-        if volume_creators_text:
-            lines.append(f'<div><dt>{html.escape(role_label)}</dt><dd>{html.escape(volume_creators_text)}</dd></div>')
         if site_meta.publisher:
             lines.append(f'<div><dt>Éditeur</dt><dd>{html.escape(site_meta.publisher)}</dd></div>')
         if site_meta.publication_year:
@@ -378,15 +376,8 @@ class SiteBuilder:
     def _render_banner(self, site_meta: SiteMeta, theme_assets: ThemeAssets) -> str:
         press_label = 'Presses universitaires de Rouen et du Havre'
         book_label = html.escape(site_meta.title)
+        subtitle_label = html.escape(site_meta.subtitle)
         creator_names = ' · '.join(html.escape(name) for name in site_meta.creators if name)
-        creator_role = ''
-        if site_meta.creators:
-            if 'Édition scientifique' in site_meta.creator_role_label:
-                creator_role = 'Édition scientifique'
-            elif len(site_meta.creators) == 1:
-                creator_role = 'Auteur'
-            else:
-                creator_role = 'Auteurs'
 
         parts = ['<header class="site-banner">', '<div class="site-banner-inner">']
         parts.append('<a class="site-banner-home" href="index.html" aria-label="Retour au sommaire">')
@@ -397,10 +388,10 @@ class SiteBuilder:
         parts.append('<div class="site-banner-titles">')
         parts.append(f'<div class="site-banner-label">{press_label}</div>')
         parts.append(f'<div class="site-banner-book">{book_label}</div>')
+        if subtitle_label:
+            parts.append(f'<div class="site-banner-subtitle">{subtitle_label}</div>')
         if creator_names:
             parts.append('<div class="site-banner-creators">')
-            if creator_role:
-                parts.append(f'<span class="site-banner-creators-role">{html.escape(creator_role)}</span>')
             parts.append(f'<span class="site-banner-creators-names">{creator_names}</span>')
             parts.append('</div>')
         parts.append('</div>')

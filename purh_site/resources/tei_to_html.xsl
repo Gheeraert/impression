@@ -6,7 +6,9 @@
 
   <xsl:output method="html" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
   <xsl:strip-space elements="*"/>
-  <xsl:param name="assets_base">assets</xsl:param>
+  <xsl:param name="assets_image_base">assets/images</xsl:param>
+  <xsl:param name="assets_audio_base">assets/audio</xsl:param>
+  <xsl:param name="assets_video_base">assets/video</xsl:param>
 
   <xsl:template match="/">
     <div class="tei-fragment">
@@ -117,7 +119,7 @@
     <xsl:param name="url"/>
     <xsl:choose>
       <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/')"><xsl:value-of select="$url"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="concat($assets_base, '/images/', $url)"/></xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="concat($assets_image_base, '/', $url)"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
@@ -125,7 +127,7 @@
     <xsl:param name="url"/>
     <xsl:choose>
       <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/')"><xsl:value-of select="$url"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="concat($assets_base, '/audio/', $url)"/></xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="concat($assets_audio_base, '/', $url)"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
@@ -133,7 +135,7 @@
     <xsl:param name="url"/>
     <xsl:choose>
       <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/')"><xsl:value-of select="$url"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="concat($assets_base, '/video/', $url)"/></xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="concat($assets_video_base, '/', $url)"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 

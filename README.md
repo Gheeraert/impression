@@ -15,35 +15,56 @@ Ce prototype prend comme entrée un **fichier maître TEI Métopes** et construi
 
 ## Convention d'assets
 
-Placez vos fichiers dans un dossier du type :
+Le dossier d'assets choisi dans l'interface est **copié tel quel** dans la sortie sous `assets/`.
+Il ne faut donc pas réorganiser les médias au moment du build : **la source de vérité est le XML**.
+
+Exemple d'arborescence de sortie attendue :
 
 ```text
-assets/
-  images/
-    cover.jpg
-    couverture.png
-    ... figures du livre ...
-  audio/
-  video/
-  logos/
-    universite.svg
-    urn.png
-    purh.svg
+site/
+  index.html
+  01-chapitre.html
+  assets/
+    icono/
+      br/
+        Ch03_Loskoutoff_1/
+          fig10.jpg
+    logos/
+      purh.svg
+      universite.svg
 ```
 
-Conventions reconnues par le prototype :
+Si le XML contient une référence de type :
+
+```xml
+<graphic url="../icono/br/Ch03_Loskoutoff_1/fig10.jpg"/>
+```
+
+alors le HTML généré contiendra :
+
+```html
+src="assets/images/../icono/br/Ch03_Loskoutoff_1/fig10.jpg"
+```
+
+ce qui résout côté navigateur vers :
+
+```text
+assets/icono/br/Ch03_Loskoutoff_1/fig10.jpg
+```
+
+Conventions encore reconnues pour les éléments de thème :
 
 - **couverture** : noms contenant `cover`, `couverture`, `couv` ;
 - **logo université** : noms contenant `universite`, `university` ou `urn` ;
 - **logo PURH** : noms contenant `purh` ou `presses`.
 
-Si un fichier TEI contient par exemple :
+Pour des références simples comme :
 
 ```xml
 <graphic url="figure-1.jpg"/>
 ```
 
-le générateur cherchera l'image dans `assets/images/figure-1.jpg`.
+le générateur produira toujours un chemin relatif à `assets/images/figure-1.jpg`.
 
 ## Lancer l'interface
 
