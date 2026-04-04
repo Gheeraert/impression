@@ -1,0 +1,16 @@
+# Environnements virtuels
+.venv/
+
+# Cache de tests
+.pytest_cache/
+
+# Réglages locaux PyCharm
+.idea/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+
+# Fichiers divers système/éditeur
+.DS_Store
+Thumbs.db
