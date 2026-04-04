@@ -31,7 +31,7 @@ a { color: var(--accent); }
 }
 
 .site-banner-inner {
-  width: min(1600px, calc(100vw - 28px));
+  width: min(1600px, calc(100vw - 40px));
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@ a { color: var(--accent); }
 }
 
 .layout {
-  width: min(1600px, calc(100vw - 28px));
+  width: min(1600px, calc(100vw - 40px));
   margin: 0 auto;
   display: grid;
   grid-template-columns: clamp(240px, 22vw, 300px) minmax(0, 1fr);
@@ -254,6 +254,9 @@ a { color: var(--accent); }
 
 .book-cover-link {
   display: flex;
+  appearance: none;
+  padding: 0;
+  cursor: zoom-in;
   align-items: center;
   justify-content: center;
   justify-self: end;
@@ -271,10 +274,20 @@ a { color: var(--accent); }
   min-height: 220px;
 }
 
+.book-cover-link--placeholder {
+  cursor: default;
+}
+
+.book-cover-link:hover .book-cover-image,
+.book-cover-link:focus-visible .book-cover-image {
+  transform: scale(1.02);
+}
+
 .book-cover-image {
   display: block;
   width: 100%;
   height: auto;
+  transition: transform 180ms ease;
 }
 
 .book-cover-placeholder {
@@ -373,6 +386,35 @@ figure {
   border-radius: 18px;
   background: #fafbfc;
 }
+
+.media-zoom-trigger {
+  display: flex;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: zoom-in;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.figure-zoom-trigger img {
+  width: auto;
+  max-width: min(100%, 760px);
+  max-height: clamp(260px, 46vh, 520px);
+  height: auto;
+}
+
+.media-zoom-trigger img {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.media-zoom-trigger:hover img,
+.media-zoom-trigger:focus-visible img {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(13, 18, 28, 0.12);
+}
+
 figure img,
 figure video {
   max-width: 100%;
@@ -501,6 +543,129 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   text-align: left;
 }
 
+.lightbox-open {
+  overflow: hidden;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox[hidden] {
+  display: none;
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 20, 0.82);
+  backdrop-filter: blur(2px);
+}
+
+.lightbox-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(1100px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transform: translateY(10px) scale(0.985);
+  transition: transform 220ms ease;
+}
+
+.lightbox.is-open .lightbox-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.lightbox-close {
+  align-self: flex-end;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font: 400 1.6rem/1 Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+
+.lightbox-close:hover,
+.lightbox-close:focus-visible {
+  background: rgba(255,255,255,0.18);
+}
+
+.lightbox-figure {
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 136px);
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  background: #fff;
+}
+
+.lightbox-caption {
+  max-width: min(760px, 100%);
+  margin: 0;
+  text-align: center;
+  color #111;
+  font: 400 0.98rem/1.5 Arial, Helvetica, sans-serif;
+}
+
+.lightbox-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.lightbox-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.72rem 1.1rem;
+  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  text-decoration: none;
+  font: 600 0.95rem/1.2 Arial, Helvetica, sans-serif;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.lightbox-download:hover,
+.lightbox-download:focus-visible {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.34);
+  transform: translateY(-1px);
+}
+
 .pager {
   display: flex;
   justify-content: space-between;
@@ -561,7 +726,7 @@ figure audio { width: 100%; margin-bottom: 1rem; }
 
   .site-banner-inner,
   .layout {
-    width: min(1120px, calc(100vw - 20px));
+    width: min(1120px, calc(100vw - 28px));
   }
 
   .site-banner-inner,

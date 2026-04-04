@@ -407,15 +407,20 @@ class SiteBuilder:
     def _render_cover_link(self, theme_assets: ThemeAssets, compact: bool) -> str:
         classes = 'book-cover-link book-cover-link--compact' if compact else 'book-cover-link'
         if theme_assets.cover_href:
+            cover_href = html.escape(theme_assets.cover_href)
             return (
-                f'<a class="{classes}" href="index.html" title="Retour au sommaire">'
-                f'<img class="book-cover-image" src="{html.escape(theme_assets.cover_href)}" alt="Couverture de l’ouvrage">'
-                '</a>'
+                f'<button type="button" class="{classes} book-cover-trigger" '
+                f'data-lightbox-src="{cover_href}" '
+                'data-lightbox-alt="Couverture de l’ouvrage" '
+                'data-lightbox-caption="Couverture de l’ouvrage" '
+                'aria-label="Agrandir la couverture">'
+                f'<img class="book-cover-image" src="{cover_href}" alt="Couverture de l’ouvrage">'
+                '</button>'
             )
         return (
-            f'<a class="{classes} book-cover-link--placeholder" href="index.html" title="Retour au sommaire">'
+            f'<div class="{classes} book-cover-link--placeholder" aria-hidden="true">'
             '<span class="book-cover-placeholder">Couverture</span>'
-            '</a>'
+            '</div>'
         )
 
     def _discover_theme_assets(self, output_assets_dir: Path) -> ThemeAssets:

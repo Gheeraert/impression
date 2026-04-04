@@ -110,6 +110,129 @@ function buildMarginNotes() {
   }
 }
 
+
+function ensureLightbox() {
+  let root = document.getElementById('site-lightbox');
+  if (root) {
+    return {
+      root,
+      backdrop: root.querySelector('.lightbox-backdrop'),
+      dialog: root.querySelector('.lightbox-dialog'),
+      image: root.querySelector('.lightbox-image'),
+      caption: root.querySelector('.lightbox-caption'),
+      close: root.querySelector('.lightbox-close'),
+      download: root.querySelector('.lightbox-download'),
+    };
+  }
+
+  root = document.createElement('div');
+  root.id = 'site-lightbox';
+  root.className = 'lightbox';
+  root.hidden = true;
+  root.innerHTML = `
+    <div class="lightbox-backdrop"></div>
+    <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image agrandie">
+      <button type="button" class="lightbox-close" aria-label="Fermer l'image">×</button>
+      <figure class="lightbox-figure">
+        <img class="lightbox-image" alt="">
+        <figcaption class="lightbox-caption" hidden></figcaption>
+      </figure>
+      <div class="lightbox-actions">
+        <a class="lightbox-download" href="#" download>Télécharger l’original</a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(root);
+
+  return {
+    root,
+    backdrop: root.querySelector('.lightbox-backdrop'),
+    dialog: root.querySelector('.lightbox-dialog'),
+    image: root.querySelector('.lightbox-image'),
+    caption: root.querySelector('.lightbox-caption'),
+    close: root.querySelector('.lightbox-close'),
+    download: root.querySelector('.lightbox-download'),
+  };
+}
+
+let activeLightboxTrigger = null;
+let lightboxHideTimer = null;
+
+function closeLightbox() {
+  const lb = ensureLightbox();
+  if (lb.root.hidden) return;
+
+  document.body.classList.remove('lightbox-open');
+  lb.root.classList.remove('is-open');
+  window.clearTimeout(lightboxHideTimer);
+  lightboxHideTimer = window.setTimeout(() => {
+    lb.root.hidden = true;
+    lb.image.removeAttribute('src');
+    lb.image.alt = '';
+    lb.caption.textContent = '';
+    lb.caption.hidden = true;
+    lb.download.setAttribute('href', '#');
+    lb.download.removeAttribute('download');
+  }, 220);
+
+  if (activeLightboxTrigger && typeof activeLightboxTrigger.focus === 'function') {
+    activeLightboxTrigger.focus();
+  }
+  activeLightboxTrigger = null;
+}
+
+function openLightbox(trigger) {
+  const src = trigger?.dataset?.lightboxSrc;
+  if (!src) return;
+
+  const lb = ensureLightbox();
+  const image = trigger.querySelector('img');
+  const alt = trigger.dataset.lightboxAlt || image?.getAttribute('alt') || '';
+  const caption = trigger.dataset.lightboxCaption || alt || '';
+  const downloadName = src.split('/').pop() || 'original';
+
+  window.clearTimeout(lightboxHideTimer);
+  activeLightboxTrigger = trigger;
+  lb.image.src = src;
+  lb.image.alt = alt;
+  lb.caption.textContent = caption;
+  lb.caption.hidden = !caption;
+  lb.download.href = src;
+  lb.download.setAttribute('download', downloadName);
+  lb.root.hidden = false;
+
+  window.requestAnimationFrame(() => {
+    lb.root.classList.add('is-open');
+    document.body.classList.add('lightbox-open');
+    lb.close.focus({ preventScroll: true });
+  });
+}
+
+function initLightbox() {
+  const lb = ensureLightbox();
+
+  lb.backdrop.addEventListener('click', closeLightbox);
+  lb.close.addEventListener('click', closeLightbox);
+  lb.root.addEventListener('click', (event) => {
+    if (event.target === lb.root) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeLightbox();
+    }
+  });
+
+  document.querySelectorAll('[data-lightbox-src]').forEach((trigger) => {
+    if (trigger.dataset.lightboxBound === '1') return;
+    trigger.dataset.lightboxBound = '1';
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      openLightbox(trigger);
+    });
+  });
+}
+
 function renderConsultationDates() {
   const nodes = document.querySelectorAll('.consultation-date');
   if (!nodes.length) return;
@@ -134,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     current.scrollIntoView({ block: 'nearest' });
   }
   renderConsultationDates();
+  initLightbox();
   buildMarginNotes();
   window.requestAnimationFrame(buildMarginNotes);
 });

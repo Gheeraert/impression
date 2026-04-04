@@ -158,3 +158,45 @@ def test_banner_and_credit_box_use_plain_names(tmp_path: Path) -> None:
     assert 'Auteur<' not in index_html
     assert 'Auteur·rice' not in page_html
     assert '<p class="credit-names">Jeanne Test</p>' in page_html
+
+
+def test_lightbox_markup_is_present_for_figures_and_covers(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE_WITH_FIGURE, encoding='utf-8')
+
+    assets_dir = tmp_path / 'source_assets'
+    figure_path = assets_dir / 'icono' / 'br' / 'Ch03_Loskoutoff_1' / 'fig10.jpg'
+    figure_path.parent.mkdir(parents=True, exist_ok=True)
+    figure_path.write_bytes(b'fake-jpg')
+    cover_path = assets_dir / 'images' / 'cover.jpg'
+    cover_path.parent.mkdir(parents=True, exist_ok=True)
+    cover_path.write_bytes(b'fake-cover')
+
+    builder = SiteBuilder()
+    result = builder.build_from_master(xml_path, BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir))
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+    page_html = (tmp_path / 'site' / '01-chapitre-image.html').read_text(encoding='utf-8')
+
+    assert 'class="book-cover-link book-cover-trigger"' in index_html
+    assert 'data-lightbox-src="assets/images/cover.jpg"' in index_html
+    assert 'class="figure-zoom-trigger media-zoom-trigger"' in page_html
+    assert 'data-lightbox-src="assets/images/../icono/br/Ch03_Loskoutoff_1/fig10.jpg"' in page_html
+
+    app_js = (tmp_path / 'site' / 'assets' / 'app.js').read_text(encoding='utf-8')
+    assert 'Télécharger l’original' in app_js
+    assert "lb.download.href = src;" in app_js
+
+
+def test_article_images_are_normalized_in_default_css(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE_WITH_FIGURE, encoding='utf-8')
+
+    builder = SiteBuilder()
+    builder.build_from_master(xml_path, BuildConfig(output_dir=tmp_path / 'site'))
+
+    css = (tmp_path / 'site' / 'assets' / 'site.css').read_text(encoding='utf-8')
+
+    assert '.figure-zoom-trigger img {' in css
+    assert 'max-width: min(100%, 760px);' in css
+    assert 'max-height: clamp(260px, 46vh, 520px);' in css

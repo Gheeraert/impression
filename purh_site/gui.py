@@ -28,13 +28,13 @@ class App(ttk.Frame):
         self.master.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _build_ui(self) -> None:
-        self.master.title("PURH — livre web TEI")
+        self.master.title("IMPRESSIONS — livre web TEI")
         self.master.geometry("1020x720")
         self.pack(fill="both", expand=True)
 
         title = ttk.Label(
             self,
-            text="PURH — génération d’un livre web multi-pages à partir de TEI Métopes",
+            text="IMPRESSIONS — génération d’un livre web à partir de TEI Métopes",
             font=("TkDefaultFont", 12, "bold"),
         )
         title.grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 12))
