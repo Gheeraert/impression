@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impressions — Générateur de livre web savant</title>
+  <meta name="description" content="Impressions génère un livre web savant à partir d’un fichier XML-TEI et d’un dossier d’assets : page d’accueil, navigation, illustrations, métadonnées, PDF, citation et publication web statique.">
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#4b5563;
+      --line:#e5e7eb;
+      --soft:#f9fafb;
+      --soft2:#f3f4f6;
+      --accent:#0b5bd3;
+      --accent2:#083a85;
+      --ok:#0f7b3e;
+      --warn:#9a6b00;
+      --danger:#b42318;
+      --radius:16px;
+      --shadow:0 10px 30px rgba(0,0,0,.07);
+      --mono:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:linear-gradient(180deg,#f7fafc 0%,#fff 30%,#fff 100%);
+      line-height:1.55;
+    }
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+    header{
+      position:sticky;top:0;z-index:10;
+      background:rgba(255,255,255,.88);
+      backdrop-filter:saturate(120%) blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:14px;padding:12px 0;
+    }
+    .brand{display:flex;gap:12px;align-items:center;min-width:240px}
+    .logo{
+      width:36px;height:36px;border-radius:10px;
+      background:radial-gradient(circle at 30% 30%, #6aa7ff, #0b5bd3 60%, #083a85);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);
+    }
+    .brand h1{font-size:24px;margin:0;line-height:1.15}
+    .brand p{margin:0;font-size:16px;color:var(--muted)}
+    nav{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px}
+    nav a{
+      font-size:13px;padding:8px 10px;border-radius:999px;color:var(--muted);
+    }
+    nav a:hover{background:var(--soft2);color:var(--text);text-decoration:none}
+    .hero{padding:42px 0 18px}
+    .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:start}
+    @media (max-width:920px){
+      .hero-grid{grid-template-columns:1fr}
+      nav{justify-content:flex-start}
+    }
+    .kicker{
+      display:inline-flex;gap:8px;align-items:center;
+      font-size:12px;color:var(--muted);
+      background:rgba(11,91,211,.08);
+      border:1px solid rgba(11,91,211,.20);
+      border-radius:999px;padding:6px 10px;
+    }
+    .kicker b{color:var(--accent2)}
+    .hero h2{font-size:24px;letter-spacing:-.02em;margin:14px 0 10px;line-height:1.1}
+    .hero p{margin:0 0 16px;color:var(--muted);font-size:16px;max-width:60ch}
+    .cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 10px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 14px;border-radius:12px;border:1px solid transparent;
+      font-weight:600;font-size:14px;cursor:pointer;user-select:none;text-decoration:none !important;
+    }
+    .btn-primary{background:var(--accent);color:#fff;box-shadow:0 10px 25px rgba(11,91,211,.22)}
+    .btn-primary:hover{background:#0a4fc0}
+    .btn-ghost{background:#fff;border-color:var(--line);color:var(--text)}
+    .btn-ghost:hover{background:var(--soft2)}
+    .meta{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:12px;margin-top:10px}
+    .chip{background:var(--soft);border:1px solid var(--line);padding:6px 10px;border-radius:999px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card .card-hd{padding:14px 14px 0}
+    .card .card-hd h3{margin:0;font-size:15px}
+    .card .card-bd{padding:12px 14px 14px;color:var(--muted);font-size:14px}
+    .shot{
+      background:linear-gradient(135deg,#eef2ff,#f8fafc);
+      border:1px dashed rgba(11,91,211,.35);
+      border-radius:14px;padding:14px;color:var(--muted);
+    }
+    figure{margin:0}
+    figcaption{font-size:12px;color:var(--muted);margin-top:8px}
+    img{max-width:100%;height:auto;border-radius:12px;display:block}
+    section{padding:18px 0}
+    .section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 12px}
+    .section-title h3{margin:0;font-size:20px;letter-spacing:-.01em}
+    .section-title p{margin:0;color:var(--muted);font-size:13px;max-width:62ch}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:920px){.grid-3{grid-template-columns:1fr}}
+    .icon{
+      width:26px;height:26px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+      background:rgba(11,91,211,.10);border:1px solid rgba(11,91,211,.18);color:var(--accent2);font-weight:800;margin-bottom:8px;
+    }
+    .steps{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:920px){.steps{grid-template-columns:1fr}}
+    .step{padding:14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+    .step h4{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:10px}
+    .badge{
+      display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:9px;
+      background:var(--soft2);border:1px solid var(--line);font-weight:800;color:var(--text);flex:0 0 auto;
+    }
+    .step p,.step ul{margin:0;color:var(--muted);font-size:14px}
+    .step ul{padding-left:18px;margin-top:8px}
+    .callout{border:1px solid var(--line);background:var(--soft);border-radius:var(--radius);padding:14px;margin-top:12px}
+    .callout b{color:var(--text)}
+    .callout.ok{border-color:rgba(15,123,62,.25);background:rgba(15,123,62,.06)}
+    .callout.warn{border-color:rgba(154,107,0,.25);background:rgba(154,107,0,.06)}
+    code, pre{font-family:var(--mono);font-size:12.5px}
+    pre{margin:10px 0 0;background:#0b1220;color:#e5e7eb;padding:12px;border-radius:14px;overflow:auto;border:1px solid rgba(255,255,255,.08)}
+    .filelist{padding-left:18px;margin:8px 0 0;color:var(--muted);font-size:14px}
+    details{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;background:#fff}
+    details + details{margin-top:10px}
+    summary{cursor:pointer;font-weight:700}
+    footer{border-top:1px solid var(--line);padding:22px 0 38px;color:var(--muted);font-size:13px}
+    .footgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+    @media (max-width:920px){.footgrid{grid-template-columns:1fr}}
+    img[data-zoom]{cursor:zoom-in;transition:transform .28s ease, box-shadow .28s ease}
+    img[data-zoom]:hover{transform:scale(1.01)}
+    .lightbox{
+      position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
+      padding:22px;background:rgba(17,24,39,.72);backdrop-filter:blur(6px);
+    }
+    .lightbox.open{display:flex}
+    .lightbox figure{margin:0;max-width:min(1100px,96vw);width:100%}
+    .lightbox img{
+      width:100%;height:auto;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.35);
+      transform:scale(.92);opacity:0;transition:transform .18s ease, opacity .18s ease;cursor:zoom-out;background:#fff;
+    }
+    .lightbox.open img{transform:scale(1);opacity:1}
+    .lightbox figcaption{margin-top:10px;color:rgba(255,255,255,.85);font-size:13px;text-align:center}
+    .lightbox .close{
+      position:fixed;top:14px;right:14px;width:42px;height:42px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:#fff;font-size:22px;
+      line-height:1;display:grid;place-items:center;cursor:pointer;transition:background .18s ease;
+    }
+    .lightbox .close:hover{background:rgba(255,255,255,.18)}
+    @media (prefers-reduced-motion: reduce){
+      img[data-zoom]{transition:none}
+      .lightbox img{transition:none;transform:none;opacity:1}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Impressions</h1>
+          <p>Générateur de livre web savant</p>
+        </div>
+      </div>
+      <nav aria-label="Navigation">
+        <a href="#telecharger">Télécharger</a>
+        <a href="#principe">Principe</a>
+        <a href="#exemple">Exemple de livre</a>
+        <a href="#pas-a-pas">Pas à pas</a>
+        <a href="#sorties">Fichiers générés</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="hero" id="top">
+      <div class="hero-grid">
+        <div>
+          <div class="kicker"><b>XML-TEI → Livre web</b> statique, élégant et pérenne</div>
+          <h2>Générez un livre web complet à partir d’un fichier XML-TEI, d’un dossier d’assets et d’une interface graphique simple.</h2>
+          <p>
+            <b>Impressions</b> transforme un volume éditorial structuré en un livre web savant : page d’accueil,
+            navigation par chapitres ou contributions, métadonnées, quatrième de couverture, PDF, citations,
+            illustrations agrandissables et export de pages HTML statiques prêtes à être mises en ligne.
+          </p>
+          <div class="cta-row" id="telecharger">
+            <a class="btn btn-primary" href="downloads/impressions-windows.zip">Télécharger Impressions (Windows)</a>
+            <a class="btn btn-ghost" href="#pas-a-pas">Voir le pas à pas</a>
+          </div>
+          <div class="meta">
+            <span class="chip">✔ XML-TEI comme source principale</span>
+            <span class="chip">✔ Livre web statique</span>
+            <span class="chip">✔ PDF et XML téléchargeables</span>
+            <span class="chip">✔ Métadonnées et citabilité</span>
+          </div>
+          <div class="callout warn" style="margin-top:14px">
+            <b>Utilisation :</b> téléchargez l’archive, décompressez-la puis lancez <code>impressions.exe</code> sous Windows.
+            L’interface vous permet ensuite de sélectionner le fichier XML maître, le dossier d’assets et le dossier de sortie.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <h3>Interface graphique</h3>
+          </div>
+          <div class="card-bd">
+            <div class="shot">
+              <figure>
+                <img src="assets/screenshots/01-interface-principale.png" alt="Interface d’Impressions" data-zoom>
+                <figcaption>Capture 01 — écran principal d’Impressions.</figcaption>
+              </figure>
+            </div>
+            <p style="margin-top:12px">
+              L’interface rassemble l’essentiel : sélection du XML maître, ajout des fichiers utiles,
+              choix des assets, génération du site et consultation du journal de build.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="principe">
+      <div class="section-title">
+        <div>
+          <h3>Principe et objectif</h3>
+          <p>Un outil de publication sobre, universitaire et lisible pour transformer un volume XML-TEI en livre web.</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-bd"><div class="icon">1</div><b>Une source structurée</b><br>Le fichier XML-TEI constitue la source principale du livre : titre, structure, divisions, auteurs, notes, éléments éditoriaux.</div></div>
+        <div class="card"><div class="card-bd"><div class="icon">2</div><b>Des assets complémentaires</b><br>Couverture, logos, PDF, quatrième de couverture et autres ressources peuvent être ajoutés via un dossier d’assets clairement organisé.</div></div>
+        <div class="card"><div class="card-bd"><div class="icon">3</div><b>Un livre web statique</b><br>Impressions génère un site HTML statique, léger, robuste, rapide à afficher et facile à maintenir ou à déposer sur un serveur web.</div></div>
+      </div>
+    </section>
+
+    
+<section id="exemple">
+      <div class="section-title">
+        <div>
+          <h3>Exemple de rendu</h3>
+          <p>Impressions ne produit pas seulement une interface de travail : il génère un véritable livre web savant, structuré, lisible et directement publiable.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-bd">
+          <div class="shot">
+            <figure>
+              <img src="assets/screenshots/02-exemple-page-livre.png" alt="Exemple de page de livre générée par Impressions" data-zoom>
+              <figcaption>Exemple de visuel tiré d’une page HTML générée par Impressions.</figcaption>
+            </figure>
+          </div>
+          <p style="margin-top:12px">
+            Cette capture peut montrer, selon ton choix, la page d’accueil d’un livre, une contribution, un apparat de notes,
+            une illustration agrandissable ou encore le bloc de citabilité. L’idée est de donner immédiatement à voir
+            la qualité du rendu final.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pas-a-pas">
+      <div class="section-title">
+        <div>
+          <h3>Déploiement pas à pas</h3>
+          <p>Le scénario le plus courant : choisir les sources → lancer le build → vérifier le site → publier.</p>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <h4><span class="badge">1</span> Sélectionner le fichier XML maître</h4>
+          <p>Choisissez le fichier XML qui sert de point d’entrée au volume.</p>
+        </div>
+        <div class="step">
+          <h4><span class="badge">2</span> Ajouter les fichiers XML utiles</h4>
+          <p>Selon les cas, plusieurs fichiers XML peuvent être associés à la génération.</p>
+        </div>
+        <div class="step">
+          <h4><span class="badge">3</span> Indiquer le dossier d’assets</h4>
+          <p>Le dossier d’assets permet d’ajouter couverture, logos, PDF, quatrième et autres ressources du volume.</p>
+        </div>
+        <div class="step">
+          <h4><span class="badge">4</span> Choisir le dossier de sortie</h4>
+          <p>Le build génère le livre web dans un dossier de sortie autonome.</p>
+        </div>
+        <div class="step">
+          <h4><span class="badge">5</span> Lancer la génération</h4>
+          <p>Impressions produit alors les pages HTML, copie les ressources utiles et génère un rapport de build.</p>
+        </div>
+        <div class="step">
+          <h4><span class="badge">6</span> Vérifier le livre généré</h4>
+          <p>On contrôle la page d’accueil, la navigation, les téléchargements, la couverture, les citations et les illustrations.</p>
+          <div class="callout ok"><b>Bon réflexe :</b> relire immédiatement la page d’accueil et quelques contributions avant mise en ligne.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sorties">
+      <div class="section-title">
+        <div>
+          <h3>Ce qu’Impressions génère</h3>
+          <p>Un dossier de livre web prêt à être servi sur le web, sans base de données ni couche applicative complexe.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-bd">
+          <p style="margin:0 0 10px">Selon les options et les ressources disponibles, vous obtenez notamment :</p>
+          <ul class="filelist">
+            <li><code>index.html</code> : page de présentation du volume ;</li>
+            <li>une page HTML par <b>chapitre</b> ou <b>contribution</b> ;</li>
+            <li><code>book.normalized.xml</code> : XML normalisé ;</li>
+            <li><code>assets/</code> : CSS, JavaScript, images, logos, PDF, etc. ;</li>
+            <li><code>build_report.txt</code> : rapport de génération ;</li>
+            <li>des métadonnées utiles à la consultation et à la citation.</li>
+          </ul>
+          <div class="callout ok"><b>Résultat :</b> un livre web savant, autonome, léger et facilement publiable.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="section-title">
+        <div>
+          <h3>FAQ</h3>
+          <p>Quelques réponses rapides pour une première prise en main.</p>
+        </div>
+      </div>
+      <details open>
+        <summary>Faut-il connaître le web pour utiliser Impressions ?</summary>
+        <p style="margin:10px 0 0; color:var(--muted)">Non. Le principe est de s’appuyer sur une interface graphique simple et sur des sources déjà préparées en amont.</p>
+      </details>
+      <details open>
+        <summary>Le XML est-il obligatoire ?</summary>
+        <p style="margin:10px 0 0; color:var(--muted)">Oui : Impressions a été conçu pour partir d’un XML-TEI structuré.</p>
+      </details>
+      <details>
+        <summary>Peut-on ajouter une quatrième de couverture hors XML ?</summary>
+        <p style="margin:10px 0 0; color:var(--muted)">Oui. Impressions peut la prendre dans <code>assets/quatrieme/</code>, avec priorité au Markdown, puis repli sur HTML ou TXT.</p>
+      </details>
+      <details open>
+        <summary>Peut-on joindre un PDF du volume ?</summary>
+        <p style="margin:10px 0 0; color:var(--muted)">Oui. Si un PDF est présent dans le bon dossier d’assets, il peut être proposé au téléchargement sur la page d’accueil.</p>
+      </details>
+    </section>
+
+    <section id="github">
+      <div class="card">
+        <div class="card-bd">
+          <h3 style="margin:0 0 6px; font-size:18px; color:var(--text);">Projet Impressions sur Github</h3>
+          <p style="margin:0; color:var(--muted);">
+            Impressions est un projet libre à retrouver sur Github :
+            <a href="https://github.com/Gheeraert/impression" target="_blank" rel="noopener noreferrer">https://github.com/Gheeraert/impression</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footgrid">
+      <div>
+        <b>Impressions</b> — Générateur de livre web savant.<br>
+        <span style="color:var(--muted)">
+          Outil conçu et développé par Tony Gheeraert dans le cadre des projets d’innovation éditoriale des Presses universitaires de Rouen et du Havre,
+          en collaboration avec la <a href="https://ceen.hypotheses.org/">Chaire d’excellence en édition numérique</a>.
+        </span>
+      </div>
+      <div style="text-align:right">
+        <a href="#top">↑ Retour en haut</a><br>
+        <span style="color:var(--muted)">Contact : <a href="mailto:tony.gheeraert@univ-rouen.fr">tony.gheeraert@univ-rouen.fr</a></span>
+      </div>
+    </div>
+  </div>
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="close" type="button" aria-label="Fermer">×</button>
+    <figure>
+      <img id="lightbox-img" alt="">
+      <figcaption id="lightbox-cap"></figcaption>
+    </figure>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightbox-img');
+  const lbCap = document.getElementById('lightbox-cap');
+  const closeBtn = lb.querySelector('.close');
+
+  function openLightbox(img){
+    lbImg.src = img.currentSrc || img.src;
+    lbImg.alt = img.alt || '';
+    const cap = img.closest('figure')?.querySelector('figcaption')?.textContent?.trim();
+    lbCap.textContent = cap || '';
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(){
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    setTimeout(() => { lbImg.src = ''; }, 180);
+  }
+
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest('img[data-zoom]');
+    if (img) openLightbox(img);
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', (e) => {
+    if (e.target === lb || e.target === lbImg) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lb.classList.contains('open')) closeLightbox();
+  });
+})();
+</script>
+</body>
+</html>
