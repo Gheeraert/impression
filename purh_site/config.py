@@ -10,6 +10,10 @@ class BuildConfig:
 
     output_dir: Path
     assets_dir: Path | None = None
+    back_cover_path: Path | None = None
+    collection_title: str = ""
+    collection_number: str = ""
+    collection_issn: str = ""
     write_normalized_tei: bool = True
     site_title_fallback: str = "Livre PURH"
 

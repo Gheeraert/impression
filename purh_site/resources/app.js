@@ -130,17 +130,17 @@ function ensureLightbox() {
   root.className = 'lightbox';
   root.hidden = true;
   root.innerHTML = `
-    <div class="lightbox-backdrop"></div>
-    <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image agrandie">
+  <div class="lightbox-backdrop"></div>
+  <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image agrandie">
+    <div class="lightbox-toolbar">
+      <a class="lightbox-download" href="#" download>Télécharger l’original</a>
       <button type="button" class="lightbox-close" aria-label="Fermer l'image">×</button>
-      <figure class="lightbox-figure">
-        <img class="lightbox-image" alt="">
-        <figcaption class="lightbox-caption" hidden></figcaption>
-      </figure>
-      <div class="lightbox-actions">
-        <a class="lightbox-download" href="#" download>Télécharger l’original</a>
-      </div>
     </div>
+    <figure class="lightbox-figure">
+      <img class="lightbox-image" alt="">
+      <figcaption class="lightbox-caption" hidden></figcaption>
+    </figure>
+  </div>
   `;
   document.body.appendChild(root);
 

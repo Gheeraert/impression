@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import html
+import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -23,13 +24,13 @@ class BuildResult:
     normalized_tei_path: Path | None
     report_path: Path
 
-
 @dataclass(slots=True)
 class ThemeAssets:
     cover_href: str | None = None
     university_logo_href: str | None = None
     purh_logo_href: str | None = None
-
+    pdf_href: str | None = None
+    footer_logo_href: str | None = None
 
 class SiteBuilder:
     """Orchestre le chargement, la normalisation et le rendu multi-pages."""
@@ -67,19 +68,25 @@ class SiteBuilder:
         self._copy_static_resources(config.output_assets_dir)
         self._copy_user_assets(config.assets_dir, config.output_assets_dir)
 
-        normalized_tei_path: Path | None = None
-        if config.write_normalized_tei:
-            normalized_tei_path = config.output_dir / "book.normalized.xml"
-            tree.write(
-                str(normalized_tei_path),
-                encoding="utf-8",
-                xml_declaration=True,
-                pretty_print=True,
-            )
+        normalized_tei_path: Path | None = config.output_dir / "book.normalized.xml"
+        tree.write(
+            str(normalized_tei_path),
+            encoding="utf-8",
+            xml_declaration=True,
+            pretty_print=True,
+        )
 
         site_meta, pages, nav = self.structure_builder.build(tree)
         theme_assets = self._discover_theme_assets(config.output_assets_dir)
-        self._write_index_page(config.output_dir, site_meta, nav, theme_assets)
+        back_cover_html, back_cover_source = self._resolve_back_cover_html(tree, config.output_assets_dir)
+        self._write_index_page(
+            config.output_dir,
+            site_meta,
+            nav,
+            theme_assets,
+            normalized_tei_href=normalized_tei_path.name,
+            back_cover_html=back_cover_html,
+        )
         for page in pages:
             self._write_content_page(config.output_dir, tree, site_meta, nav, page, theme_assets)
 
@@ -98,6 +105,10 @@ class SiteBuilder:
             report_lines.append(f"Logo université : {theme_assets.university_logo_href}")
         if theme_assets.purh_logo_href:
             report_lines.append(f"Logo PURH : {theme_assets.purh_logo_href}")
+        if theme_assets.pdf_href:
+            report_lines.append(f"PDF détecté : {theme_assets.pdf_href}")
+        if back_cover_source:
+            report_lines.append(f"Quatrième de couverture : {back_cover_source}")
         report_path.write_text("\n".join(report_lines), encoding="utf-8")
 
         return BuildResult(
@@ -124,11 +135,13 @@ class SiteBuilder:
                 shutil.copy2(child, dst)
 
     def _write_index_page(
-        self,
-        output_dir: Path,
-        site_meta: SiteMeta,
-        nav: list[NavItem],
-        theme_assets: ThemeAssets,
+            self,
+            output_dir: Path,
+            site_meta: SiteMeta,
+            nav: list[NavItem],
+            theme_assets: ThemeAssets,
+            normalized_tei_href: str,
+            back_cover_html: str | None,
     ) -> None:
         nav_html = self._render_sidebar(nav, current_file_name=None)
         creators_value = html.escape(" · ".join(site_meta.creators)) if site_meta.creators else ""
@@ -143,12 +156,16 @@ class SiteBuilder:
         if site_meta.publisher or site_meta.publication_year:
             meta_bits = [bit for bit in (site_meta.publisher, site_meta.publication_year) if bit]
             hero_parts.append(f'<p class="meta-line">{" · ".join(html.escape(bit) for bit in meta_bits)}</p>')
+        if back_cover_html:
+            hero_parts.append(f'<div class="hero-back-cover">{back_cover_html}</div>')
         hero_parts.append('</div>')
         hero_parts.append(self._render_cover_link(theme_assets, compact=False))
         hero_parts.append('</div></section>')
+        hero_parts.append(self._render_home_downloads(normalized_tei_href, theme_assets.pdf_href))
         hero_parts.append('<section class="home-panel"><h2>Sommaire</h2>')
         hero_parts.append(self._render_toc(nav))
         hero_parts.append('</section>')
+        hero_parts.append(self._render_footer(theme_assets))
         page_html = self._wrap_html(
             page_title=site_meta.title,
             site_meta=site_meta,
@@ -156,6 +173,7 @@ class SiteBuilder:
             content_html=''.join(hero_parts),
             theme_assets=theme_assets,
             page_grid_class='page-grid page-grid--home',
+            abstract_html=back_cover_html,
         )
         (output_dir / 'index.html').write_text(page_html, encoding='utf-8')
 
@@ -176,7 +194,7 @@ class SiteBuilder:
         page_header = self._render_page_header(page, theme_assets)
         credits = self._render_credit_block(page, site_meta)
         pager = self._render_prev_next(page, nav)
-        full_content = page_header + fragment_html + credits + pager
+        full_content = page_header + fragment_html + credits + pager + self._render_footer(theme_assets)
         page_html = self._wrap_html(
             page_title=f"{page.title} — {site_meta.title}",
             site_meta=site_meta,
@@ -184,6 +202,7 @@ class SiteBuilder:
             content_html=full_content,
             theme_assets=theme_assets,
             page_grid_class='page-grid',
+            page=page,
         )
         (output_dir / page.file_name).write_text(page_html, encoding='utf-8')
 
@@ -218,7 +237,13 @@ class SiteBuilder:
         nav_items = self.structure_builder.build_nav_for_page(nav, current_file_name)
         return (
             '<nav class="sidebar-nav" aria-label="Sommaire du livre">'
-            f'<a class="sidebar-home" href="index.html">Accueil</a>{self._render_nav_list(nav_items)}'
+            '<div class="sidebar-top-links">'
+            '<a class="sidebar-back-link" href="https://purh.univ-rouen.fr/" target="_blank" rel="noopener">'
+            'Retour au catalogue des PURH'
+            '</a>'
+            '<a class="sidebar-home" href="index.html">Présentation du volume</a>'
+            '</div>'
+            f'{self._render_nav_list(nav_items)}'
             '</nav>'
         )
 
@@ -244,6 +269,129 @@ class SiteBuilder:
 
     def _render_toc(self, nav: list[NavItem]) -> str:
         return self._render_nav_list(nav)
+
+    def _render_home_downloads(self, normalized_tei_href: str, pdf_href: str | None) -> str:
+        parts = ['<section class="home-panel home-panel--downloads">']
+        parts.append('<h2>Téléchargements</h2>')
+        parts.append('<div class="download-buttons">')
+        parts.append(
+            f'<a class="download-button" href="{html.escape(normalized_tei_href)}" download>'
+            'Télécharger le XML - TEI'
+            '</a>'
+        )
+        if pdf_href:
+            parts.append(
+                f'<a class="download-button" href="{html.escape(pdf_href)}" download>'
+                'Télécharger le PDF'
+                '</a>'
+            )
+        parts.append('</div></section>')
+        return ''.join(parts)
+
+    def _resolve_back_cover_html(self, tree: etree._ElementTree, output_assets_dir: Path) -> tuple[str | None, str | None]:
+        xml_html = self._extract_back_cover_from_xml(tree)
+        if xml_html:
+            return xml_html, 'XML (abstract rend="4e-couv")'
+        assets_html = self._read_back_cover_from_assets(output_assets_dir)
+        if assets_html:
+            return assets_html, 'assets/quatrieme'
+        return None, None
+
+    def _extract_back_cover_from_xml(self, tree: etree._ElementTree) -> str | None:
+        nodes = tree.xpath(
+            "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract[@rend='4e-couv']",
+            namespaces=NSMAP,
+        )
+        if not nodes:
+            return None
+
+        abstract_node = nodes[0]
+        if not ''.join(abstract_node.itertext()).strip():
+            return None
+
+        wrapper = etree.Element(f"{{{NSMAP['tei']}}}div", nsmap={'tei': NSMAP['tei']})
+        for child in abstract_node:
+            wrapper.append(copy.deepcopy(child))
+
+        fragment_tree = etree.ElementTree(wrapper)
+        result = self.fragment_xslt(
+            fragment_tree,
+            assets_image_base=etree.XSLT.strparam('assets/images'),
+            assets_audio_base=etree.XSLT.strparam('assets/audio'),
+            assets_video_base=etree.XSLT.strparam('assets/video'),
+        )
+        return str(result)
+
+    def _read_back_cover_from_assets(self, output_assets_dir: Path) -> str | None:
+        back_cover_dir = output_assets_dir / 'quatrieme'
+        if not back_cover_dir.exists() or not back_cover_dir.is_dir():
+            return None
+
+        markdown_files = sorted(
+            path for path in back_cover_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in {'.md', '.markdown'}
+        )
+        if markdown_files:
+            content = markdown_files[0].read_text(encoding='utf-8').strip()
+            return self._render_simple_markdown(content) if content else None
+
+        html_files = sorted(
+            path for path in back_cover_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in {'.html', '.htm'}
+        )
+        if html_files:
+            content = html_files[0].read_text(encoding='utf-8').strip()
+            return content or None
+
+        txt_files = sorted(
+            path for path in back_cover_dir.iterdir()
+            if path.is_file() and path.suffix.lower() == '.txt'
+        )
+        if txt_files:
+            content = txt_files[0].read_text(encoding='utf-8').strip()
+            return self._render_simple_markdown(content) if content else None
+
+        return None
+
+    def _render_simple_markdown(self, source: str) -> str:
+        blocks = [block.strip() for block in re.split(r"\n\s*\n", source.strip()) if block.strip()]
+        if not blocks:
+            return ''
+
+        parts: list[str] = []
+        list_buffer: list[str] = []
+
+        def flush_list() -> None:
+            nonlocal list_buffer
+            if list_buffer:
+                items = ''.join(f'<li>{self._render_markdown_inline(item)}</li>' for item in list_buffer)
+                parts.append(f'<ul>{items}</ul>')
+                list_buffer = []
+
+        for block in blocks:
+            lines = [line.strip() for line in block.splitlines() if line.strip()]
+            if lines and all(line.startswith(('- ', '* ')) for line in lines):
+                list_buffer.extend(line[2:].strip() for line in lines)
+                continue
+
+            flush_list()
+            merged = ' '.join(lines)
+            parts.append(f'<p>{self._render_markdown_inline(merged)}</p>')
+
+        flush_list()
+        return ''.join(parts)
+
+    def _render_markdown_inline(self, text: str) -> str:
+        rendered = html.escape(text)
+        substitutions = (
+            (r'(?<!\*)\*\*(.+?)\*\*(?!\*)', r'<strong>\1</strong>'),
+            (r'(?<!_)__(.+?)__(?!_)', r'<strong>\1</strong>'),
+            (r'(?<!\*)\*(.+?)\*(?!\*)', r'<em>\1</em>'),
+            (r'(?<!_)_(.+?)_(?!_)', r'<em>\1</em>'),
+        )
+        for pattern, replacement in substitutions:
+            rendered = re.sub(pattern, replacement, rendered)
+        return rendered
 
     def _render_page_header(self, page: PageDef, theme_assets: ThemeAssets) -> str:
         parts = ['<header class="page-header">', '<div class="page-header-grid">']
@@ -295,7 +443,7 @@ class SiteBuilder:
         suggestion.append(f'« {html.escape(title_bit)} »')
         host = f'dans <em>{html.escape(volume_title)}</em>'
         if volume_creators_text and set(page_creators) != set(site_meta.creators):
-            host += f', {html.escape(role_label.lower())} : {html.escape(volume_creators_text)}'
+            host += f', {html.escape(role_label)} : {html.escape(volume_creators_text)}'
         suggestion.append(host)
         if site_meta.publisher:
             suggestion.append(html.escape(site_meta.publisher))
@@ -454,6 +602,11 @@ class SiteBuilder:
                 ['purh'],
                 ['presses'],
             ]),
+            footer_logo_href=self._pick_asset(candidates, [
+                ['logos', 'logo_footer'],
+                ['logos', 'footer'],
+            ]),
+            pdf_href=self._discover_pdf_href(output_assets_dir),
         )
 
     def _pick_asset(self, candidates: list[str], token_sets: list[list[str]]) -> str | None:
@@ -464,6 +617,134 @@ class SiteBuilder:
                     return f'assets/{candidate}'
         return None
 
+    def _discover_pdf_href(self, output_assets_dir: Path) -> str | None:
+        for child in output_assets_dir.iterdir():
+            if child.is_dir() and child.name.lower() == "pdf":
+                pdf_files = sorted(path for path in child.rglob("*.pdf") if path.is_file())
+                if pdf_files:
+                    relative = pdf_files[0].relative_to(output_assets_dir).as_posix()
+                    return f'assets/{relative}'
+        return None
+
+
+    def _render_footer(self, theme_assets: ThemeAssets) -> str:
+        parts = [
+            '<footer class="site-footer">',
+            '<p>',
+            'Livre web créé avec le système ',
+            '<a href="https://github.com/Gheeraert/impression" target="_blank" rel="noopener">Impressions</a>. ',
+            'Impressions est une création des PURH et de la ',
+            '<a href="https://ceen.hypotheses.org/" target="_blank" rel="noopener">chaire d’excellence en édition numérique</a>.',
+            '</p>',
+        ]
+        if theme_assets.footer_logo_href:
+            parts.append(
+                '<div class="site-footer-logo-wrap">'
+                '<a href="https://ceen.hypotheses.org/" target="_blank" rel="noopener">'
+                f'<img class="site-footer-logo" src="{html.escape(theme_assets.footer_logo_href)}" '
+                'alt="Logo de la chaire d’excellence en édition numérique">'
+                '</a>'
+                '</div>'
+            )
+        parts.append('</footer>')
+        return ''.join(parts)
+
+
+    def _full_volume_title(self, site_meta: SiteMeta) -> str:
+        if site_meta.subtitle:
+            return f"{site_meta.title}. {site_meta.subtitle}"
+        return site_meta.title
+
+    def _build_public_asset_url(self, asset_href: str, site_meta: SiteMeta) -> str:
+        base = site_meta.site_url.strip()
+        if not base:
+            return asset_href
+        if base.endswith('.html'):
+            return urljoin(base, asset_href)
+        return urljoin(base.rstrip('/') + '/', asset_href)
+
+    def _strip_html(self, value: str) -> str:
+        text_value = re.sub(r'<[^>]+>', ' ', value or '')
+        return re.sub(r'\s+', ' ', text_value).strip()
+
+    def _meta_tag(self, name: str, content: str) -> str:
+        content = (content or '').strip()
+        if not content:
+            return ''
+        return f'<meta name="{html.escape(name, quote=True)}" content="{html.escape(content, quote=True)}">'
+
+    def _render_zotero_meta(
+        self,
+        site_meta: SiteMeta,
+        theme_assets: ThemeAssets,
+        page: PageDef | None = None,
+        abstract_html: str | None = None,
+    ) -> str:
+        tags: list[str] = []
+        volume_title = self._full_volume_title(site_meta)
+
+        page_url = self._build_public_page_url(page.file_name if page is not None else 'index.html', site_meta)
+        if page is None:
+            citation_title = volume_title
+            creator_tag = 'citation_editor' if site_meta.creator_role_label.lower().startswith('dir') else 'citation_author'
+            for creator in site_meta.creators:
+                tags.append(self._meta_tag(creator_tag, creator))
+            tags.extend([
+                self._meta_tag('citation_title', citation_title),
+                self._meta_tag('citation_publisher', site_meta.publisher),
+                self._meta_tag('citation_publication_date', site_meta.publication_year),
+                self._meta_tag('citation_isbn', site_meta.isbn),
+                self._meta_tag('citation_issn', site_meta.issn),
+                self._meta_tag('citation_series_title', site_meta.collection_title),
+                self._meta_tag('citation_series_number', site_meta.collection_number),
+                self._meta_tag('citation_doi', site_meta.doi),
+                self._meta_tag('citation_language', 'fr'),
+                self._meta_tag('citation_pdf_url', self._build_public_asset_url(theme_assets.pdf_href, site_meta) if theme_assets.pdf_href else ''),
+                self._meta_tag('citation_abstract_html_url', page_url),
+                self._meta_tag('DC.Title', citation_title),
+                self._meta_tag('DC.Type', 'book'),
+                self._meta_tag('DC.Publisher', site_meta.publisher),
+                self._meta_tag('DC.Date', site_meta.publication_year),
+                self._meta_tag('DC.Identifier', page_url),
+            ])
+            if abstract_html:
+                abstract_text = self._strip_html(abstract_html)
+                tags.append(self._meta_tag('description', abstract_text))
+                tags.append(self._meta_tag('DC.Description', abstract_text))
+            for creator in site_meta.creators:
+                dc_name = 'DC.Contributor' if creator_tag == 'citation_editor' else 'DC.Creator'
+                tags.append(self._meta_tag(dc_name, creator))
+        else:
+            citation_title = page.title if not page.subtitle else f"{page.title}. {page.subtitle}"
+            chapter_authors = page.authors or site_meta.creators
+            for author in chapter_authors:
+                tags.append(self._meta_tag('citation_author', author))
+                tags.append(self._meta_tag('DC.Creator', author))
+            if site_meta.creators and set(chapter_authors) != set(site_meta.creators):
+                for editor in site_meta.creators:
+                    tags.append(self._meta_tag('citation_editor', editor))
+                    tags.append(self._meta_tag('DC.Contributor', editor))
+            tags.extend([
+                self._meta_tag('citation_title', citation_title),
+                self._meta_tag('citation_book_title', volume_title),
+                self._meta_tag('citation_publisher', site_meta.publisher),
+                self._meta_tag('citation_publication_date', site_meta.publication_year),
+                self._meta_tag('citation_isbn', site_meta.isbn),
+                self._meta_tag('citation_issn', site_meta.issn),
+                self._meta_tag('citation_series_title', site_meta.collection_title),
+                self._meta_tag('citation_series_number', site_meta.collection_number),
+                self._meta_tag('citation_language', 'fr'),
+                self._meta_tag('citation_abstract_html_url', page_url),
+                self._meta_tag('DC.Title', citation_title),
+                self._meta_tag('DC.Type', 'bookSection'),
+                self._meta_tag('DC.Relation', volume_title),
+                self._meta_tag('DC.Publisher', site_meta.publisher),
+                self._meta_tag('DC.Date', site_meta.publication_year),
+                self._meta_tag('DC.Identifier', page_url),
+            ])
+
+        return '\n  '.join(tag for tag in tags if tag)
+
     def _wrap_html(
         self,
         page_title: str,
@@ -472,8 +753,11 @@ class SiteBuilder:
         content_html: str,
         theme_assets: ThemeAssets,
         page_grid_class: str = 'page-grid',
+        page: PageDef | None = None,
+        abstract_html: str | None = None,
     ) -> str:
         banner = self._render_banner(site_meta, theme_assets)
+        zotero_meta = self._render_zotero_meta(site_meta, theme_assets, page=page, abstract_html=abstract_html)
         return f'''<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -481,12 +765,12 @@ class SiteBuilder:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(page_title)}</title>
   <link rel="stylesheet" href="assets/site.css">
+  {zotero_meta}
 </head>
 <body>
   {banner}
   <div class="layout">
     <aside class="sidebar">
-      <div class="site-title"><a href="index.html">{html.escape(site_meta.title)}</a></div>
       {nav_html}
     </aside>
     <main class="content">

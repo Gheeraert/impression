@@ -133,11 +133,13 @@ a { color: var(--accent); }
   align-self: start;
   max-height: calc(100vh - 32px);
   overflow: auto;
-  padding: 18px;
+  padding: 16px 16px 14px;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--panel);
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .site-title {
@@ -163,14 +165,15 @@ a { color: var(--accent); }
   padding-left: 16px;
   list-style: none;
 }
-.nav-list > li { margin: 6px 0; }
+.nav-list > li { margin: 2px 0; }
 .nav-item > a,
 .nav-label {
   display: inline-block;
-  padding: 4px 6px;
+  padding: 2px 5px;
   border-radius: 8px;
   color: inherit;
   text-decoration: none;
+  line-height: 1.3;
 }
 .nav-item > a:hover { background: var(--accent-soft); }
 .nav-item.is-current > a,
@@ -218,6 +221,34 @@ a { color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: 22px;
   background: var(--panel-2);
+}
+
+.home-panel--downloads .download-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.download-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.9rem;
+  padding: 0.78rem 1.15rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
+  font: 600 0.95rem/1.2 Arial, Helvetica, sans-serif;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.download-button:hover,
+.download-button:focus-visible {
+  background: #fff;
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .home-hero-grid,
@@ -372,12 +403,42 @@ p { margin: 0 0 1rem; text-align: justify; }
 blockquote,
 .cit-block,
 .epigraph {
+  position: relative;
   margin: 1.5rem 0;
-  padding: 0.95rem 1.2rem;
-  border-left: 4px solid var(--accent);
+  padding: 0.95rem 1.2rem 0.95rem 1.35rem;
+  border-left: none;
   background: #f9fbff;
 }
-.epigraph { font-style: italic; }
+
+blockquote::before,
+.cit-block::before,
+.epigraph::before {
+  content: "";
+  position: absolute;
+  left: 0.7rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.epigraph {
+  font-style: italic;
+}
+
+/* Évite les doubles ou triples barres quand les blocs sont imbriqués */
+blockquote blockquote::before,
+blockquote .cit-block::before,
+blockquote .epigraph::before,
+.cit-block blockquote::before,
+.cit-block .cit-block::before,
+.cit-block .epigraph::before,
+.epigraph blockquote::before,
+.epigraph .cit-block::before,
+.epigraph .epigraph::before {
+  content: none;
+}
 
 figure {
   margin: 1.8rem 0;
@@ -543,6 +604,23 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   text-align: left;
 }
 
+.hero-back-cover {
+  margin-top: 1.25rem;
+  color: var(--text);
+}
+
+.hero-back-cover p:last-child,
+.hero-back-cover ul:last-child,
+.hero-back-cover ol:last-child {
+  margin-bottom: 0;
+}
+
+.hero-back-cover ul,
+.hero-back-cover ol {
+  margin: 0 0 1rem 1.25rem;
+  padding: 0;
+}
+
 .lightbox-open {
   overflow: hidden;
 }
@@ -594,7 +672,7 @@ figure audio { width: 100%; margin-bottom: 1rem; }
 }
 
 .lightbox-close {
-  align-self: flex-end;
+  flex: 0 0 auto;
   width: 42px;
   height: 42px;
   border: 1px solid rgba(255,255,255,0.22);
@@ -634,14 +712,8 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   max-width: min(760px, 100%);
   margin: 0;
   text-align: center;
-  color #111;
+  color: #111;
   font: 400 0.98rem/1.5 Arial, Helvetica, sans-serif;
-}
-
-.lightbox-actions {
-  display: flex;
-  justify-content: center;
-  width: 100%;
 }
 
 .lightbox-download {
@@ -652,17 +724,27 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   padding: 0.72rem 1.1rem;
   border: 1px solid rgba(255,255,255,0.24);
   border-radius: 999px;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.16);
   color: #fff;
   text-decoration: none;
   font: 600 0.95rem/1.2 Arial, Helvetica, sans-serif;
   transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
+.lightbox-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .lightbox-download:hover,
-.lightbox-download:focus-visible {
-  background: rgba(255,255,255,0.18);
-  border-color: rgba(255,255,255,0.34);
+.lightbox-download:focus-visible,
+.lightbox-close:hover,
+.lightbox-close:focus-visible {
+  background: rgba(255,255,255,0.24);
+  border-color: rgba(255,255,255,0.36);
   transform: translateY(-1px);
 }
 
@@ -735,6 +817,41 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   }
 }
 
+.sidebar-top-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0 0 0.4rem;
+}
+
+.sidebar-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.42rem 0.75rem;
+  border: 1px solid #d7d7d7;
+  border-radius: 999px;
+  background: #fff;
+  color: #444;
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-back-link:hover,
+.sidebar-back-link:focus-visible {
+  background: #f5f5f5;
+  border-color: #bbb;
+  color: #111;
+}
+
+.sidebar-home {
+  font-weight: 600;
+  text-decoration: none;
+}
+
 @media (max-width: 860px) {
   .site-banner-inner {
     flex-wrap: wrap;
@@ -781,4 +898,55 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   .site-logo--univ {
     max-height: 76px;
   }
+}
+
+
+.site-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(221, 226, 232, 0.65);
+  color: var(--muted);
+  font: 0.92rem/1.45 Arial, Helvetica, sans-serif;
+}
+
+.site-footer p {
+  margin: 0;
+  text-align: left;
+}
+
+.site-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible {
+  text-decoration: underline;
+}
+
+.site-footer-logo-wrap {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.site-footer-logo-wrap a {
+  display: inline-flex;
+}
+
+.site-footer-logo-wrap a:hover .site-footer-logo,
+.site-footer-logo-wrap a:focus-visible .site-footer-logo {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.site-footer-logo {
+  display: block;
+  max-width: 160px;
+  max-height: 56px;
+  width: auto;
+  height: auto;
+  opacity: 0.96;
+  transition: opacity 0.2s ease, transform 0.2s ease;10
 }

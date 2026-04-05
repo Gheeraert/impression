@@ -19,6 +19,10 @@ class App(ttk.Frame):
         self.builder = SiteBuilder()
         self.master_xml_var = tk.StringVar()
         self.assets_dir_var = tk.StringVar()
+        self.back_cover_var = tk.StringVar()
+        self.collection_title_var = tk.StringVar()
+        self.collection_number_var = tk.StringVar()
+        self.collection_issn_var = tk.StringVar()
         self.output_dir_var = tk.StringVar()
         self.xml_files: list[Path] = []
         self.port_var = tk.StringVar(value="8000,8080")
@@ -29,7 +33,7 @@ class App(ttk.Frame):
 
     def _build_ui(self) -> None:
         self.master.title("IMPRESSIONS — livre web TEI")
-        self.master.geometry("1020x720")
+        self.master.geometry("1080x780")
         self.pack(fill="both", expand=True)
 
         title = ttk.Label(
@@ -51,10 +55,14 @@ class App(ttk.Frame):
         ttk.Button(files_buttons, text="Vider", command=self._clear_xml_files).grid(row=1, column=0, sticky="ew", pady=(6, 0))
 
         self._add_path_selector(3, "Dossier assets", self.assets_dir_var, self._choose_assets_dir, "Choisir…")
-        self._add_path_selector(4, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
+        self._add_path_selector(4, "Quatrième de couverture (optionnel : .md, .markdown, .html, .txt)", self.back_cover_var, self._choose_back_cover, "Choisir…")
+        self._add_entry_row(5, "Nom de la collection (optionnel)", self.collection_title_var)
+        self._add_entry_row(6, "Numéro dans la collection (optionnel)", self.collection_number_var)
+        self._add_entry_row(7, "ISSN de la collection (optionnel)", self.collection_issn_var)
+        self._add_path_selector(8, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
 
         preview_bar = ttk.Frame(self)
-        preview_bar.grid(row=5, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        preview_bar.grid(row=9, column=0, columnspan=3, sticky="w", pady=(0, 8))
         ttk.Label(preview_bar, text="Ports de prévisualisation").grid(row=0, column=0, sticky="w")
         ttk.Entry(preview_bar, textvariable=self.port_var, width=18).grid(row=0, column=1, sticky="w", padx=(8, 16))
         ttk.Checkbutton(preview_bar, text="Lancer le serveur local et ouvrir le navigateur après build", variable=self.auto_preview_var).grid(row=0, column=2, sticky="w")
@@ -63,32 +71,38 @@ class App(ttk.Frame):
             self,
             text=(
                 "Le dossier choisi sera copié tel quel dans la sortie sous assets/. "
-                "Les chemins d’images indiqués dans le XML font foi ; logos conseillés : cover/couverture, universite/urn, purh."
+                "La collection est lue d’abord dans le TEI ; les champs ci-dessus ne servent que de repli. "
+                "Même logique pour la quatrième : XML d’abord, puis fichier externe si nécessaire."
             ),
+            wraplength=920,
         )
-        helper.grid(row=6, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        helper.grid(row=10, column=0, columnspan=3, sticky="w", pady=(0, 8))
 
         button_bar = ttk.Frame(self)
-        button_bar.grid(row=7, column=0, columnspan=3, sticky="w", pady=(8, 12))
+        button_bar.grid(row=11, column=0, columnspan=3, sticky="w", pady=(8, 12))
         ttk.Button(button_bar, text="Construire le site", command=self._build).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0, column=1, padx=(0, 8))
         ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=2, padx=(0, 8))
         ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=3)
 
         log_label = ttk.Label(self, text="Journal")
-        log_label.grid(row=8, column=0, sticky="w")
+        log_label.grid(row=12, column=0, sticky="w")
         self.log = tk.Text(self, wrap="word", height=24)
-        self.log.grid(row=9, column=0, columnspan=3, sticky="nsew")
+        self.log.grid(row=13, column=0, columnspan=3, sticky="nsew")
         self.log.configure(state="disabled")
 
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(9, weight=1)
+        self.rowconfigure(13, weight=1)
         self._log("Interface prête.")
 
     def _add_path_selector(self, row: int, label: str, variable: tk.StringVar, browse_command, button_text: str) -> None:
         ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
         ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
         ttk.Button(self, text=button_text, command=browse_command).grid(row=row, column=2, sticky="ew", pady=(0, 6))
+
+    def _add_entry_row(self, row: int, label: str, variable: tk.StringVar) -> None:
+        ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
+        ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
 
     def _choose_master_xml(self) -> None:
         path = filedialog.askopenfilename(title="Choisir un fichier XML maître", filetypes=[("Fichiers XML", "*.xml")])
@@ -118,11 +132,36 @@ class App(ttk.Frame):
             self.assets_dir_var.set(path)
             self._log(f"Dossier assets : {path}")
 
+    def _choose_back_cover(self) -> None:
+        path = filedialog.askopenfilename(
+            title="Choisir une quatrième de couverture",
+            filetypes=[
+                ("Fichiers Markdown/HTML/Texte", "*.md *.markdown *.html *.htm *.txt"),
+                ("Markdown", "*.md *.markdown"),
+                ("HTML", "*.html *.htm"),
+                ("Texte", "*.txt"),
+            ],
+        )
+        if path:
+            self.back_cover_var.set(path)
+            self._log(f"Quatrième de couverture : {path}")
+
     def _choose_output_dir(self) -> None:
         path = filedialog.askdirectory(title="Choisir un dossier de sortie")
         if path:
             self.output_dir_var.set(path)
             self._log(f"Dossier de sortie : {path}")
+
+    def _make_build_config(self, output_dir: Path, assets_dir: Path | None) -> BuildConfig:
+        back_cover = Path(self.back_cover_var.get()).resolve() if self.back_cover_var.get().strip() else None
+        return BuildConfig(
+            output_dir=output_dir,
+            assets_dir=assets_dir,
+            back_cover_path=back_cover,
+            collection_title=self.collection_title_var.get().strip(),
+            collection_number=self.collection_number_var.get().strip(),
+            collection_issn=self.collection_issn_var.get().strip(),
+        )
 
     def _build(self) -> None:
         output_dir_text = self.output_dir_var.get().strip()
@@ -140,7 +179,7 @@ class App(ttk.Frame):
                 self._log("Build multi-pages à partir du fichier maître…")
                 result = self.builder.build_from_master(
                     master_xml,
-                    BuildConfig(output_dir=output_dir, assets_dir=assets_dir),
+                    self._make_build_config(output_dir=output_dir, assets_dir=assets_dir),
                 )
                 self._log(f"Site généré : {result.html_path}")
                 self._log(f"Rapport : {result.report_path}")
@@ -150,7 +189,13 @@ class App(ttk.Frame):
 
             if self.xml_files:
                 self._log("Build de plusieurs fichiers XML indépendants…")
-                results = self.builder.build_from_many(self.xml_files, output_dir, assets_dir=assets_dir)
+                config = self._make_build_config(output_dir=output_dir, assets_dir=assets_dir)
+                results = self.builder.build_from_many(
+                    self.xml_files,
+                    output_dir,
+                    assets_dir=assets_dir,
+                    config_overrides=config,
+                )
                 self._log(f"{len(results)} site(s) généré(s).")
                 if results and self.auto_preview_var.get():
                     self._preview_result(results[0])

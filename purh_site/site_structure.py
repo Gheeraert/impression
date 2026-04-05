@@ -40,6 +40,11 @@ class SiteMeta:
     publication_year: str = ""
     doi: str = ""
     site_url: str = ""
+    collection_title: str = ""
+    collection_number: str = ""
+    collection_issn: str = ""
+    isbn: str = ""
+    issn: str = ""
 
 
 @dataclass(slots=True)
@@ -115,26 +120,53 @@ class SiteStructureBuilder:
             namespaces=NSMAP,
         )
 
-        editor_nodes = tree.xpath("/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor", namespaces=NSMAP)
-        author_nodes = tree.xpath("/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author", namespaces=NSMAP)
-        creator_nodes = editor_nodes or author_nodes
-        creators = [self._personish_text(node) for node in creator_nodes if self._personish_text(node)]
+        editor_nodes = tree.xpath(
+            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor",
+            namespaces=NSMAP,
+        )
+        director_author_nodes = tree.xpath(
+            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[translate(normalize-space(@role), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='pbd']",
+            namespaces=NSMAP,
+        )
+        author_nodes = tree.xpath(
+            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author",
+            namespaces=NSMAP,
+        )
 
         if editor_nodes:
-            creator_role_label = "Édition scientifique du volume"
-        elif len(creators) == 1:
-            creator_role_label = "Auteur·rice du volume"
+            creator_nodes = editor_nodes
+            creator_role_label = "Dir."
+        elif director_author_nodes:
+            creator_nodes = director_author_nodes
+            creator_role_label = "Dir."
         else:
-            creator_role_label = "Responsabilité du volume"
+            creator_nodes = author_nodes
+            creators_preview = [self._personish_text(node) for node in creator_nodes if self._personish_text(node)]
+            if len(creators_preview) == 1:
+                creator_role_label = "Auteur·rice du volume"
+            else:
+                creator_role_label = "Responsabilité du volume"
+
+        creators = [self._personish_text(node) for node in creator_nodes if self._personish_text(node)]
 
         publisher = tree.xpath(
             "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:publisher[normalize-space(.) != ''])[1])",
             namespaces=NSMAP,
         )
         publication_date_raw = tree.xpath(
-            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[@type='publishing'][normalize-space(.) != ''])[1])",
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[@type='publishing']/@when)[1])",
             namespaces=NSMAP,
         )
+        if not publication_date_raw:
+            publication_date_raw = tree.xpath(
+                "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[@type='publishing'][normalize-space(.) != ''])[1])",
+                namespaces=NSMAP,
+            )
+        if not publication_date_raw:
+            publication_date_raw = tree.xpath(
+                "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date/@when)[1])",
+                namespaces=NSMAP,
+            )
         if not publication_date_raw:
             publication_date_raw = tree.xpath(
                 "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt//tei:date[normalize-space(.) != ''])[1])",
@@ -164,6 +196,44 @@ class SiteStructureBuilder:
             )
         site_url = "" if site_url in {"#", "-", "##"} else site_url
 
+        collection_title = self._first_nonempty(
+            tree,
+            [
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:title[@level='s'][1]",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:title[1]",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='collection'][1]",
+            ],
+        )
+        collection_number_raw = self._first_nonempty(
+            tree,
+            [
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:biblScope[@unit='volume'][1]",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:biblScope[@unit='number'][1]",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:biblScope[@unit='issue'][1]",
+            ],
+        )
+        collection_number = self._normalize_collection_number(collection_number_raw)
+        collection_issn = self._extract_identifier(
+            tree,
+            [
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt//tei:idno[@type='ISSN'][1]",
+            ],
+        )
+        isbn = self._extract_identifier(
+            tree,
+            [
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:ab[@type='book']//tei:idno[@type='ISBN-13'][1]",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:ab[@type='book']//tei:idno[@type='ISBN'][1]",
+            ],
+        )
+        issn = self._extract_identifier(
+            tree,
+            [
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:ab[@type='book']//tei:idno[@type='ISSN'][1]",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt//tei:idno[@type='ISSN'][1]",
+            ],
+        )
+
         return SiteMeta(
             title=title or "Livre PURH",
             subtitle=subtitle,
@@ -173,7 +243,32 @@ class SiteStructureBuilder:
             publication_year=publication_year,
             doi=doi,
             site_url=site_url,
+            collection_title=collection_title,
+            collection_number=collection_number,
+            collection_issn=collection_issn,
+            isbn=isbn,
+            issn=issn,
         )
+
+    def _first_nonempty(self, tree: etree._ElementTree, xpaths: list[str]) -> str:
+        for xpath in xpaths:
+            value = tree.xpath(f"normalize-space(({xpath}) )", namespaces=NSMAP)
+            if isinstance(value, list):
+                value = " ".join(str(v) for v in value).strip()
+            if value:
+                return str(value).strip()
+        return ""
+
+    def _extract_identifier(self, tree: etree._ElementTree, xpaths: list[str]) -> str:
+        value = self._first_nonempty(tree, xpaths)
+        return "" if value in {"#", "-", "##"} else value
+
+    def _normalize_collection_number(self, value: str) -> str:
+        value = (value or "").strip()
+        if not value:
+            return ""
+        match = re.search(r"(\d+)", value)
+        return match.group(1) if match else value
 
     def _personish_text(self, node: etree._Element) -> str:
         text = " ".join(node.xpath('.//tei:persName//text() | .//tei:name//text()', namespaces=NSMAP)).strip()
