@@ -1,26 +1,92 @@
-# Prototype PURH — TEI Métopes vers livre web statique
+# Impressions — TEI Métopes vers livre web statique
 
-Ce prototype prend comme entrée un **fichier maître TEI Métopes** et construit un **site-livre multi-pages**.
+Impressions est un générateur de **livres web statiques** à partir de fichiers **TEI Métopes**.  
+Développé en python, utilisable en interface graphique, il produit un site HTML complet, structuré, navigable et directement publiable par simple FTP.
 
-## Ce que fait cette version
+---
 
-- charge un fichier maître XML ;
-- résout les `xi:include` ;
-- écrit un `book.normalized.xml` ;
-- génère **une page HTML par chapitre** pour une monographie ;
-- génère **une page HTML par contribution** pour un collectif ;
-- construit un **menu latéral arborescent** ;
-- prend en charge les médias TEI quand le XML contient `graphic` ou `media` avec `url` ;
-- copie un dossier `assets/` utilisateur dans la sortie.
+## Objectif
 
-## Convention d'assets
+À partir d’un **fichier maître TEI**, Impressions construit un **livre numérique multi-pages** :
 
-Le dossier d'assets choisi dans l'interface est **copié tel quel** dans la sortie sous `assets/`.
-Il ne faut donc pas réorganiser les médias au moment du build : **la source de vérité est le XML**.
+- sans base de données,
+- sans CMS,
+- avec une structure éditoriale robuste,
+- compatible avec les usages académiques (citabilité, métadonnées, Zotero).
 
-Exemple d'arborescence de sortie attendue :
+---
 
-```text
+## Fonctionnalités
+
+### Traitement TEI
+- chargement d’un fichier maître XML ;
+- résolution des `xi:include` ;
+- normalisation et export d’un `book.normalized.xml` ;
+- transformation TEI → HTML via XSLT.
+
+### Génération du livre
+- **une page HTML par chapitre** (monographie) ;
+- **une page HTML par contribution** (collectif) ;
+- génération automatique du **sommaire** ;
+- navigation précédente / suivante ;
+- menu latéral arborescent.
+
+### 🔹 Métadonnées et édition
+- génération de **cartes de citabilité** (chapitre / article) ;
+- intégration des :
+  - auteurs,
+  - directeurs de volume (*Dir.*),
+  - ISBN / ISSN,
+  - collection (depuis XML ou interface gui) ;
+  - quatrième de couverture (embarquée dans le XML ou via interface gui)
+- format de citation conforme aux usages PURH.
+
+### Page d’accueil enrichie
+- présentation du volume ;
+- **quatrième de couverture** :
+  - prioritairement depuis le XML ;
+  - sinon depuis `assets/quatrieme/` (Markdown, HTML ou TXT) ;
+- boutons de téléchargement :
+  - XML normalisé ;
+  - PDF (si présent dans `assets/PDF`) ;
+- affichage de la couverture.
+
+### 🔹 Médias et assets
+- prise en charge des balises TEI :
+  - `graphic`
+  - `media`
+- zoom (lightbox) sur les images ;
+- bouton de téléchargement des images ;
+- copie automatique du dossier `assets/`.
+
+### Interface utilisateur : facilité d'utilisation pour les éditeurs et éditrices
+- interface graphique (Tkinter) permettant :
+  - sélection du XML ;
+  - sélection du dossier `assets` ;
+  - configuration des métadonnées complémentaires (collection, ISSN, etc.).
+
+### 🔹 Compatibilité Zotero
+- ajout de métadonnées intégrées (Open Graph + Dublin Core) ;
+- détection automatique du type (livre / chapitre) ;
+- récupération automatique dans Zotero.
+
+### 🔹 Habillage éditorial
+- bandeau avec logos de la maison d'édition ;
+- sidebar structurée ;
+- footer intégré avec crédits :
+  - Impressions
+  - PURH
+  - Chaire d’excellence en édition numérique (CEEN).
+
+---
+
+## 📁 Convention d’assets
+
+Le dossier choisi dans l’interface est **copié tel quel** dans `assets/`. Le XML reste la **source de vérité** pour les chemins.
+
+### Exemple
+
+```
 site/
   index.html
   01-chapitre.html
@@ -32,58 +98,112 @@ site/
     logos/
       purh.svg
       universite.svg
+      ceen.svg
+    quatrieme
 ```
 
-Si le XML contient une référence de type :
+### Exemple TEI
 
-```xml
+```
 <graphic url="../icono/br/Ch03_Loskoutoff_1/fig10.jpg"/>
 ```
 
-alors le HTML généré contiendra :
+---
 
-```html
-src="assets/images/../icono/br/Ch03_Loskoutoff_1/fig10.jpg"
+## Conventions automatiques
+
+Détection automatique dans `assets/` :
+
+- **couverture** :
+  - `cover`, `couverture`, `couv`
+- **logo université** :
+  - `universite`, `university`
+- **logo maison d'édition** :
+  - `logo`, `presses`
+- **logo footer (optionnel)** :
+  - placé dans `assets/logos/`
+
+---
+
+## Quatrième de couverture
+
+Ordre de priorité :
+
+1. XML (si présent)
+2. `assets/quatrieme/` :
+   - `.md` (prioritaire)
+   - `.html`
+   - `.txt`
+
+---
+
+## Collections (mode hybride)
+
+Les informations de collection peuvent provenir :
+
+- du XML (si présentes) ;
+- ou de l’interface graphique.
+
+Sont pris en charge :
+- nom de collection
+- numéro
+- ISSN
+
+→ affichage dans :
+- page d’accueil
+- citations
+- sidebar (lien vers la collection)
+
+---
+
+## Librairie requises
+- lxml
+- re
+
+## Lancer l’application
+
 ```
-
-ce qui résout côté navigateur vers :
-
-```text
-assets/icono/br/Ch03_Loskoutoff_1/fig10.jpg
-```
-
-Conventions encore reconnues pour les éléments de thème :
-
-- **couverture** : noms contenant `cover`, `couverture`, `couv` ;
-- **logo université** : noms contenant `universite`, `university` ou `urn` ;
-- **logo PURH** : noms contenant `purh` ou `presses`.
-
-Pour des références simples comme :
-
-```xml
-<graphic url="figure-1.jpg"/>
-```
-
-le générateur produira toujours un chemin relatif à `assets/images/figure-1.jpg`.
-
-## Lancer l'interface
-
-```bash
 pip install -r requirements.txt
 python main.py
 ```
 
+---
+
 ## Sortie générée
 
-Le dossier de sortie contient en général :
+```
+output/
+  index.html
+  01-chapitre.html
+  02-chapitre.html
+  assets/
+  book.normalized.xml
+  build_report.txt
+```
 
-- `index.html` : page d'accueil du livre ;
-- `01-...html`, `02-...html`, etc. : pages des chapitres ou contributions ;
-- `assets/` : CSS, JS, médias copiés ;
-- `book.normalized.xml` ;
-- `build_report.txt`.
+---
 
+## Philosophie
 
-## Prévisualisation locale
+Impressions repose sur quelques principes forts :
 
-Après la génération, l'interface peut démarrer automatiquement un petit serveur local et ouvrir le navigateur sur `http://127.0.0.1:8000/index.html` ou, si ce port est occupé, sur `8080` puis sur un port libre.
+- **sobriété technique** (pas de CMS, pas de base de données)
+- **pérennité des formats** (TEI comme source)
+- **édition savante** (citabilité, structure)
+- **séparation stricte contenu / rendu**
+
+---
+
+## Crédits
+
+Impressions est développé par Tony Gheeraert dans le cadre des :
+
+- Presses universitaires de Rouen et du Havre (PURH)
+- Chaire d’excellence en édition numérique (CEEN)
+  https://ceen.hypotheses.org/
+
+---
+
+## Licence
+
+MIT
