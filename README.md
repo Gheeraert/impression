@@ -1,7 +1,7 @@
 # Impressions — TEI Métopes vers livre web statique
 
 Impressions est un générateur de **livres web statiques** à partir de fichiers **TEI Métopes**.  
-Développé en python, utilisable en interface graphique, il produit un site HTML complet, structuré, navigable et directement publiable par simple FTP.
+Développé en python, utilisable en interface graphique, il produit en un clic un site HTML complet, structuré, navigable et directement publiable par simple FTP.
 
 ---
 
