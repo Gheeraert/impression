@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import traceback
 from pathlib import Path
 import tkinter as tk
@@ -28,6 +29,7 @@ class App(ttk.Frame):
         self.port_var = tk.StringVar(value="8000,8080")
         self.auto_preview_var = tk.BooleanVar(value=True)
         self.preview_server: PreviewServer | None = None
+        self.current_config_path: Path | None = None
         self._build_ui()
         self.master.protocol("WM_DELETE_WINDOW", self._on_close)
 
@@ -80,10 +82,16 @@ class App(ttk.Frame):
 
         button_bar = ttk.Frame(self)
         button_bar.grid(row=11, column=0, columnspan=3, sticky="w", pady=(8, 12))
-        ttk.Button(button_bar, text="Construire le site", command=self._build).grid(row=0, column=0, padx=(0, 8))
-        ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0, column=1, padx=(0, 8))
-        ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=2, padx=(0, 8))
-        ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=3)
+        ttk.Button(button_bar, text="Charger config…", command=self._load_config).grid(row=0, column=0, padx=(0, 8))
+        ttk.Button(button_bar, text="Enregistrer config…", command=self._save_config).grid(row=0, column=1, padx=(0, 8))
+        ttk.Button(button_bar, text="Construire le site", command=self._build).grid(row=0, column=2, padx=(0, 8))
+        ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0,
+                                                                                                              column=3,
+                                                                                                              padx=(
+                                                                                                              0, 8))
+        ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=4,
+                                                                                                       padx=(0, 8))
+        ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=5)
 
         log_label = ttk.Label(self, text="Journal")
         log_label.grid(row=12, column=0, sticky="w")
@@ -151,6 +159,106 @@ class App(ttk.Frame):
         if path:
             self.output_dir_var.set(path)
             self._log(f"Dossier de sortie : {path}")
+
+    def _config_as_dict(self) -> dict[str, object]:
+        """Retourne l'état courant de l'interface sous forme sérialisable en JSON."""
+        return {
+            "version": 1,
+            "master_xml": self.master_xml_var.get().strip(),
+            "xml_files": [str(path) for path in self.xml_files],
+            "assets_dir": self.assets_dir_var.get().strip(),
+            "back_cover": self.back_cover_var.get().strip(),
+            "collection_title": self.collection_title_var.get().strip(),
+            "collection_number": self.collection_number_var.get().strip(),
+            "collection_issn": self.collection_issn_var.get().strip(),
+            "output_dir": self.output_dir_var.get().strip(),
+            "preview_ports": self.port_var.get().strip(),
+            "auto_preview": bool(self.auto_preview_var.get()),
+        }
+
+    def _apply_config(self, data: dict[str, object]) -> None:
+        """Applique une configuration JSON à l'interface."""
+
+        def as_text(key: str) -> str:
+            value = data.get(key, "")
+            return "" if value is None else str(value)
+
+        self.master_xml_var.set(as_text("master_xml"))
+        self.assets_dir_var.set(as_text("assets_dir"))
+        self.back_cover_var.set(as_text("back_cover"))
+        self.collection_title_var.set(as_text("collection_title"))
+        self.collection_number_var.set(as_text("collection_number"))
+        self.collection_issn_var.set(as_text("collection_issn"))
+        self.output_dir_var.set(as_text("output_dir"))
+        self.port_var.set(as_text("preview_ports") or "8000,8080")
+
+        raw_auto_preview = data.get("auto_preview", True)
+        if isinstance(raw_auto_preview, str):
+            self.auto_preview_var.set(raw_auto_preview.strip().lower() not in {"0", "false", "non", "no"})
+        else:
+            self.auto_preview_var.set(bool(raw_auto_preview))
+
+        raw_xml_files = data.get("xml_files", [])
+        self.xml_files.clear()
+        self.files_list.delete(0, "end")
+
+        if isinstance(raw_xml_files, list):
+            for item in raw_xml_files:
+                if item is None:
+                    continue
+                path = Path(str(item))
+                self.xml_files.append(path)
+                self.files_list.insert("end", str(path))
+
+    def _save_config(self) -> None:
+        """Enregistre l'état courant de l'interface dans un fichier JSON."""
+        initial_dir = self.output_dir_var.get().strip() or None
+        path = filedialog.asksaveasfilename(
+            title="Enregistrer la configuration",
+            defaultextension=".json",
+            filetypes=[("Configuration JSON", "*.json"), ("Tous les fichiers", "*.*")],
+            initialdir=initial_dir,
+            initialfile="impressions_config.json",
+        )
+        if not path:
+            return
+
+        config_path = Path(path)
+        try:
+            config_path.write_text(
+                json.dumps(self._config_as_dict(), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        except Exception as exc:
+            self._log(f"Erreur lors de l'enregistrement de la configuration : {exc}")
+            messagebox.showerror("Configuration", f"Impossible d'enregistrer la configuration :\n{exc}")
+            return
+
+        self.current_config_path = config_path
+        self._log(f"Configuration enregistrée : {config_path}")
+
+    def _load_config(self) -> None:
+        """Charge une configuration JSON et remplit l'interface."""
+        path = filedialog.askopenfilename(
+            title="Charger une configuration",
+            filetypes=[("Configuration JSON", "*.json"), ("Tous les fichiers", "*.*")],
+        )
+        if not path:
+            return
+
+        config_path = Path(path)
+        try:
+            data = json.loads(config_path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("Le fichier JSON ne contient pas un objet de configuration.")
+            self._apply_config(data)
+        except Exception as exc:
+            self._log(f"Erreur lors du chargement de la configuration : {exc}")
+            messagebox.showerror("Configuration", f"Impossible de charger la configuration :\n{exc}")
+            return
+
+        self.current_config_path = config_path
+        self._log(f"Configuration chargée : {config_path}")
 
     def _make_build_config(self, output_dir: Path, assets_dir: Path | None) -> BuildConfig:
         back_cover = Path(self.back_cover_var.get()).resolve() if self.back_cover_var.get().strip() else None
