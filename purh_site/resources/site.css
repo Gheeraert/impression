@@ -559,7 +559,25 @@ figure audio { width: 100%; margin-bottom: 1rem; }
   white-space: nowrap;
   text-decoration: none;
 }
-.smallcaps { font-variant: small-caps; }
+.smallcaps {
+  font-variant: small-caps;
+  font-variant-caps: small-caps;
+}
+
+sup.tei-sup,
+sub.tei-sub {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+.tei-underline {
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.tei-strikethrough {
+  text-decoration: line-through;
+}
 
 .credit-box h2 {
   margin-top: 0;

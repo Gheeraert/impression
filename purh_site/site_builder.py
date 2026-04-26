@@ -32,6 +32,86 @@ class ThemeAssets:
     pdf_href: str | None = None
     footer_logo_href: str | None = None
 
+_INLINE_TAGS_PATTERN = r"em|strong|span|sup|sub|i|b"
+
+
+def normalize_inline_html_spacing(html_content: str) -> str:
+    """
+    Corrige des espacements fautifs autour des balises inline HTML.
+
+    Exemples corrigés :
+    - tardive<em> Passio</em>  ->  tardive <em>Passio</em>
+    - <em>confessio </em>que   ->  <em>confessio</em> que
+    - </em>,n<sup>o</sup>      ->  </em>, n<sup>o</sup>
+
+    La fonction reste volontairement prudente : elle ne modifie pas
+    la structure HTML, seulement quelques espaces manifestement fautifs.
+    """
+
+    # Évite d'intervenir dans des zones où l'espace peut être significatif.
+    protected_blocks: list[str] = []
+
+    def protect(match: re.Match[str]) -> str:
+        protected_blocks.append(match.group(0))
+        return f"@@IMPRESSION_PROTECTED_BLOCK_{len(protected_blocks) - 1}@@"
+
+    html_content = re.sub(
+        r"<(script|style|code|pre)\b[^>]*>.*?</\1>",
+        protect,
+        html_content,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+
+    inline = _INLINE_TAGS_PATTERN
+    word_char = r"A-Za-zÀ-ÖØ-öø-ÿ0-9"
+
+    # tardive<em> Passio</em> -> tardive <em>Passio</em>
+    html_content = re.sub(
+        rf"([{word_char}])<({inline})(\s+[^>]*)?>\s+",
+        r"\1 <\2\3>",
+        html_content,
+    )
+
+    # <em>confessio </em>que -> <em>confessio</em> que
+    html_content = re.sub(
+        rf"\s+</({inline})>(?=[{word_char}])",
+        r"</\1> ",
+        html_content,
+    )
+
+    # <em>confessio </em>, -> <em>confessio</em>,
+    html_content = re.sub(
+        rf"\s+</({inline})>(?=[,.;:!?])",
+        r"</\1>",
+        html_content,
+    )
+
+    # </em>,n<sup>o</sup> -> </em>, n<sup>o</sup>
+    html_content = re.sub(
+        rf"</({inline})>,([{word_char}])",
+        r"</\1>, \2",
+        html_content,
+    )
+
+    # Pas d'espace avant ponctuation après une balise inline.
+    html_content = re.sub(
+        rf"</({inline})>\s+([,.;:!?])",
+        r"</\1>\2",
+        html_content,
+    )
+
+    def restore(match: re.Match[str]) -> str:
+        index = int(match.group(1))
+        return protected_blocks[index]
+
+    html_content = re.sub(
+        r"@@IMPRESSION_PROTECTED_BLOCK_(\d+)@@",
+        restore,
+        html_content,
+    )
+
+    return html_content
+
 class SiteBuilder:
     """Orchestre le chargement, la normalisation et le rendu multi-pages."""
 
@@ -175,6 +255,7 @@ class SiteBuilder:
             page_grid_class='page-grid page-grid--home',
             abstract_html=back_cover_html,
         )
+        page_html = normalize_inline_html_spacing(page_html)
         (output_dir / 'index.html').write_text(page_html, encoding='utf-8')
 
     def _write_content_page(
@@ -204,6 +285,7 @@ class SiteBuilder:
             page_grid_class='page-grid',
             page=page,
         )
+        page_html = normalize_inline_html_spacing(page_html)
         (output_dir / page.file_name).write_text(page_html, encoding='utf-8')
 
     def _find_page_group(self, tree: etree._ElementTree, node_id: str) -> etree._Element | None:

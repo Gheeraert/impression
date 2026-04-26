@@ -43,9 +43,9 @@
       <xsl:if test="tei:head">
         <xsl:variable name="level" select="count(ancestor::tei:div) + 2"/>
         <xsl:choose>
-          <xsl:when test="$level = 2"><h2><xsl:value-of select="normalize-space(tei:head[1])"/></h2></xsl:when>
-          <xsl:when test="$level = 3"><h3><xsl:value-of select="normalize-space(tei:head[1])"/></h3></xsl:when>
-          <xsl:otherwise><h4><xsl:value-of select="normalize-space(tei:head[1])"/></h4></xsl:otherwise>
+          <xsl:when test="$level = 2"><h2><xsl:apply-templates select="tei:head[1]/node()"/></h2></xsl:when>
+          <xsl:when test="$level = 3"><h3><xsl:apply-templates select="tei:head[1]/node()"/></h3></xsl:when>
+          <xsl:otherwise><h4><xsl:apply-templates select="tei:head[1]/node()"/></h4></xsl:otherwise>
         </xsl:choose>
       </xsl:if>
       <xsl:apply-templates select="node()[not(self::tei:head)]"/>
@@ -83,7 +83,7 @@
       <xsl:call-template name="render-figure-media"/>
       <figcaption>
         <xsl:if test="tei:head">
-          <div class="figure-title"><xsl:value-of select="normalize-space(tei:head[1])"/></div>
+          <div class="figure-title"><xsl:apply-templates select="tei:head[1]/node()"/></div>
         </xsl:if>
         <xsl:for-each select="tei:p | tei:figDesc">
           <div><xsl:apply-templates select="."/></div>
@@ -181,9 +181,50 @@
     <li><xsl:apply-templates/></li>
   </xsl:template>
 
-  <xsl:template match="tei:hi[@rend='italic'] | tei:emph"><em><xsl:apply-templates/></em></xsl:template>
-  <xsl:template match="tei:hi[@rend='bold']"><strong><xsl:apply-templates/></strong></xsl:template>
-  <xsl:template match="tei:hi[@rend='smallcaps']"><span class="smallcaps"><xsl:apply-templates/></span></xsl:template>
+    <!-- Typographie locale TEI / Métopes.
+       normalize-space() permet de tolérer les espaces parasites,
+       par exemple rend=" small-caps italic". -->
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' bold ') and contains(concat(' ', normalize-space(@rend), ' '), ' italic ')]" priority="30">
+    <strong><em><xsl:apply-templates/></em></strong>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' small-caps ') and contains(concat(' ', normalize-space(@rend), ' '), ' italic ')] | tei:hi[normalize-space(@rend)='small-caps-ital']" priority="30">
+    <span class="smallcaps"><em><xsl:apply-templates/></em></span>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' sup ') and contains(concat(' ', normalize-space(@rend), ' '), ' italic ')]" priority="30">
+    <sup class="tei-sup"><em><xsl:apply-templates/></em></sup>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' italic ')] | tei:emph" priority="20">
+    <em><xsl:apply-templates/></em>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' bold ')]" priority="20">
+    <strong><xsl:apply-templates/></strong>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' small-caps ')] | tei:hi[normalize-space(@rend)='smallcaps']" priority="20">
+    <span class="smallcaps"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' sup ')]" priority="20">
+    <sup class="tei-sup"><xsl:apply-templates/></sup>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' sub ')]" priority="20">
+    <sub class="tei-sub"><xsl:apply-templates/></sub>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' underline ')]" priority="20">
+    <span class="tei-underline"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' strikethrough ')]" priority="20">
+    <span class="tei-strikethrough"><xsl:apply-templates/></span>
+  </xsl:template>
+
   <xsl:template match="tei:pb | tei:lb"><br/></xsl:template>
   <xsl:template match="text()"><xsl:value-of select="."/></xsl:template>
 </xsl:stylesheet>
