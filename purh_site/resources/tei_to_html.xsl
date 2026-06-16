@@ -74,6 +74,10 @@
     <span class="cit-inline"><xsl:apply-templates/></span>
   </xsl:template>
 
+  <xsl:template match="tei:item/tei:cit" priority="20">
+    <span class="cit-inline"><xsl:apply-templates/></span>
+  </xsl:template>
+
   <xsl:template match="tei:q">
     <q><xsl:apply-templates/></q>
   </xsl:template>
@@ -83,6 +87,10 @@
   </xsl:template>
 
   <xsl:template match="tei:p/tei:cit/tei:quote" priority="30">
+    <q><xsl:apply-templates/></q>
+  </xsl:template>
+
+  <xsl:template match="tei:item/tei:cit/tei:quote" priority="30">
     <q><xsl:apply-templates/></q>
   </xsl:template>
 
@@ -214,7 +222,142 @@
   </xsl:template>
 
   <xsl:template match="tei:ref">
-    <a href="{@target}"><xsl:apply-templates/></a>
+    <xsl:choose>
+      <xsl:when test="@target">
+        <a href="{@target}">
+          <xsl:call-template name="external-link-attrs">
+            <xsl:with-param name="target" select="@target"/>
+          </xsl:call-template>
+          <xsl:apply-templates/>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <span class="tei-ref"><xsl:apply-templates/></span>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="tei:ptr">
+    <xsl:choose>
+      <xsl:when test="@target">
+        <a class="tei-ptr" href="{@target}">
+          <xsl:call-template name="external-link-attrs">
+            <xsl:with-param name="target" select="@target"/>
+          </xsl:call-template>
+          <xsl:value-of select="@target"/>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <span class="tei-ptr"></span>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="external-link-attrs">
+    <xsl:param name="target"/>
+    <xsl:if test="contains($target, '://')">
+      <xsl:attribute name="target">_blank</xsl:attribute>
+      <xsl:attribute name="rel">noopener</xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="tei:title">
+    <cite class="tei-title">
+      <xsl:if test="@level">
+        <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@type">
+        <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </cite>
+  </xsl:template>
+
+  <xsl:template match="tei:bibl//tei:title" priority="30">
+    <span class="tei-title">
+      <xsl:if test="@level">
+        <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@type">
+        <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:foreign">
+    <span class="foreign">
+      <xsl:if test="@xml:lang">
+        <xsl:attribute name="lang"><xsl:value-of select="@xml:lang"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:term">
+    <span class="term">
+      <xsl:call-template name="data-ref-attr"/>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:name">
+    <span class="name">
+      <xsl:call-template name="data-ref-attr"/>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:persName">
+    <span class="pers-name">
+      <xsl:call-template name="data-ref-attr"/>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:placeName">
+    <span class="place-name">
+      <xsl:call-template name="data-ref-attr"/>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:orgName">
+    <span class="org-name">
+      <xsl:call-template name="data-ref-attr"/>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template name="data-ref-attr">
+    <xsl:if test="@ref">
+      <xsl:attribute name="data-ref"><xsl:value-of select="@ref"/></xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="tei:date">
+    <time class="tei-date">
+      <xsl:if test="@when">
+        <xsl:attribute name="datetime"><xsl:value-of select="@when"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </time>
+  </xsl:template>
+
+  <xsl:template match="tei:num">
+    <span class="tei-num">
+      <xsl:if test="@type">
+        <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@value">
+        <xsl:attribute name="data-value"><xsl:value-of select="@value"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:label">
+    <span class="tei-label"><xsl:apply-templates/></span>
   </xsl:template>
 
   <xsl:template match="tei:choice[tei:abbr and tei:expan]" priority="20">
@@ -310,6 +453,20 @@
     <span class="tei-strikethrough"><xsl:apply-templates/></span>
   </xsl:template>
 
-  <xsl:template match="tei:pb | tei:lb"><br/></xsl:template>
+  <xsl:template match="tei:lb"><br/></xsl:template>
+
+  <xsl:template match="tei:pb">
+    <span class="page-break">
+      <xsl:if test="@n">
+        <xsl:attribute name="data-n"><xsl:value-of select="@n"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@n">
+        <xsl:text>[p. </xsl:text>
+        <xsl:value-of select="@n"/>
+        <xsl:text>]</xsl:text>
+      </xsl:if>
+    </span>
+  </xsl:template>
+
   <xsl:template match="text()"><xsl:value-of select="."/></xsl:template>
 </xsl:stylesheet>
