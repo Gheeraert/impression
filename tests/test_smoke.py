@@ -200,3 +200,134 @@ def test_article_images_are_normalized_in_default_css(tmp_path: Path) -> None:
     assert '.figure-zoom-trigger img {' in css
     assert 'max-width: min(100%, 760px);' in css
     assert 'max-height: clamp(260px, 46vh, 520px);' in css
+
+
+TEI_SAMPLE_WITHOUT_TITLE_OR_COLLECTION = """<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns='http://www.tei-c.org/ns/1.0'>
+  <teiHeader>
+    <fileDesc>
+      <titleStmt/>
+      <publicationStmt><p/></publicationStmt>
+      <sourceDesc><p/></sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <group type='book'>
+      <group type='chapter' data-page-title='Chapitre sans metadata'>
+        <body>
+          <div type='section1'>
+            <head>Section simple</head>
+            <p>Texte.</p>
+          </div>
+        </body>
+      </group>
+    </group>
+  </text>
+</TEI>
+"""
+
+
+def test_build_config_fallbacks_are_used_when_xml_is_silent(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE_WITHOUT_TITLE_OR_COLLECTION, encoding='utf-8')
+
+    builder = SiteBuilder()
+    result = builder.build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / 'site',
+            collection_title='Collection de repli',
+            collection_number='42',
+            collection_issn='1234-5678',
+            site_title_fallback='Titre de repli',
+        ),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert '<h1>Titre de repli</h1>' in index_html
+    assert 'name="citation_series_title" content="Collection de repli"' in index_html
+    assert 'name="citation_series_number" content="42"' in index_html
+    assert 'name="citation_issn" content="1234-5678"' in index_html
+
+
+def test_xml_metadata_keeps_priority_over_config_fallbacks(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+
+    builder = SiteBuilder()
+    result = builder.build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / 'site',
+            collection_title='Collection de repli',
+            site_title_fallback='Titre de repli',
+        ),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert '<h1>Livre de test</h1>' in index_html
+    assert '<h1>Titre de repli</h1>' not in index_html
+
+
+def test_write_normalized_tei_false_skips_export_and_download_link(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+
+    builder = SiteBuilder()
+    result = builder.build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', write_normalized_tei=False),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert result.normalized_tei_path is None
+    assert not (tmp_path / 'site' / 'book.normalized.xml').exists()
+    assert 'href="book.normalized.xml"' not in index_html
+
+
+def test_external_back_cover_path_is_used_as_fallback(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+    back_cover_path = tmp_path / 'quatrieme.md'
+    back_cover_path.write_text('Texte de **quatrieme** externe.', encoding='utf-8')
+
+    builder = SiteBuilder()
+    result = builder.build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', back_cover_path=back_cover_path),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+    report = result.report_path.read_text(encoding='utf-8')
+
+    assert '<p>Texte de <strong>quatrieme</strong> externe.</p>' in index_html
+    assert str(back_cover_path) in report
+
+
+def test_build_from_many_accepts_gui_style_config_overrides(tmp_path: Path) -> None:
+    xml_one = tmp_path / 'one.xml'
+    xml_two = tmp_path / 'two.xml'
+    xml_one.write_text(TEI_SAMPLE, encoding='utf-8')
+    xml_two.write_text(TEI_SAMPLE_WITH_FIGURE, encoding='utf-8')
+
+    builder = SiteBuilder()
+    results = builder.build_from_many(
+        [xml_one, xml_two],
+        tmp_path / 'sites',
+        assets_dir=None,
+        config_overrides=BuildConfig(
+            output_dir=tmp_path / 'unused',
+            collection_title='Collection GUI',
+            write_normalized_tei=False,
+        ),
+    )
+
+    assert len(results) == 2
+    assert (tmp_path / 'sites' / 'one' / 'index.html').exists()
+    assert (tmp_path / 'sites' / 'two' / 'index.html').exists()
+    assert results[0].normalized_tei_path is None
+    assert not (tmp_path / 'sites' / 'one' / 'book.normalized.xml').exists()
+    assert 'Collection GUI' in (tmp_path / 'sites' / 'one' / 'index.html').read_text(encoding='utf-8')

@@ -4,7 +4,7 @@ import copy
 import html
 import re
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -127,12 +127,25 @@ class SiteBuilder:
         normalize_report = self.normalizer.normalize(tree)
         return self._finalize_build(tree, config, load_report, normalize_report)
 
-    def build_from_many(self, xml_files: list[Path], output_root: Path, assets_dir: Path | None = None) -> list[BuildResult]:
+    def build_from_many(
+        self,
+        xml_files: list[Path],
+        output_root: Path,
+        assets_dir: Path | None = None,
+        config_overrides: BuildConfig | None = None,
+    ) -> list[BuildResult]:
         results: list[BuildResult] = []
         for tree, load_report in load_many(xml_files):
             normalize_report = self.normalizer.normalize(tree)
             target_dir = output_root / Path(load_report.master_path).stem
-            config = BuildConfig(output_dir=target_dir, assets_dir=assets_dir)
+            if config_overrides is None:
+                config = BuildConfig(output_dir=target_dir, assets_dir=assets_dir)
+            else:
+                config = replace(
+                    config_overrides,
+                    output_dir=target_dir,
+                    assets_dir=assets_dir if assets_dir is not None else config_overrides.assets_dir,
+                )
             results.append(self._finalize_build(tree, config, load_report, normalize_report))
         return results
 
@@ -148,23 +161,26 @@ class SiteBuilder:
         self._copy_static_resources(config.output_assets_dir)
         self._copy_user_assets(config.assets_dir, config.output_assets_dir)
 
-        normalized_tei_path: Path | None = config.output_dir / "book.normalized.xml"
-        tree.write(
-            str(normalized_tei_path),
-            encoding="utf-8",
-            xml_declaration=True,
-            pretty_print=True,
-        )
+        normalized_tei_path: Path | None = None
+        if config.write_normalized_tei:
+            normalized_tei_path = config.output_dir / "book.normalized.xml"
+            tree.write(
+                str(normalized_tei_path),
+                encoding="utf-8",
+                xml_declaration=True,
+                pretty_print=True,
+            )
 
         site_meta, pages, nav = self.structure_builder.build(tree)
+        self._apply_config_fallbacks(site_meta, config, tree)
         theme_assets = self._discover_theme_assets(config.output_assets_dir)
-        back_cover_html, back_cover_source = self._resolve_back_cover_html(tree, config.output_assets_dir)
+        back_cover_html, back_cover_source = self._resolve_back_cover_html(tree, config)
         self._write_index_page(
             config.output_dir,
             site_meta,
             nav,
             theme_assets,
-            normalized_tei_href=normalized_tei_path.name,
+            normalized_tei_href=normalized_tei_path.name if normalized_tei_path else None,
             back_cover_html=back_cover_html,
         )
         for page in pages:
@@ -198,6 +214,27 @@ class SiteBuilder:
             report_path=report_path,
         )
 
+    def _apply_config_fallbacks(
+        self,
+        site_meta: SiteMeta,
+        config: BuildConfig,
+        tree: etree._ElementTree,
+    ) -> None:
+        title_from_xml = tree.xpath(
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='main'])[1])",
+            namespaces=NSMAP,
+        )
+        if not title_from_xml and config.site_title_fallback:
+            site_meta.title = config.site_title_fallback
+        if not site_meta.collection_title:
+            site_meta.collection_title = config.collection_title
+        if not site_meta.collection_number:
+            site_meta.collection_number = config.collection_number
+        if not site_meta.collection_issn:
+            site_meta.collection_issn = config.collection_issn
+        if not site_meta.issn:
+            site_meta.issn = config.collection_issn
+
     def _copy_static_resources(self, output_assets_dir: Path) -> None:
         for name in ("site.css", "app.js"):
             shutil.copy2(self.resources_dir / name, output_assets_dir / name)
@@ -220,7 +257,7 @@ class SiteBuilder:
             site_meta: SiteMeta,
             nav: list[NavItem],
             theme_assets: ThemeAssets,
-            normalized_tei_href: str,
+            normalized_tei_href: str | None,
             back_cover_html: str | None,
     ) -> None:
         nav_html = self._render_sidebar(nav, current_file_name=None)
@@ -352,15 +389,16 @@ class SiteBuilder:
     def _render_toc(self, nav: list[NavItem]) -> str:
         return self._render_nav_list(nav)
 
-    def _render_home_downloads(self, normalized_tei_href: str, pdf_href: str | None) -> str:
+    def _render_home_downloads(self, normalized_tei_href: str | None, pdf_href: str | None) -> str:
         parts = ['<section class="home-panel home-panel--downloads">']
         parts.append('<h2>Téléchargements</h2>')
         parts.append('<div class="download-buttons">')
-        parts.append(
-            f'<a class="download-button" href="{html.escape(normalized_tei_href)}" download>'
-            'Télécharger le XML - TEI'
-            '</a>'
-        )
+        if normalized_tei_href:
+            parts.append(
+                f'<a class="download-button" href="{html.escape(normalized_tei_href)}" download>'
+                'Télécharger le XML - TEI'
+                '</a>'
+            )
         if pdf_href:
             parts.append(
                 f'<a class="download-button" href="{html.escape(pdf_href)}" download>'
@@ -370,11 +408,15 @@ class SiteBuilder:
         parts.append('</div></section>')
         return ''.join(parts)
 
-    def _resolve_back_cover_html(self, tree: etree._ElementTree, output_assets_dir: Path) -> tuple[str | None, str | None]:
+    def _resolve_back_cover_html(self, tree: etree._ElementTree, config: BuildConfig) -> tuple[str | None, str | None]:
         xml_html = self._extract_back_cover_from_xml(tree)
         if xml_html:
             return xml_html, 'XML (abstract rend="4e-couv")'
-        assets_html = self._read_back_cover_from_assets(output_assets_dir)
+        if config.back_cover_path:
+            file_html = self._read_back_cover_file(config.back_cover_path)
+            if file_html:
+                return file_html, str(config.back_cover_path)
+        assets_html = self._read_back_cover_from_assets(config.output_assets_dir)
         if assets_html:
             return assets_html, 'assets/quatrieme'
         return None, None
@@ -433,6 +475,21 @@ class SiteBuilder:
             content = txt_files[0].read_text(encoding='utf-8').strip()
             return self._render_simple_markdown(content) if content else None
 
+        return None
+
+    def _read_back_cover_file(self, path: Path) -> str | None:
+        if not path.exists() or not path.is_file():
+            return None
+
+        content = path.read_text(encoding='utf-8').strip()
+        if not content:
+            return None
+
+        suffix = path.suffix.lower()
+        if suffix in {'.md', '.markdown', '.txt'}:
+            return self._render_simple_markdown(content)
+        if suffix in {'.html', '.htm'}:
+            return content
         return None
 
     def _render_simple_markdown(self, source: str) -> str:

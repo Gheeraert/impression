@@ -39,7 +39,10 @@
   </xsl:template>
 
   <xsl:template match="tei:div">
-    <section class="tei-div" id="{@xml:id}">
+    <section class="tei-div">
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
       <xsl:if test="tei:head">
         <xsl:variable name="level" select="count(ancestor::tei:div) + 2"/>
         <xsl:choose>
@@ -55,15 +58,61 @@
   <xsl:template match="tei:head"/>
 
   <xsl:template match="tei:p">
-    <p id="{@xml:id}"><xsl:apply-templates/></p>
+    <p>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </p>
   </xsl:template>
 
   <xsl:template match="tei:cit">
     <div class="cit-block"><xsl:apply-templates/></div>
   </xsl:template>
 
+  <xsl:template match="tei:p/tei:cit" priority="20">
+    <span class="cit-inline"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:q">
+    <q><xsl:apply-templates/></q>
+  </xsl:template>
+
+  <xsl:template match="tei:p/tei:quote" priority="20">
+    <q><xsl:apply-templates/></q>
+  </xsl:template>
+
+  <xsl:template match="tei:p/tei:cit/tei:quote" priority="30">
+    <q><xsl:apply-templates/></q>
+  </xsl:template>
+
   <xsl:template match="tei:quote">
     <blockquote><xsl:apply-templates/></blockquote>
+  </xsl:template>
+
+  <xsl:template match="tei:table">
+    <table>
+      <xsl:apply-templates/>
+    </table>
+  </xsl:template>
+
+  <xsl:template match="tei:table/tei:head" priority="20">
+    <caption><xsl:apply-templates/></caption>
+  </xsl:template>
+
+  <xsl:template match="tei:row">
+    <tr><xsl:apply-templates/></tr>
+  </xsl:template>
+
+  <xsl:template match="tei:cell">
+    <xsl:choose>
+      <xsl:when test="@role='label' or @role='header' or @type='head' or @type='header' or parent::tei:row[@role='label' or @role='header' or @type='head' or @type='header']">
+        <th><xsl:apply-templates/></th>
+      </xsl:when>
+      <xsl:otherwise>
+        <td><xsl:apply-templates/></td>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="tei:lg">
@@ -79,7 +128,10 @@
   </xsl:template>
 
   <xsl:template match="tei:figure">
-    <figure id="{@xml:id}">
+    <figure>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
       <xsl:call-template name="render-figure-media"/>
       <figcaption>
         <xsl:if test="tei:head">
@@ -165,12 +217,45 @@
     <a href="{@target}"><xsl:apply-templates/></a>
   </xsl:template>
 
+  <xsl:template match="tei:choice[tei:abbr and tei:expan]" priority="20">
+    <abbr>
+      <xsl:attribute name="title"><xsl:value-of select="normalize-space(tei:expan[1])"/></xsl:attribute>
+      <xsl:apply-templates select="tei:abbr[1]/node()"/>
+    </abbr>
+  </xsl:template>
+
+  <xsl:template match="tei:choice">
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="tei:abbr">
+    <abbr><xsl:apply-templates/></abbr>
+  </xsl:template>
+
+  <xsl:template match="tei:expan">
+    <span class="tei-expan"><xsl:apply-templates/></span>
+  </xsl:template>
+
   <xsl:template match="tei:listBibl">
-    <section class="tei-div bibliography-block" id="{@xml:id}"><h2>Bibliographie</h2><ol class="bibl-list"><xsl:apply-templates/></ol></section>
+    <section class="tei-div bibliography-block">
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <h2>Bibliographie</h2><ol class="bibl-list"><xsl:apply-templates/></ol>
+    </section>
+  </xsl:template>
+
+  <xsl:template match="tei:listBibl/tei:bibl" priority="20">
+    <li>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </li>
   </xsl:template>
 
   <xsl:template match="tei:bibl">
-    <li id="{@xml:id}"><xsl:apply-templates/></li>
+    <cite class="bibl-ref"><xsl:apply-templates/></cite>
   </xsl:template>
 
   <xsl:template match="tei:list">
