@@ -95,7 +95,7 @@ def test_terms_and_names_render_inline_with_classes_and_data_ref(tmp_path: Path)
     assert doc.xpath("//span[contains(@class, 'term')]/@data-ref") == ["#jansenisme"]
     assert doc.xpath("string(//span[@class='name'])") == "un nom"
     assert doc.xpath("//span[@class='name']/@data-ref") == ["#nom-simple"]
-    assert doc.xpath("string(//span[contains(@class, 'org-name')])") == "l'Oratoire"
+    assert doc.xpath("string(//span[contains(@class, 'org-name')])") == "l’Oratoire"
     assert doc.xpath("//span[contains(@class, 'org-name')]/@data-ref") == ["#oratoire"]
 
 

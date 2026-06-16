@@ -33,6 +33,17 @@ class ThemeAssets:
     footer_logo_href: str | None = None
 
 _INLINE_TAGS_PATTERN = r"em|strong|span|sup|sub|i|b"
+_PROTECTED_HTML_BLOCK_RE = re.compile(
+    r"<(script|style|code|pre)\b[^>]*>.*?</\1>",
+    flags=re.DOTALL | re.IGNORECASE,
+)
+_HTML_TAG_RE = re.compile(r"(<[^>]+>)")
+_VISIBLE_URL_RE = re.compile(r"(https?://[^\s<]+|www\.[^\s<]+)")
+_HTML_ENTITY_RE = re.compile(r"&(?:#\d+|#x[0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]+);")
+_SPACE_ENTITY_BEFORE_DOUBLE_PUNCT_RE = re.compile(
+    r"(&(?:nbsp|#160|#xA0|#xa0|#8239|#x202f|#x202F);)\u202f([:;?!])"
+)
+_FRENCH_NARROW_NBSP = "\u202f"
 
 
 def normalize_inline_html_spacing(html_content: str) -> str:
@@ -111,6 +122,75 @@ def normalize_inline_html_spacing(html_content: str) -> str:
     )
 
     return html_content
+
+
+def normalize_french_typography_html(html_content: str) -> str:
+    """Normalise prudemment la typographie francaise dans le texte visible HTML."""
+
+    parts: list[str] = []
+    last_end = 0
+    for match in _PROTECTED_HTML_BLOCK_RE.finditer(html_content):
+        parts.append(_normalize_french_typography_unprotected_html(html_content[last_end:match.start()]))
+        parts.append(match.group(0))
+        last_end = match.end()
+    parts.append(_normalize_french_typography_unprotected_html(html_content[last_end:]))
+    return "".join(parts)
+
+
+def _normalize_french_typography_unprotected_html(html_content: str) -> str:
+    parts: list[str] = []
+    for part in _HTML_TAG_RE.split(html_content):
+        if not part:
+            continue
+        if part.startswith("<") and part.endswith(">"):
+            parts.append(part)
+        else:
+            parts.append(_normalize_french_typography_text(part))
+    return "".join(parts)
+
+
+def _normalize_french_typography_text(text: str) -> str:
+    parts: list[str] = []
+    last_end = 0
+    for match in _VISIBLE_URL_RE.finditer(text):
+        parts.append(_normalize_french_typography_text_without_urls(text[last_end:match.start()]))
+        parts.append(match.group(0))
+        last_end = match.end()
+    parts.append(_normalize_french_typography_text_without_urls(text[last_end:]))
+    return "".join(parts)
+
+
+def _normalize_french_typography_text_without_urls(text: str) -> str:
+    parts: list[str] = []
+    last_end = 0
+    for match in _HTML_ENTITY_RE.finditer(text):
+        parts.append(_normalize_french_typography_plain_text(text[last_end:match.start()]))
+        parts.append(match.group(0))
+        last_end = match.end()
+    parts.append(_normalize_french_typography_plain_text(text[last_end:]))
+    normalized = "".join(parts)
+    return _SPACE_ENTITY_BEFORE_DOUBLE_PUNCT_RE.sub(r"\1\2", normalized)
+
+
+def _normalize_french_typography_plain_text(text: str) -> str:
+    if not text:
+        return text
+
+    text = re.sub(
+        r"\b([cCdDjJlLmMnNsStT]|[qQ]u|[jJ]usqu|[lL]orsqu|[pP]uisqu)'(?=[A-Za-zÀ-ÖØ-öø-ÿ])",
+        r"\1’",
+        text,
+    )
+    text = re.sub(r"«[\s\u00a0\u202f]*", f"«{_FRENCH_NARROW_NBSP}", text)
+    text = re.sub(r"[\s\u00a0\u202f]*»", f"{_FRENCH_NARROW_NBSP}»", text)
+    text = re.sub(r"[\s\u00a0\u202f]*([:;?!])", f"{_FRENCH_NARROW_NBSP}\\1", text)
+    text = re.sub(
+        r"\b([IVXLCDM]{2,})e(\s+siècle)",
+        r"\1<sup>e</sup>\2",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return text
 
 class SiteBuilder:
     """Orchestre le chargement, la normalisation et le rendu multi-pages."""
@@ -293,6 +373,7 @@ class SiteBuilder:
             abstract_html=back_cover_html,
         )
         page_html = normalize_inline_html_spacing(page_html)
+        page_html = normalize_french_typography_html(page_html)
         (output_dir / 'index.html').write_text(page_html, encoding='utf-8')
 
     def _write_content_page(
@@ -323,6 +404,7 @@ class SiteBuilder:
             page=page,
         )
         page_html = normalize_inline_html_spacing(page_html)
+        page_html = normalize_french_typography_html(page_html)
         (output_dir / page.file_name).write_text(page_html, encoding='utf-8')
 
     def _find_page_group(self, tree: etree._ElementTree, node_id: str) -> etree._Element | None:
