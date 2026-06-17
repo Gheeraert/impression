@@ -270,6 +270,8 @@ class PdfBuilder:
         self._absolutize_blocks_paths(division.blocks, base_dir=base_dir, warnings=warnings)
         for section in division.sections:
             self._absolutize_section_paths(section, base_dir=base_dir, warnings=warnings)
+        for note in division.notes.values():
+            self._absolutize_blocks_paths(note.blocks, base_dir=base_dir, warnings=warnings)
 
     def _absolutize_section_paths(self, section: Section, *, base_dir: Path, warnings: list[str]) -> None:
         self._absolutize_blocks_paths(section.blocks, base_dir=base_dir, warnings=warnings)

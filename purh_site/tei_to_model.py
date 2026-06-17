@@ -753,7 +753,26 @@ class TeiToModelParser:
                 identifiers.append(BibliographicIdentifier(type=kind, value=value))
             elif target or value:
                 identifiers.append(BibliographicIdentifier(type=kind, value=value or target))
-        return identifiers
+        return self._deduplicate_identifiers(identifiers)
+
+    def _deduplicate_identifiers(
+        self, identifiers: list[BibliographicIdentifier]
+    ) -> list[BibliographicIdentifier]:
+        seen: set[tuple[str, str]] = set()
+        result: list[BibliographicIdentifier] = []
+        for identifier in identifiers:
+            key = self._identifier_dedupe_key(identifier)
+            if key not in seen:
+                seen.add(key)
+                result.append(identifier)
+        return result
+
+    def _identifier_dedupe_key(self, identifier: BibliographicIdentifier) -> tuple[str, str]:
+        kind = identifier.type.strip().upper()
+        value = identifier.value.strip()
+        if kind == "DOI":
+            value = value.removeprefix("https://doi.org/").removeprefix("http://doi.org/")
+        return kind, value
 
 
 # ----------------------------------------------------------------------

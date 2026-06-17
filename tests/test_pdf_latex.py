@@ -858,3 +858,112 @@ def test_escape_url_handles_ampersand_in_bibl_identifier(tmp_path: Path) -> None
     assert r"https://example.org/search?q=test\&lang=fr" in latex
     assert "https://example.org/search?q=test&lang=fr" not in latex
     assert "None" not in latex
+
+
+def test_pdf_builder_absolutizes_figure_paths_inside_footnotes(tmp_path: Path) -> None:
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+    figure_path = images_dir / "note figure.png"
+    figure_path.write_bytes(b"fake-png")
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <figure>
+            <graphic url="images/note figure.png"/>
+            <head>Figure en note</head>
+          </figure>
+        </note>.</p>
+        """,
+    )
+
+    result = PdfBuilder(compile_pdf=False).build_from_normalized_tei(xml_path, tmp_path / "pdf")
+    tex = result.tex_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert r"\includegraphics" in tex
+    assert r"\detokenize{" in tex
+    assert figure_path.resolve().as_posix() in tex
+    assert "Image absente ou non fournie" not in tex
+    assert not any("Image introuvable" in w for w in result.warnings)
+
+
+def test_biblstruct_duplicate_doi_identifiers_are_deduplicated(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Autrice</author>
+              <title level="m">Livre avec DOI</title>
+              <idno type="DOI">10.4000/foo</idno>
+              <ref type="DOI" target="https://doi.org/10.4000/foo">https://doi.org/10.4000/foo</ref>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    book = parse_normalized_tei(xml_path)
+    item = next(
+        block for block in book.body_divisions[0].blocks if isinstance(block, BibliographyBlock)
+    ).items[0]
+    latex = LatexRenderer().render_book(book)
+
+    assert item.structured is not None
+    assert len([i for i in item.structured.identifiers if i.type == "DOI"]) == 1
+    # Un seul lien DOI rendu (la valeur apparaît deux fois dans \href{url}{label},
+    # donc on compte les occurrences du préfixe de rendu)
+    assert latex.count(r"DOI \href{") == 1
+    assert "https://doi.org/https://doi.org" not in latex
+    assert "None" not in latex
+
+
+def test_table_with_merged_cells_emits_latex_warning_comment(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <table>
+          <row>
+            <cell role="label" cols="2">En-tête fusionnée</cell>
+          </row>
+          <row>
+            <cell>A</cell>
+            <cell>B</cell>
+          </row>
+        </table>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert "AVERTISSEMENT Impressions" in latex
+    assert "cols/rows ignorés" in latex
+    assert r"\begin{tabularx}" in latex
+    assert "En-tête fusionnée" in latex
+    assert "None" not in latex
+
+
+def test_simple_tei_table_without_merged_cells_has_no_fusion_warning(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <table>
+          <row>
+            <cell role="label">Colonne 1</cell>
+            <cell role="label">Colonne 2</cell>
+          </row>
+          <row>
+            <cell>Valeur 1</cell>
+            <cell>Valeur 2</cell>
+          </row>
+        </table>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert "AVERTISSEMENT Impressions" not in latex
+    assert r"\begin{tabularx}" in latex
+    assert "None" not in latex

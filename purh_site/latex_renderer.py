@@ -978,7 +978,18 @@ class LatexRenderer:
         if column_count <= 0:
             return "% Table omise sans colonnes"
 
-        lines = [
+        has_merged_cells = any(
+            cell.cols > 1 or cell.rows > 1
+            for row in rows
+            for cell in row.cells
+        )
+
+        lines: list[str] = []
+        if has_merged_cells:
+            lines.append(
+                r"% AVERTISSEMENT Impressions : cellules fusionnées TEI non encore rendues (cols/rows ignorés)"
+            )
+        lines += [
             r"\begin{center}",
             rf"\begin{{tabularx}}{{\linewidth}}{{{'X' * column_count}}}",
             r"\toprule",
