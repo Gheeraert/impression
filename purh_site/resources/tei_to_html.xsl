@@ -78,6 +78,10 @@
     <span class="cit-inline"><xsl:apply-templates/></span>
   </xsl:template>
 
+  <xsl:template match="tei:note//tei:cit" priority="20">
+    <span class="cit-inline"><xsl:apply-templates/></span>
+  </xsl:template>
+
   <xsl:template match="tei:q">
     <q><xsl:apply-templates/></q>
   </xsl:template>
@@ -91,6 +95,10 @@
   </xsl:template>
 
   <xsl:template match="tei:item/tei:cit/tei:quote" priority="30">
+    <q><xsl:apply-templates/></q>
+  </xsl:template>
+
+  <xsl:template match="tei:note//tei:cit/tei:quote" priority="30">
     <q><xsl:apply-templates/></q>
   </xsl:template>
 
