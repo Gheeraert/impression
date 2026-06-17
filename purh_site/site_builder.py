@@ -8,7 +8,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import urljoin
 
-from lxml import etree
+from lxml import etree, html as lxml_html
 
 from .config import BuildConfig
 from .normalizer import NormalizeReport, TeiNormalizer
@@ -31,6 +31,11 @@ class ThemeAssets:
     purh_logo_href: str | None = None
     pdf_href: str | None = None
     footer_logo_href: str | None = None
+
+@dataclass(frozen=True, slots=True)
+class AnchorTarget:
+    file_name: str
+    is_page_root: bool = False
 
 _INLINE_TAGS_PATTERN = r"em|strong|span|sup|sub|i|b"
 _PROTECTED_HTML_BLOCK_RE = re.compile(
@@ -135,6 +140,33 @@ def normalize_french_typography_html(html_content: str) -> str:
         last_end = match.end()
     parts.append(_normalize_french_typography_unprotected_html(html_content[last_end:]))
     return "".join(parts)
+
+
+def rewrite_internal_links(html_content: str, current_file_name: str, anchor_index: dict[str, AnchorTarget]) -> str:
+    """Rattache les liens #xml-id aux pages HTML statiques qui portent l'ancre."""
+
+    if not anchor_index:
+        return html_content
+
+    document = lxml_html.fromstring(html_content)
+    changed = False
+    for link in document.xpath("//a[@href]"):
+        href = link.get("href") or ""
+        if not href.startswith("#") or len(href) <= 1:
+            continue
+        anchor_id = href[1:]
+        target = anchor_index.get(anchor_id)
+        if not target or target.file_name == current_file_name:
+            continue
+        if target.is_page_root:
+            link.set("href", target.file_name)
+        else:
+            link.set("href", f"{target.file_name}#{anchor_id}")
+        changed = True
+
+    if not changed:
+        return html_content
+    return lxml_html.tostring(document, encoding="unicode", method="html", doctype="<!DOCTYPE html>")
 
 
 def _normalize_french_typography_unprotected_html(html_content: str) -> str:
@@ -253,6 +285,7 @@ class SiteBuilder:
 
         site_meta, pages, nav = self.structure_builder.build(tree)
         self._apply_config_fallbacks(site_meta, config, tree)
+        anchor_index = self._collect_anchor_index(tree, pages)
         theme_assets = self._discover_theme_assets(config.output_assets_dir)
         back_cover_html, back_cover_source = self._resolve_back_cover_html(tree, config)
         self._write_index_page(
@@ -264,7 +297,7 @@ class SiteBuilder:
             back_cover_html=back_cover_html,
         )
         for page in pages:
-            self._write_content_page(config.output_dir, tree, site_meta, nav, page, theme_assets)
+            self._write_content_page(config.output_dir, tree, site_meta, nav, page, theme_assets, anchor_index)
 
         report_path = config.output_dir / "build_report.txt"
         report_lines = [
@@ -384,6 +417,7 @@ class SiteBuilder:
         nav: list[NavItem],
         page: PageDef,
         theme_assets: ThemeAssets,
+        anchor_index: dict[str, AnchorTarget],
     ) -> None:
         page_group = self._find_page_group(tree, page.node_id)
         if page_group is None:
@@ -405,7 +439,24 @@ class SiteBuilder:
         )
         page_html = normalize_inline_html_spacing(page_html)
         page_html = normalize_french_typography_html(page_html)
+        page_html = rewrite_internal_links(page_html, current_file_name=page.file_name, anchor_index=anchor_index)
         (output_dir / page.file_name).write_text(page_html, encoding='utf-8')
+
+    def _collect_anchor_index(self, tree: etree._ElementTree, pages: list[PageDef]) -> dict[str, AnchorTarget]:
+        anchor_index: dict[str, AnchorTarget] = {}
+        xml_id_attr = "{http://www.w3.org/XML/1998/namespace}id"
+        for page in pages:
+            page_group = self._find_page_group(tree, page.node_id)
+            if page_group is None:
+                continue
+            page_anchor_id = (page_group.get(xml_id_attr) or "").strip()
+            if page_anchor_id and page_anchor_id not in anchor_index:
+                anchor_index[page_anchor_id] = AnchorTarget(page.file_name, is_page_root=True)
+            for node in page_group.xpath(".//*[@xml:id]", namespaces=NSMAP):
+                anchor_id = (node.get(xml_id_attr) or "").strip()
+                if anchor_id and anchor_id not in anchor_index:
+                    anchor_index[anchor_id] = AnchorTarget(page.file_name)
+        return anchor_index
 
     def _find_page_group(self, tree: etree._ElementTree, node_id: str) -> etree._Element | None:
         matches = tree.xpath(f"//*[@xml:id='{node_id}']", namespaces=NSMAP)
