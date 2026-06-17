@@ -697,7 +697,7 @@ class SiteBuilder:
         return ''.join(parts)
 
     def _render_credit_block(self, page: PageDef, site_meta: SiteMeta) -> str:
-        page_creators = page.authors or site_meta.creators
+        page_creators = self._page_citation_authors(page, site_meta)
         volume_title = site_meta.title
         if site_meta.subtitle:
             volume_title = f"{volume_title}. {site_meta.subtitle}"
@@ -771,6 +771,14 @@ class SiteBuilder:
         if doi.startswith('http://') or doi.startswith('https://'):
             return doi
         return f'https://doi.org/{doi}'
+
+    def _page_citation_authors(self, page: PageDef, site_meta: SiteMeta) -> list[str]:
+        volume_is_edited = site_meta.creator_role_label.lower().startswith('dir')
+        if page.authors:
+            return page.authors
+        if volume_is_edited:
+            return []
+        return site_meta.creators
 
     def _render_prev_next(self, page: PageDef, nav: list[NavItem]) -> str:
         flat: list[tuple[str, str]] = []
@@ -992,11 +1000,12 @@ class SiteBuilder:
                 tags.append(self._meta_tag(dc_name, creator))
         else:
             citation_title = page.title if not page.subtitle else f"{page.title}. {page.subtitle}"
-            chapter_authors = page.authors or site_meta.creators
+            volume_is_edited = site_meta.creator_role_label.lower().startswith('dir')
+            chapter_authors = self._page_citation_authors(page, site_meta)
             for author in chapter_authors:
                 tags.append(self._meta_tag('citation_author', author))
                 tags.append(self._meta_tag('DC.Creator', author))
-            if site_meta.creators and set(chapter_authors) != set(site_meta.creators):
+            if site_meta.creators and volume_is_edited:
                 for editor in site_meta.creators:
                     tags.append(self._meta_tag('citation_editor', editor))
                     tags.append(self._meta_tag('DC.Contributor', editor))
