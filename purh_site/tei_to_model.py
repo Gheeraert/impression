@@ -174,6 +174,7 @@ class TeiToModelParser:
         info.publication_year = (
             self._first_text(book_ab, ".//tei:date[@type='publishing']")
             or self._first_text(pdf_ab, ".//tei:date[@type='publishing']")
+            or self._first_text(publication_stmt, "./tei:date[@type='publishing']")
         )
         info.isbn_print = self._first_text(book_ab, ".//tei:idno[@type='ISBN-13']")
         info.isbn_pdf = (
@@ -714,7 +715,7 @@ class TeiToModelParser:
                 )
             ]
 
-        if local == "note" and (element.get("place") == "foot" or element.get("type") == "standard"):
+        if local == "note" and self._is_inline_footnote(element):
             note_id = element.get("{http://www.w3.org/XML/1998/namespace}id") or f"note-{next(self._generated_note_counter)}"
             if note_id not in notes_store:
                 notes_store[note_id] = self._parse_footnote(element, note_id)
@@ -840,6 +841,11 @@ class TeiToModelParser:
         if parent is None:
             return True
         return self._local_name(parent) not in {"p", "item"}
+
+    def _is_inline_footnote(self, note_el: ET._Element) -> bool:
+        place = (note_el.get("place") or "").strip().lower()
+        note_type = (note_el.get("type") or "").strip().lower()
+        return place in {"", "foot"} and note_type in {"", "standard"}
 
 
 # ----------------------------------------------------------------------
