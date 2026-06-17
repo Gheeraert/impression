@@ -816,3 +816,45 @@ def test_pdf_builder_reports_missing_latex_engine_without_real_tex_dependency(tm
     assert "Moteur LaTeX introuvable" in result.error_message
     assert "moteur-introuvable-impressions" in result.log_path.read_text(encoding="utf-8")
     assert "Succ" in result.report_path.read_text(encoding="utf-8")
+
+
+def test_inline_ref_target_uses_url_escaping(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <p>Voir <ref target="https://example.org/page_test?a=1&amp;b=2#section_1">le site</ref>.</p>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"\href{" in latex
+    assert "le site" in latex
+    assert r"page\_test" in latex
+    assert r"a=1\&b=2" in latex
+    assert r"\#section\_1" in latex
+    assert "None" not in latex
+    assert r"\href{https://example.org/page\_test?a=1\&b=2\#section\_1}{le site}" in latex
+
+
+def test_escape_url_handles_ampersand_in_bibl_identifier(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Autrice</author>
+              <title level="m">Livre</title>
+              <idno type="URI">https://example.org/search?q=test&amp;lang=fr</idno>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"https://example.org/search?q=test\&lang=fr" in latex
+    assert "https://example.org/search?q=test&lang=fr" not in latex
+    assert "None" not in latex

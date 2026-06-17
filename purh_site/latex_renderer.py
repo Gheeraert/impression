@@ -1043,7 +1043,7 @@ class LatexRenderer:
             return rf"$_{{{self._render_inline_nodes(node.children)}}}$"
         if isinstance(node, Link):
             label = self._render_inline_nodes(node.children) or self._escape_text(node.target)
-            target = self._escape_text(node.target)
+            target = self._escape_url(node.target)
             return rf"\href{{{target}}}{{{label}}}"
         if isinstance(node, InlineQuote):
             return rf"\enquote{{{self._render_inline_nodes(node.children)}}}"
@@ -1119,6 +1119,7 @@ class LatexRenderer:
             "\\": "/",
             "{": r"\{",
             "}": r"\}",
+            "&": r"\&",
             "%": r"\%",
             "#": r"\#",
             "_": r"\_",
