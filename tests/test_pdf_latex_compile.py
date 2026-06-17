@@ -99,21 +99,27 @@ def test_purh_style_minimal_document_compiles_with_lualatex() -> None:
     runtime_dir = Path.cwd() / ".latex-integration-runtime" / uuid.uuid4().hex
     runtime_dir.mkdir(parents=True, exist_ok=False)
     xml_path = write_compile_tei(runtime_dir)
+    success = False
 
-    result = PdfBuilder(
-        latex_options=LatexRenderOptions(style="purh"),
-        compile_pdf=True,
-        latex_engine="lualatex",
-    ).build_from_normalized_tei(xml_path, runtime_dir / "pdf")
+    try:
+        result = PdfBuilder(
+            latex_options=LatexRenderOptions(style="purh"),
+            compile_pdf=True,
+            latex_engine="lualatex",
+        ).build_from_normalized_tei(xml_path, runtime_dir / "pdf")
 
-    tex = result.tex_path.read_text(encoding="utf-8")
-    log = result.log_path.read_text(encoding="utf-8")
+        tex = result.tex_path.read_text(encoding="utf-8")
+        log = result.log_path.read_text(encoding="utf-8")
 
-    assert result.success is True, log
-    assert result.pdf_path.exists()
-    assert result.tex_path.exists()
-    assert result.log_path.exists()
-    assert result.commands
-    assert r"\documentclass[12pt,twoside,openany]{book}" in tex
-    assert r"\usepackage[french]{babel}" in tex
-    assert r"\pagestyle{fancy}" in tex
+        assert result.success is True, log
+        assert result.pdf_path.exists()
+        assert result.tex_path.exists()
+        assert result.log_path.exists()
+        assert result.commands
+        assert r"\documentclass[12pt,twoside,openany]{book}" in tex
+        assert r"\usepackage[french]{babel}" in tex
+        assert r"\pagestyle{fancy}" in tex
+        success = True
+    finally:
+        if success:
+            shutil.rmtree(runtime_dir, ignore_errors=True)

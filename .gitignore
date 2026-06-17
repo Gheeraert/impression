@@ -3,6 +3,7 @@
 
 # Cache de tests
 .pytest_cache/
+.latex-integration-runtime/
 
 # Réglages locaux PyCharm
 .idea/
