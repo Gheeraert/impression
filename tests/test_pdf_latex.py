@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from purh_site.latex_renderer import LatexRenderer
+from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions
 from purh_site.pdf_builder import PdfBuilder
 from purh_site.semantic_model import FigureBlock, Italic, NoteRef, Paragraph, TextRun
 from purh_site.tei_to_model import parse_normalized_tei
@@ -63,6 +63,10 @@ def render_latex(xml_path: Path) -> str:
     return LatexRenderer().render_book(parse_normalized_tei(xml_path))
 
 
+def render_latex_with_options(xml_path: Path, options: LatexRenderOptions) -> str:
+    return LatexRenderer(options=options).render_book(parse_normalized_tei(xml_path))
+
+
 def paragraph_text(paragraph: Paragraph) -> str:
     return "".join(node.text for node in paragraph.content if isinstance(node, TextRun))
 
@@ -90,6 +94,8 @@ def test_latex_renderer_outputs_minimal_document(tmp_path: Path) -> None:
     latex = render_latex(xml_path)
 
     assert r"\documentclass[11pt,oneside,openany]{memoir}" in latex
+    assert r"\newcommand{\PurhVolumeTitle}" not in latex
+    assert r"\pagestyle{purh}" not in latex
     assert r"\begin{document}" in latex
     assert r"\end{document}" in latex
     assert "Livre PDF" in latex
@@ -212,6 +218,121 @@ def test_pdf_builder_writes_latex_without_compilation(tmp_path: Path) -> None:
     assert "Texte sans compilation." in result.tex_path.read_text(encoding="utf-8")
     assert "Compilation PDF" in result.log_path.read_text(encoding="utf-8")
     assert "Aucune compilation" in result.report_path.read_text(encoding="utf-8")
+
+
+def test_latex_renderer_purh_style_activates_expected_page_profile(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert r"\documentclass[12pt,twoside,openany]{book}" in latex
+    assert "{memoir}" not in latex
+    assert r"\usepackage[" in latex
+    assert r"]{geometry}" in latex
+    assert "paperwidth=155mm" in latex
+    assert "paperheight=230mm" in latex
+    assert "top=30mm" in latex
+    assert "bottom=19mm" in latex
+    assert "inner=23mm" in latex
+    assert "outer=23mm" in latex
+    assert "headheight=14pt" in latex
+    assert "headsep=8mm" in latex
+    assert "footskip=10mm" in latex
+    assert r"\raggedbottom" in latex
+
+
+def test_latex_renderer_purh_style_activates_running_heads(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert r"\usepackage[nobottomtitles*]{titlesec}" in latex
+    assert r"\usepackage{titletoc}" in latex
+    assert r"\usepackage{fancyhdr}" in latex
+    assert r"\pagestyle{fancy}" in latex
+    assert r"\fancyhead[LE]{\PURHHeaderFont\thepage}" in latex
+    assert r"\fancyhead[RE]{\PURHHeaderFont\nouppercase{\PURHBookTitle}}" in latex
+    assert r"\fancyhead[LO]{\PURHHeaderFont\nouppercase{\leftmark}}" in latex
+    assert r"\fancyhead[RO]{\PURHHeaderFont\thepage}" in latex
+    assert r"\renewcommand{\chaptermark}[1]{\markboth{#1}{}}" in latex
+    assert r"\fancypagestyle{plain}" in latex
+
+
+def test_latex_renderer_purh_style_defines_editorial_macros(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert r"\newcommand{\PURHBookTitle}{Livre PDF}" in latex
+    assert r"\newcommand{\PURHBookSubtitle}{Sous-titre PDF}" in latex
+    assert r"\newcommand{\PURHBookAuthor}{Alice Auteur}" in latex
+    assert r"\newcommand{\PURHPublisher}{PURH}" in latex
+    assert r"\newcommand{\PURHYear}{2024}" in latex
+    assert r"\newcommand{\PURHDOI}{}" in latex
+    assert r"\newcommand{\PURHISBN}{}" in latex
+    assert r"\title{\PURHBookTitle}" in latex
+    assert r"\author{\PURHBookAuthor}" in latex
+    assert r"\date{\PURHYear}" in latex
+
+
+def test_latex_renderer_purh_style_adds_french_typography_settings(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert r"\usepackage[french]{babel}" in latex
+    assert "polyglossia" not in latex
+    assert r"\setmainlanguage" not in latex
+    assert r"\usepackage{microtype}" in latex
+    assert r"\usepackage{csquotes}" in latex
+    assert r"\usepackage{indentfirst}" in latex
+    assert r"\usepackage[hang,flushmargin]{footmisc}" in latex
+    assert r"\captionsetup{" in latex
+    assert "labelfont=bf" in latex
+    assert r"\clubpenalty=10000" in latex
+    assert r"\widowpenalty=10000" in latex
+    assert r"\displaywidowpenalty=10000" in latex
+    assert r"\emergencystretch=3em" in latex
+    assert r"\setlength{\parindent}{5mm}" in latex
+
+
+def test_latex_renderer_purh_style_does_not_load_heavy_template_dependencies(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    forbidden_dependencies = [
+        "memoir",
+        "polyglossia",
+        "minted",
+        "svg",
+        "tikz",
+        "tkz-tab",
+        "biblatex",
+        "makeidx",
+        "listings",
+    ]
+    for dependency in forbidden_dependencies:
+        assert dependency not in latex
+
+
+def test_pdf_builder_writes_purh_style_latex_without_compilation(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH sans compilation.</p>")
+
+    result = PdfBuilder(
+        latex_options=LatexRenderOptions(style="purh"),
+        compile_pdf=False,
+    ).build_from_normalized_tei(xml_path, tmp_path / "pdf")
+    tex = result.tex_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert result.commands == []
+    assert result.tex_path.exists()
+    assert not result.pdf_path.exists()
+    assert r"\documentclass[12pt,twoside,openany]{book}" in tex
+    assert r"\pagestyle{fancy}" in tex
+    assert r"\usepackage[french]{babel}" in tex
+    assert "Texte style PURH sans compilation." in tex
 
 
 def test_pdf_builder_reports_missing_latex_engine_without_real_tex_dependency(tmp_path: Path) -> None:
