@@ -423,7 +423,7 @@
 
   <xsl:template match="tei:listBibl">
     <section class="tei-div bibliography-block">
-      <xsl:if test="@xml:id">
+      <xsl:if test="normalize-space(@xml:id) != ''">
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <h2>Bibliographie</h2><ol class="bibl-list"><xsl:apply-templates/></ol>
@@ -432,11 +432,287 @@
 
   <xsl:template match="tei:listBibl/tei:bibl" priority="20">
     <li>
-      <xsl:if test="@xml:id">
+      <xsl:if test="normalize-space(@xml:id) != ''">
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <xsl:apply-templates/>
     </li>
+  </xsl:template>
+
+  <xsl:template match="tei:listBibl/tei:biblStruct" priority="20">
+    <li class="bibl-entry">
+      <xsl:if test="normalize-space(@xml:id) != ''">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="." mode="bibl-structured"/>
+    </li>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct">
+    <span class="bibl-entry"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct" mode="bibl-structured">
+    <xsl:choose>
+      <xsl:when test="tei:analytic">
+        <span class="bibl-analytic"><xsl:apply-templates select="tei:analytic[1]" mode="bibl-structured"/></span>
+        <xsl:if test="tei:monogr">
+          <xsl:choose>
+            <xsl:when test="tei:monogr[1]/tei:title[1][@level='j']">
+              <xsl:text>, </xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>, dans </xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
+          <span class="bibl-monogr"><xsl:apply-templates select="tei:monogr[1]" mode="bibl-structured"/></span>
+        </xsl:if>
+      </xsl:when>
+      <xsl:when test="tei:monogr">
+        <span class="bibl-monogr"><xsl:apply-templates select="tei:monogr[1]" mode="bibl-structured"/></span>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>.</xsl:text>
+    <xsl:if test=".//tei:idno[normalize-space(.) != '']">
+      <xsl:text> </xsl:text>
+      <xsl:for-each select=".//tei:idno[normalize-space(.) != '']">
+        <xsl:apply-templates select="." mode="bibl-structured"/>
+        <xsl:text>.</xsl:text>
+        <xsl:if test="position() != last()">
+          <xsl:text> </xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="tei:analytic" mode="bibl-structured">
+    <xsl:if test="tei:author[normalize-space(.) != '']">
+      <xsl:apply-templates select="tei:author[1]" mode="bibl-structured"/>
+      <xsl:if test="tei:title[normalize-space(.) != '']">
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+    </xsl:if>
+    <xsl:if test="tei:title[normalize-space(.) != '']">
+      <xsl:apply-templates select="tei:title[1]" mode="bibl-structured"/>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="tei:monogr" mode="bibl-structured">
+    <xsl:if test="tei:author[normalize-space(.) != '']">
+      <xsl:apply-templates select="tei:author[1]" mode="bibl-structured"/>
+      <xsl:if test="tei:title[normalize-space(.) != ''] or tei:imprint/*[normalize-space(.) != '']">
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+    </xsl:if>
+    <xsl:if test="tei:editor[normalize-space(.) != '']">
+      <xsl:apply-templates select="tei:editor[1]" mode="bibl-structured"/>
+      <xsl:if test="tei:title[normalize-space(.) != ''] or tei:imprint/*[normalize-space(.) != '']">
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+    </xsl:if>
+    <xsl:if test="tei:title[normalize-space(.) != '']">
+      <xsl:apply-templates select="tei:title[1]" mode="bibl-structured"/>
+      <xsl:if test="tei:imprint/*[normalize-space(.) != '']">
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+    </xsl:if>
+    <xsl:if test="tei:imprint/*[normalize-space(.) != '']">
+      <span class="bibl-imprint"><xsl:apply-templates select="tei:imprint[1]" mode="bibl-structured"/></span>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="tei:imprint" mode="bibl-structured">
+    <xsl:if test="tei:pubPlace[normalize-space(.) != '']">
+      <xsl:apply-templates select="tei:pubPlace[1]" mode="bibl-structured"/>
+    </xsl:if>
+    <xsl:if test="tei:publisher[normalize-space(.) != '']">
+      <xsl:if test="tei:pubPlace[normalize-space(.) != '']"><xsl:text>, </xsl:text></xsl:if>
+      <xsl:apply-templates select="tei:publisher[1]" mode="bibl-structured"/>
+    </xsl:if>
+    <xsl:if test="tei:biblScope[@unit='volume' and normalize-space(.) != '']">
+      <xsl:if test="tei:pubPlace[normalize-space(.) != ''] or tei:publisher[normalize-space(.) != '']"><xsl:text>, </xsl:text></xsl:if>
+      <xsl:apply-templates select="tei:biblScope[@unit='volume'][1]" mode="bibl-structured"/>
+    </xsl:if>
+    <xsl:if test="tei:biblScope[@unit='issue' and normalize-space(.) != '']">
+      <xsl:if test="tei:pubPlace[normalize-space(.) != ''] or tei:publisher[normalize-space(.) != ''] or tei:biblScope[@unit='volume' and normalize-space(.) != '']"><xsl:text>, </xsl:text></xsl:if>
+      <xsl:text>no </xsl:text><xsl:apply-templates select="tei:biblScope[@unit='issue'][1]" mode="bibl-structured"/>
+    </xsl:if>
+    <xsl:if test="tei:date[normalize-space(.) != '']">
+      <xsl:if test="tei:pubPlace[normalize-space(.) != ''] or tei:publisher[normalize-space(.) != ''] or tei:biblScope[(@unit='volume' or @unit='issue') and normalize-space(.) != '']"><xsl:text>, </xsl:text></xsl:if>
+      <xsl:apply-templates select="tei:date[1]" mode="bibl-structured"/>
+    </xsl:if>
+    <xsl:if test="tei:biblScope[@unit='page' and normalize-space(.) != '']">
+      <xsl:if test="tei:pubPlace[normalize-space(.) != ''] or tei:publisher[normalize-space(.) != ''] or tei:biblScope[(@unit='volume' or @unit='issue') and normalize-space(.) != ''] or tei:date[normalize-space(.) != '']"><xsl:text>, </xsl:text></xsl:if>
+      <xsl:apply-templates select="tei:biblScope[@unit='page'][1]" mode="bibl-structured"/>
+    </xsl:if>
+    <xsl:for-each select="tei:biblScope[not(@unit='volume' or @unit='issue' or @unit='page') and normalize-space(.) != '']">
+      <xsl:if test="../tei:pubPlace[normalize-space(.) != ''] or ../tei:publisher[normalize-space(.) != ''] or ../tei:biblScope[(@unit='volume' or @unit='issue' or @unit='page') and normalize-space(.) != ''] or ../tei:date[normalize-space(.) != ''] or position() &gt; 1"><xsl:text>, </xsl:text></xsl:if>
+      <xsl:apply-templates select="." mode="bibl-structured"/>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:author">
+    <span class="bibl-author"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:author" mode="bibl-structured">
+    <span class="bibl-author"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:editor">
+    <span class="bibl-editor"><xsl:apply-templates/></span>
+    <xsl:text> (dir.)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei:editor" mode="bibl-structured">
+    <span class="bibl-editor"><xsl:apply-templates/></span>
+    <xsl:text> (dir.)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:title" priority="40">
+    <cite class="tei-title bibl-title">
+      <xsl:if test="normalize-space(@level) != ''">
+        <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="normalize-space(@type) != ''">
+        <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </cite>
+  </xsl:template>
+
+  <xsl:template match="tei:title" mode="bibl-structured">
+    <xsl:choose>
+      <xsl:when test="@level='a'">
+        <xsl:text>« </xsl:text>
+        <cite class="tei-title bibl-title">
+          <xsl:if test="normalize-space(@level) != ''">
+            <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+          </xsl:if>
+          <xsl:if test="normalize-space(@type) != ''">
+            <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+          </xsl:if>
+          <xsl:apply-templates/>
+        </cite>
+        <xsl:text> »</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <cite class="tei-title bibl-title">
+          <xsl:if test="normalize-space(@level) != ''">
+            <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+          </xsl:if>
+          <xsl:if test="normalize-space(@type) != ''">
+            <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+          </xsl:if>
+          <xsl:apply-templates/>
+        </cite>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:pubPlace">
+    <span class="bibl-pub-place"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:pubPlace" mode="bibl-structured">
+    <span class="bibl-pub-place"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:publisher">
+    <span class="bibl-publisher"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:publisher" mode="bibl-structured">
+    <span class="bibl-publisher"><xsl:apply-templates/></span>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:date" priority="20">
+    <time class="tei-date bibl-date">
+      <xsl:if test="normalize-space(@when) != ''">
+        <xsl:attribute name="datetime"><xsl:value-of select="@when"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </time>
+  </xsl:template>
+
+  <xsl:template match="tei:date" mode="bibl-structured">
+    <time class="tei-date bibl-date">
+      <xsl:if test="normalize-space(@when) != ''">
+        <xsl:attribute name="datetime"><xsl:value-of select="@when"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </time>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:biblScope">
+    <span class="bibl-scope">
+      <xsl:if test="normalize-space(@unit) != ''">
+        <xsl:attribute name="data-unit"><xsl:value-of select="@unit"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="normalize-space(@from) != ''">
+        <xsl:attribute name="data-from"><xsl:value-of select="@from"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="normalize-space(@to) != ''">
+        <xsl:attribute name="data-to"><xsl:value-of select="@to"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:biblScope" mode="bibl-structured">
+    <span class="bibl-scope">
+      <xsl:if test="normalize-space(@unit) != ''">
+        <xsl:attribute name="data-unit"><xsl:value-of select="@unit"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="normalize-space(@from) != ''">
+        <xsl:attribute name="data-from"><xsl:value-of select="@from"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="normalize-space(@to) != ''">
+        <xsl:attribute name="data-to"><xsl:value-of select="@to"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:biblStruct//tei:idno">
+    <xsl:apply-templates select="." mode="bibl-structured"/>
+  </xsl:template>
+
+  <xsl:template match="tei:idno" mode="bibl-structured">
+    <xsl:variable name="idno-value" select="normalize-space(.)"/>
+    <xsl:if test="$idno-value != ''">
+      <xsl:choose>
+        <xsl:when test="@type='DOI'">
+          <a class="bibl-idno" href="{concat('https://doi.org/', $idno-value)}" target="_blank" rel="noopener">
+            <xsl:if test="normalize-space(@type) != ''">
+              <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+            </xsl:if>
+            <xsl:text>DOI </xsl:text><xsl:value-of select="$idno-value"/>
+          </a>
+        </xsl:when>
+        <xsl:when test="@type='URI' or @type='URL'">
+          <a class="bibl-idno" href="{$idno-value}" target="_blank" rel="noopener">
+            <xsl:if test="normalize-space(@type) != ''">
+              <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+            </xsl:if>
+            <xsl:value-of select="@type"/><xsl:text> </xsl:text>
+            <xsl:value-of select="$idno-value"/>
+          </a>
+        </xsl:when>
+        <xsl:otherwise>
+          <span class="bibl-idno">
+            <xsl:if test="normalize-space(@type) != ''">
+              <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+              <xsl:value-of select="@type"/><xsl:text> </xsl:text>
+            </xsl:if>
+            <xsl:value-of select="$idno-value"/>
+          </span>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="tei:bibl">

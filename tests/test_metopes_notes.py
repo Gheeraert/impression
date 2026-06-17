@@ -131,3 +131,115 @@ def test_note_receives_final_french_typography(tmp_path: Path) -> None:
     assert "\u202f:" in note_html
     assert "XVII<sup>e</sup> siècle" in note_html
     assert "\u202f!" in note_html
+
+
+def test_note_preserves_multiple_paragraphs(tmp_path: Path) -> None:
+    doc = render_note_page(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <p>Premier paragraphe avec <hi rend="italic">italique</hi>.</p>
+          <p>Second paragraphe avec <ref target="#source">renvoi</ref>.</p>
+        </note></p>
+        """,
+    )
+    paragraph = doc.xpath("//div[contains(@class, 'tei-fragment')]//p")[0]
+    note = first_endnote(doc)
+    paragraphs = note.xpath("./p")
+
+    assert paragraph.xpath("count(.//sup[contains(@class, 'note-ref')])") == 1
+    assert len(paragraphs) == 2
+    assert paragraphs[0].xpath("string(.//em)") == "italique"
+    assert paragraphs[1].xpath("string(.//a[@href='#source'])") == "renvoi"
+
+
+def test_note_preserves_list_content(tmp_path: Path) -> None:
+    doc = render_note_page(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <list>
+            <item>Premier element avec <hi rend="small-caps">Port-Royal</hi>.</item>
+            <item>Second element avec <title>Les Provinciales</title>.</item>
+          </list>
+        </note></p>
+        """,
+    )
+    paragraph = doc.xpath("//div[contains(@class, 'tei-fragment')]//p")[0]
+    note = first_endnote(doc)
+    items = note.xpath(".//ul/li")
+
+    assert paragraph.xpath("count(.//sup[contains(@class, 'note-ref')])") == 1
+    assert len(items) == 2
+    assert items[0].xpath("string(.//span[contains(@class, 'smallcaps')])") == "Port-Royal"
+    assert items[1].xpath("string(.//cite[contains(@class, 'tei-title')])") == "Les Provinciales"
+
+
+def test_note_preserves_structured_bibliography_without_nested_cites(tmp_path: Path) -> None:
+    doc = render_note_page(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <listBibl>
+            <bibl>Pascal, <title>Les Provinciales</title>, 1656.</bibl>
+            <bibl>Nicole, <title>Essais de morale</title>, 1671.</bibl>
+          </listBibl>
+        </note></p>
+        """,
+    )
+    paragraph = doc.xpath("//div[contains(@class, 'tei-fragment')]//p")[0]
+    note = first_endnote(doc)
+    note_html = html.tostring(note, encoding="unicode")
+    entries = note.xpath(".//section[contains(@class, 'bibliography-block')]//ol[contains(@class, 'bibl-list')]/li")
+
+    assert paragraph.xpath("count(.//sup[contains(@class, 'note-ref')])") == 1
+    assert len(entries) == 2
+    assert note.xpath("count(.//cite//cite)") == 0
+    assert entries[0].xpath("string(.//span[contains(@class, 'tei-title')])") == "Les Provinciales"
+    assert entries[1].xpath("string(.//span[contains(@class, 'tei-title')])") == "Essais de morale"
+    assert 'id=""' not in note_html
+
+
+def test_note_preserves_long_quote_paragraphs(tmp_path: Path) -> None:
+    doc = render_note_page(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <quote>
+            <p>Premier paragraphe cite.</p>
+            <p>Second paragraphe cite.</p>
+          </quote>
+        </note></p>
+        """,
+    )
+    paragraph = doc.xpath("//div[contains(@class, 'tei-fragment')]//p")[0]
+    note = first_endnote(doc)
+    blockquote = note.xpath(".//blockquote")[0]
+    quoted_paragraphs = blockquote.xpath("./p")
+
+    assert paragraph.xpath("count(.//sup[contains(@class, 'note-ref')])") == 1
+    assert len(quoted_paragraphs) == 2
+    assert quoted_paragraphs[0].text_content() == "Premier paragraphe cite."
+    assert quoted_paragraphs[1].text_content() == "Second paragraphe cite."
+
+
+def test_note_preserves_simple_table(tmp_path: Path) -> None:
+    doc = render_note_page(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <table>
+            <row>
+              <cell>A</cell>
+              <cell>B</cell>
+            </row>
+          </table>
+        </note></p>
+        """,
+    )
+    paragraph = doc.xpath("//div[contains(@class, 'tei-fragment')]//p")[0]
+    note = first_endnote(doc)
+    cells = note.xpath(".//table/tr/td")
+
+    assert paragraph.xpath("count(.//sup[contains(@class, 'note-ref')])") == 1
+    assert [cell.text_content() for cell in cells] == ["A", "B"]
