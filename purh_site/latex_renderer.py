@@ -753,7 +753,7 @@ class LatexRenderer:
         return "\n".join(chunk for chunk in lines if chunk.strip())
 
     def _render_figure_block(self, figure: FigureBlock) -> str:
-        image_path = self._latex_path(figure.image_path)
+        image_path = self._select_figure_image_path(figure)
         title = self._render_inline_nodes(figure.title) if figure.title else ""
         caption = self._render_inline_nodes(figure.caption) if figure.caption else ""
         credits = self._render_inline_nodes(figure.credits) if figure.credits else ""
@@ -770,7 +770,7 @@ class LatexRenderer:
 
         lines = ["\\begin{center}"]
 
-        if image_path and Path(image_path).exists():
+        if image_path:
             lines.append(
                 rf"\includegraphics[width={self.options.figure_max_width},keepaspectratio]{{{image_path}}}"
             )
@@ -956,6 +956,19 @@ class LatexRenderer:
         if not path_value:
             return ""
         return str(Path(path_value).as_posix())
+
+    def _latex_image_path(self, path_value: str | None) -> str:
+        if not path_value:
+            return ""
+        normalized = str(Path(path_value).as_posix())
+        normalized = normalized.replace("}", r"\}")
+        return rf"\detokenize{{{normalized}}}"
+
+    def _select_figure_image_path(self, figure: FigureBlock) -> str:
+        for raw_path in (figure.image_path, figure.alt_image_path):
+            if raw_path and Path(raw_path).exists():
+                return self._latex_image_path(raw_path)
+        return ""
 
     def _escape_text(self, value: str | None) -> str:
         if value is None:

@@ -279,19 +279,25 @@ class PdfBuilder:
     def _absolutize_blocks_paths(self, blocks, *, base_dir: Path, warnings: list[str]) -> None:
         for block in blocks:
             if isinstance(block, FigureBlock):
+                main_exists = False
+                alt_exists = False
+
                 if block.image_path:
                     resolved = self._resolve_asset_path(block.image_path, base_dir)
                     block.image_path = resolved.as_posix()
-                    if not resolved.exists():
-                        warnings.append(f"Image introuvable : {resolved}")
+                    main_exists = resolved.exists()
                 else:
                     warnings.append("Figure sans chemin d'image renseigné.")
 
                 if block.alt_image_path:
                     resolved_alt = self._resolve_asset_path(block.alt_image_path, base_dir)
                     block.alt_image_path = resolved_alt.as_posix()
-                    if not resolved_alt.exists():
+                    alt_exists = resolved_alt.exists()
+                    if not alt_exists and main_exists:
                         warnings.append(f"Image alternative introuvable : {resolved_alt}")
+
+                if block.image_path and not main_exists and not alt_exists:
+                    warnings.append(f"Image introuvable : {block.image_path}")
 
             elif isinstance(block, QuoteBlock):
                 self._absolutize_blocks_paths(block.blocks, base_dir=base_dir, warnings=warnings)

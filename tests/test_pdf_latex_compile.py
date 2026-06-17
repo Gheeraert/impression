@@ -3,7 +3,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
+import struct
+import time
 import uuid
+import zlib
 
 import pytest
 
@@ -101,6 +104,20 @@ def make_runtime_dir() -> Path:
     return runtime_dir
 
 
+def cleanup_runtime_dir(runtime_dir: Path) -> None:
+    def remove_readonly(function, path, exc_info) -> None:
+        os.chmod(path, 0o700)
+        function(path)
+
+    for _ in range(3):
+        try:
+            shutil.rmtree(runtime_dir, onexc=remove_readonly)
+            return
+        except OSError:
+            time.sleep(0.2)
+    shutil.rmtree(runtime_dir, ignore_errors=True)
+
+
 def run_purh_compile(xml_path: Path, runtime_dir: Path):
     return PdfBuilder(
         latex_options=LatexRenderOptions(style="purh"),
@@ -109,7 +126,26 @@ def run_purh_compile(xml_path: Path, runtime_dir: Path):
     ).build_from_normalized_tei(xml_path, runtime_dir / "pdf")
 
 
+def write_one_pixel_png(path: Path) -> None:
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        checksum = zlib.crc32(kind + data) & 0xFFFFFFFF
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", checksum)
+
+    signature = b"\x89PNG\r\n\x1a\n"
+    ihdr = struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)
+    raw_scanline = b"\x00\xff\xff\xff"
+    path.write_bytes(
+        signature
+        + chunk(b"IHDR", ihdr)
+        + chunk(b"IDAT", zlib.compress(raw_scanline))
+        + chunk(b"IEND", b"")
+    )
+
+
 def write_realistic_metopes_tei(runtime_dir: Path) -> Path:
+    images_dir = runtime_dir / "images"
+    images_dir.mkdir()
+    write_one_pixel_png(images_dir / "figure-reelle.png")
     xml_path = runtime_dir / "metopes.normalized.xml"
     xml_path.write_text(
         """<?xml version="1.0" encoding="UTF-8"?>
@@ -199,6 +235,12 @@ def write_realistic_metopes_tei(runtime_dir: Path) -> Path:
                 <head>Illustration absente</head>
                 <p rend="caption">Légende éditoriale.</p>
               </figure>
+              <figure>
+                <graphic url="images/figure-reelle.png"/>
+                <head>Figure réelle</head>
+                <p rend="caption">Une image minimale réellement compilée.</p>
+                <p rend="credits">Image de test.</p>
+              </figure>
               <listBibl>
                 <head>Bibliographie du chapitre</head>
                 <bibl>Alice Locale, <title>Article de test</title>, Rouen, PURH, 2026.</bibl>
@@ -272,7 +314,7 @@ def test_purh_style_minimal_document_compiles_with_lualatex() -> None:
         success = True
     finally:
         if success:
-            shutil.rmtree(runtime_dir, ignore_errors=True)
+            cleanup_runtime_dir(runtime_dir)
 
 
 def test_purh_style_realistic_metopes_sample_compiles_with_lualatex() -> None:
@@ -301,6 +343,8 @@ def test_purh_style_realistic_metopes_sample_compiles_with_lualatex() -> None:
         assert tex.index(r"\chapter{Contribution locale}") < tex.index(r"\chapter*{Conclusion}")
         assert tex.index(r"\backmatter") < tex.index(r"\chapter{Annexe documentaire}")
         assert r"\PurhContributors{Alice Locale ; Bob Local}" in tex
+        assert r"\includegraphics" in tex
+        assert "images/figure-reelle.png" in tex
         assert r"\begin{tabularx}{\linewidth}{XX}" in tex
         assert "Tableau de synthèse" in tex
         assert "None" not in tex
@@ -310,4 +354,4 @@ def test_purh_style_realistic_metopes_sample_compiles_with_lualatex() -> None:
         success = True
     finally:
         if success:
-            shutil.rmtree(runtime_dir, ignore_errors=True)
+            cleanup_runtime_dir(runtime_dir)

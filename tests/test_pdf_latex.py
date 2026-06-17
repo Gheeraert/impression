@@ -204,6 +204,107 @@ def test_simple_figure_is_parsed_and_rendered_without_compilation(tmp_path: Path
     assert "Légende de test" in tex
 
 
+def test_existing_figure_path_is_rendered_with_includegraphics(tmp_path: Path) -> None:
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+    figure_path = images_dir / "figure test.png"
+    figure_path.write_bytes(b"fake-png")
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <figure>
+          <graphic url="images/figure test.png"/>
+          <head>Figure existante</head>
+          <p rend="caption">Légende.</p>
+        </figure>
+        """,
+    )
+
+    result = PdfBuilder(compile_pdf=False).build_from_normalized_tei(xml_path, tmp_path / "pdf")
+    tex = result.tex_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert result.warnings == []
+    assert r"\includegraphics" in tex
+    assert r"\detokenize{" in tex
+    assert "images/figure test.png" in tex
+    assert figure_path.resolve().as_posix() in tex
+    assert "Image absente ou non fournie" not in tex
+
+
+def test_missing_figure_path_renders_fallback_and_warning(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <figure>
+          <graphic url="images/manquante.png"/>
+          <head>Figure manquante</head>
+        </figure>
+        """,
+    )
+
+    result = PdfBuilder(compile_pdf=False).build_from_normalized_tei(xml_path, tmp_path / "pdf")
+    tex = result.tex_path.read_text(encoding="utf-8")
+    report = result.report_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert "Image absente ou non fournie" in tex
+    assert any("Image introuvable" in warning for warning in result.warnings)
+    assert "Image introuvable" in report
+
+
+def test_figure_title_caption_and_credits_are_rendered(tmp_path: Path) -> None:
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+    (images_dir / "figure.png").write_bytes(b"fake-png")
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <figure>
+          <graphic url="images/figure.png"/>
+          <head>Figure 1. Titre &amp; détail</head>
+          <p rend="caption">Légende 50% de la figure.</p>
+          <p rend="credits">Crédits : PURH #1.</p>
+        </figure>
+        """,
+    )
+
+    result = PdfBuilder(compile_pdf=False).build_from_normalized_tei(xml_path, tmp_path / "pdf")
+    tex = result.tex_path.read_text(encoding="utf-8")
+
+    assert r"\textbf{Figure 1. Titre \& détail}" in tex
+    assert r"Légende 50\% de la figure" in tex
+    assert r"Crédits : PURH \#1" in tex
+    assert "None" not in tex
+
+
+def test_figure_uses_existing_alternative_image_when_main_image_is_missing(tmp_path: Path) -> None:
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+    alternative_path = images_dir / "alternative figure.png"
+    alternative_path.write_bytes(b"fake-png")
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <figure>
+          <graphic url="images/manquante.png"/>
+          <graphic type="alternative" url="images/alternative figure.png"/>
+          <head>Figure alternative</head>
+        </figure>
+        """,
+    )
+
+    result = PdfBuilder(compile_pdf=False).build_from_normalized_tei(xml_path, tmp_path / "pdf")
+    tex = result.tex_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert result.warnings == []
+    assert r"\includegraphics" in tex
+    assert alternative_path.resolve().as_posix() in tex
+    assert "images/manquante.png" not in tex
+    assert "Image absente ou non fournie" not in tex
+
+
 def test_simple_tei_table_is_parsed_to_semantic_model(tmp_path: Path) -> None:
     xml_path = write_tei(
         tmp_path,
