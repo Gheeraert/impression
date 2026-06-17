@@ -223,6 +223,31 @@ class ListBlock:
 
 
 @dataclass(slots=True)
+class TableCell:
+    """Cellule de tableau TEI simple."""
+
+    content: list[InlineNode] = field(default_factory=list)
+    role: str | None = None
+    cols: int = 1
+    rows: int = 1
+
+
+@dataclass(slots=True)
+class TableRow:
+    """Ligne de tableau TEI simple."""
+
+    cells: list[TableCell] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class TableBlock:
+    """Tableau TEI simple avec légende optionnelle."""
+
+    caption: list[InlineNode] | None = None
+    rows: list[TableRow] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class VerseLine:
     """Vers individuel, numéroté ou non."""
 
@@ -253,6 +278,7 @@ BlockNode: TypeAlias = (
     | FigureBlock
     | BibliographyBlock
     | ListBlock
+    | TableBlock
     | VerseBlock
     | TitlePageBlock
 )

@@ -47,6 +47,8 @@ from .semantic_model import (
     SmallCaps,
     Subscript,
     Superscript,
+    TableBlock,
+    TableCell,
     TextRun,
     TitlePageBlock,
     VerseBlock,
@@ -177,6 +179,9 @@ class LatexRenderer:
 \usepackage{{bookmark}}
 \usepackage{{caption}}
 \usepackage{{enumitem}}
+\usepackage{{array}}
+\usepackage{{tabularx}}
+\usepackage{{booktabs}}
 \usepackage{{verse}}
 \usepackage{{ragged2e}}
 \usepackage{{xurl}}
@@ -601,6 +606,10 @@ class LatexRenderer:
                 contributor_block = self._render_division_titlepage_details(division.title_page)
                 if contributor_block:
                     lines.append(contributor_block)
+            elif division.contributors:
+                contributors = self._join_contributor_names(division.contributors)
+                if contributors:
+                    lines.append(rf"\PurhContributors{{{self._escape_text(contributors)}}}")
 
             blocks_and_sections = []
             blocks_and_sections.append(self._render_blocks(division.blocks))
@@ -712,6 +721,8 @@ class LatexRenderer:
             return self._render_bibliography_block(block)
         if isinstance(block, ListBlock):
             return self._render_list_block(block)
+        if isinstance(block, TableBlock):
+            return self._render_table_block(block)
         if isinstance(block, VerseBlock):
             return self._render_verse_block(block)
         if isinstance(block, TitlePageBlock):
@@ -812,6 +823,44 @@ class LatexRenderer:
         content = self._render_blocks(item.blocks)
         content = content.strip() or ""
         return rf"\item {content}"
+
+    def _render_table_block(self, table: TableBlock) -> str:
+        rows = [row for row in table.rows if row.cells]
+        caption = self._render_inline_nodes(table.caption) if table.caption else ""
+        if not rows:
+            if caption.strip():
+                return rf"% Table omise sans lignes: {caption}"
+            return "% Table omise sans lignes"
+
+        column_count = max(len(row.cells) for row in rows)
+        if column_count <= 0:
+            return "% Table omise sans colonnes"
+
+        lines = [
+            r"\begin{center}",
+            rf"\begin{{tabularx}}{{\linewidth}}{{{'X' * column_count}}}",
+            r"\toprule",
+        ]
+
+        for row_index, row in enumerate(rows):
+            rendered_cells = [self._render_table_cell(cell) for cell in row.cells]
+            while len(rendered_cells) < column_count:
+                rendered_cells.append("")
+            lines.append(" & ".join(rendered_cells) + r"\\")
+            if row_index == 0 and any((cell.role or "").strip().lower() == "label" for cell in row.cells):
+                lines.append(r"\midrule")
+
+        lines.extend([r"\bottomrule", r"\end{tabularx}"])
+        if caption.strip():
+            lines.append(rf"\par\small {caption}")
+        lines.append(r"\end{center}")
+        return "\n".join(lines)
+
+    def _render_table_cell(self, cell: TableCell) -> str:
+        content = self._render_inline_nodes(cell.content).strip()
+        if (cell.role or "").strip().lower() == "label" and content:
+            return rf"\textbf{{{content}}}"
+        return content
 
     def _render_verse_block(self, verse_block: VerseBlock) -> str:
         lines = ["\\begin{verse}"]

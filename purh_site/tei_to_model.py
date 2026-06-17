@@ -52,6 +52,9 @@ from .semantic_model import (
     SmallCaps,
     Subscript,
     Superscript,
+    TableBlock,
+    TableCell,
+    TableRow,
     TextRun,
     TitlePageBlock,
     VerseBlock,
@@ -467,6 +470,9 @@ class TeiToModelParser:
         if local == "list":
             return self._parse_list_block(element, notes_store)
 
+        if local == "table":
+            return self._parse_table_block(element, notes_store)
+
         if local == "lg":
             return self._parse_verse_block(element, notes_store)
 
@@ -581,6 +587,32 @@ class TeiToModelParser:
                 blocks = [Paragraph(content=self._parse_inline_children(item_el, notes_store))]
             items.append(ListItem(blocks=blocks))
         return ListBlock(kind=kind, items=items, rendition=list_el.get("rendition"))
+
+    def _parse_table_block(
+        self,
+        table_el: ET._Element,
+        notes_store: dict[str, Footnote],
+    ) -> TableBlock:
+        caption = None
+        head_el = table_el.find("./tei:head", namespaces=NS)
+        if head_el is not None:
+            caption = self._parse_inline_children(head_el, notes_store)
+
+        rows: list[TableRow] = []
+        for row_el in table_el.findall("./tei:row", namespaces=NS):
+            cells: list[TableCell] = []
+            for cell_el in row_el.findall("./tei:cell", namespaces=NS):
+                cells.append(
+                    TableCell(
+                        content=self._parse_inline_children(cell_el, notes_store),
+                        role=cell_el.get("role"),
+                        cols=self._positive_int(cell_el.get("cols"), default=1),
+                        rows=self._positive_int(cell_el.get("rows"), default=1),
+                    )
+                )
+            rows.append(TableRow(cells=cells))
+
+        return TableBlock(caption=caption, rows=rows)
 
     def _parse_verse_block(
         self,
@@ -952,6 +984,13 @@ class TeiToModelParser:
             return ""
         text = WHITESPACE_RE.sub(" ", text)
         return text.strip()
+
+    def _positive_int(self, value: str | None, *, default: int) -> int:
+        try:
+            parsed = int(value or "")
+        except ValueError:
+            return default
+        return parsed if parsed > 0 else default
 
     def _text_node_from_raw(self, raw: str) -> list[InlineNode]:
         if not raw:

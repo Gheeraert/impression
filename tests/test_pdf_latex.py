@@ -4,7 +4,7 @@ from pathlib import Path
 
 from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions
 from purh_site.pdf_builder import PdfBuilder
-from purh_site.semantic_model import FigureBlock, Italic, NoteRef, Paragraph, TextRun
+from purh_site.semantic_model import FigureBlock, Italic, NoteRef, Paragraph, TableBlock, TextRun
 from purh_site.tei_to_model import parse_normalized_tei
 
 
@@ -202,6 +202,105 @@ def test_simple_figure_is_parsed_and_rendered_without_compilation(tmp_path: Path
     assert r"\includegraphics" in tex
     assert "Figure de test" in tex
     assert "Légende de test" in tex
+
+
+def test_simple_tei_table_is_parsed_to_semantic_model(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <table>
+          <head>Tableau de test</head>
+          <row>
+            <cell role="label">Colonne 1</cell>
+            <cell role="label">Colonne 2</cell>
+          </row>
+          <row>
+            <cell>Valeur 1</cell>
+            <cell><hi rend="italic">Valeur 2</hi></cell>
+          </row>
+        </table>
+        """,
+    )
+
+    book = parse_normalized_tei(xml_path)
+    table = book.body_divisions[0].blocks[0]
+
+    assert isinstance(table, TableBlock)
+    assert table.caption is not None
+    assert paragraph_text(Paragraph(content=table.caption)) == "Tableau de test"
+    assert len(table.rows) == 2
+    assert [len(row.cells) for row in table.rows] == [2, 2]
+    assert table.rows[0].cells[0].role == "label"
+    assert any(isinstance(node, Italic) for node in table.rows[1].cells[1].content)
+
+
+def test_simple_tei_table_is_rendered_to_latex(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <table>
+          <head>Tableau de test</head>
+          <row>
+            <cell role="label">Colonne 1</cell>
+            <cell role="label">Colonne 2</cell>
+          </row>
+          <row>
+            <cell>Valeur 1</cell>
+            <cell><hi rend="italic">Valeur 2</hi></cell>
+          </row>
+        </table>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"\begin{tabularx}{\linewidth}{XX}" in latex
+    assert r"\toprule" in latex
+    assert r"\midrule" in latex
+    assert r"\bottomrule" in latex
+    assert r"\textbf{Colonne 1}" in latex
+    assert r"\textbf{Colonne 2}" in latex
+    assert "Valeur 1" in latex
+    assert r"\textit{Valeur 2}" in latex
+    assert "Tableau de test" in latex
+    assert "None" not in latex
+
+
+def test_table_escapes_latex_special_characters(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <table>
+          <row>
+            <cell role="label">Nom</cell>
+            <cell role="label">Valeur</cell>
+          </row>
+          <row>
+            <cell>Racine &amp; Port-Royal</cell>
+            <cell>50% mot_cle #1</cell>
+          </row>
+        </table>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"Racine \& Port-Royal" in latex
+    assert r"50\%" in latex
+    assert r"mot\_cle" in latex
+    assert r"\#1" in latex
+    assert "Racine & Port-Royal" not in latex
+    assert "50% mot_cle #1" not in latex
+
+
+def test_empty_table_does_not_break_latex_renderer(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<table><head>Table vide</head></table>")
+
+    latex = render_latex(xml_path)
+
+    assert "% Table omise sans lignes: Table vide" in latex
+    assert r"\begin{tabularx}" not in latex
+    assert "None" not in latex
 
 
 def test_pdf_builder_writes_latex_without_compilation(tmp_path: Path) -> None:
