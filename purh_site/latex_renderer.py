@@ -491,22 +491,6 @@ class LatexRenderer:
 % -----------------------------------------------------------------
 % Macros utilitaires PURH
 % -----------------------------------------------------------------
-\newenvironment{{PURHBlockQuote}}
-  {{\begin{{quote}}}}
-  {{\end{{quote}}}}
-
-\newenvironment{{PURHBibliography}}
-  {{%
-    \begin{{list}}{{}}%
-    {{%
-      \setlength{{\leftmargin}}{{1.5em}}%
-      \setlength{{\itemindent}}{{-1.5em}}%
-      \setlength{{\itemsep}}{{0.4\baselineskip}}%
-      \setlength{{\parsep}}{{0pt}}%
-    }}%
-  }}
-  {{\end{{list}}}}
-
 \newcommand{{\PURHSeparator}}{{%
   \par\addvspace{{1.5\baselineskip}}%
   \noindent\rule{{5cm}}{{0.4pt}}%
@@ -531,10 +515,10 @@ class LatexRenderer:
 
 \newenvironment{{PurhBlockQuote}}
   {{%
-    \begin{{PURHBlockQuote}}
+    \begin{{quote}}
   }}
   {{%
-    \end{{PURHBlockQuote}}
+    \end{{quote}}
   }}
 
 \newenvironment{{PurhBibliography}}

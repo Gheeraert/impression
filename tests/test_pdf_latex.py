@@ -316,6 +316,35 @@ def test_latex_renderer_purh_style_does_not_load_heavy_template_dependencies(tmp
         assert dependency not in latex
 
 
+def test_latex_renderer_purh_style_keeps_single_used_block_environments(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <div type="blockquote">
+          <p>Citation bloc.</p>
+          <p>Suite de citation.</p>
+        </div>
+        <listBibl>
+          <head>Bibliographie</head>
+          <bibl>Entrée bibliographique.</bibl>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert r"\newenvironment{PurhBlockQuote}" in latex
+    assert r"\newenvironment{PurhBibliography}" in latex
+    assert r"\newenvironment{PURHBlockQuote}" not in latex
+    assert r"\newenvironment{PURHBibliography}" not in latex
+    assert r"\begin{PurhBlockQuote}" in latex
+    assert r"\end{PurhBlockQuote}" in latex
+    assert r"\begin{PurhBibliography}" in latex
+    assert r"\end{PurhBibliography}" in latex
+    assert "Citation bloc." in latex
+    assert "Entrée bibliographique." in latex
+
+
 def test_pdf_builder_writes_purh_style_latex_without_compilation(tmp_path: Path) -> None:
     xml_path = write_tei(tmp_path, "<p>Texte style PURH sans compilation.</p>")
 
