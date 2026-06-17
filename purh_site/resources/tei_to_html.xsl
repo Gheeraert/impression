@@ -490,7 +490,11 @@
 
   <xsl:template match="tei:analytic" mode="bibl-structured">
     <xsl:if test="tei:author[normalize-space(.) != '']">
-      <xsl:apply-templates select="tei:author[1]" mode="bibl-structured"/>
+      <span class="bibl-author">
+        <xsl:call-template name="render-bibl-name-list">
+          <xsl:with-param name="nodes" select="tei:author[normalize-space(.) != '']"/>
+        </xsl:call-template>
+      </span>
       <xsl:if test="tei:title[normalize-space(.) != '']">
         <xsl:text>, </xsl:text>
       </xsl:if>
@@ -502,13 +506,22 @@
 
   <xsl:template match="tei:monogr" mode="bibl-structured">
     <xsl:if test="tei:author[normalize-space(.) != '']">
-      <xsl:apply-templates select="tei:author[1]" mode="bibl-structured"/>
+      <span class="bibl-author">
+        <xsl:call-template name="render-bibl-name-list">
+          <xsl:with-param name="nodes" select="tei:author[normalize-space(.) != '']"/>
+        </xsl:call-template>
+      </span>
       <xsl:if test="tei:title[normalize-space(.) != ''] or tei:imprint/*[normalize-space(.) != '']">
         <xsl:text>, </xsl:text>
       </xsl:if>
     </xsl:if>
     <xsl:if test="tei:editor[normalize-space(.) != '']">
-      <xsl:apply-templates select="tei:editor[1]" mode="bibl-structured"/>
+      <span class="bibl-editor">
+        <xsl:call-template name="render-bibl-name-list">
+          <xsl:with-param name="nodes" select="tei:editor[normalize-space(.) != '']"/>
+        </xsl:call-template>
+      </span>
+      <xsl:text> (dir.)</xsl:text>
       <xsl:if test="tei:title[normalize-space(.) != ''] or tei:imprint/*[normalize-space(.) != '']">
         <xsl:text>, </xsl:text>
       </xsl:if>
@@ -559,7 +572,7 @@
   </xsl:template>
 
   <xsl:template match="tei:author" mode="bibl-structured">
-    <span class="bibl-author"><xsl:apply-templates/></span>
+    <span class="bibl-author"><xsl:apply-templates select="node()" mode="bibl-name"/></span>
   </xsl:template>
 
   <xsl:template match="tei:biblStruct//tei:editor">
@@ -568,8 +581,37 @@
   </xsl:template>
 
   <xsl:template match="tei:editor" mode="bibl-structured">
-    <span class="bibl-editor"><xsl:apply-templates/></span>
+    <span class="bibl-editor"><xsl:apply-templates select="node()" mode="bibl-name"/></span>
     <xsl:text> (dir.)</xsl:text>
+  </xsl:template>
+
+  <xsl:template name="render-bibl-name-list">
+    <xsl:param name="nodes"/>
+    <xsl:for-each select="$nodes">
+      <xsl:choose>
+        <xsl:when test="position() = 1"/>
+        <xsl:when test="position() = last()">
+          <xsl:text> et </xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>, </xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="node()" mode="bibl-name"/>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template match="tei:persName" mode="bibl-name">
+    <xsl:for-each select="node()[normalize-space(.) != '']">
+      <xsl:if test="position() &gt; 1">
+        <xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:apply-templates select="." mode="bibl-name"/>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template match="tei:forename | tei:surname" mode="bibl-name">
+    <xsl:apply-templates select="node()" mode="bibl-name"/>
   </xsl:template>
 
   <xsl:template match="tei:biblStruct//tei:title" priority="40">
@@ -587,17 +629,32 @@
   <xsl:template match="tei:title" mode="bibl-structured">
     <xsl:choose>
       <xsl:when test="@level='a'">
-        <xsl:text>« </xsl:text>
-        <cite class="tei-title bibl-title">
-          <xsl:if test="normalize-space(@level) != ''">
-            <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
-          </xsl:if>
-          <xsl:if test="normalize-space(@type) != ''">
-            <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
-          </xsl:if>
-          <xsl:apply-templates/>
-        </cite>
-        <xsl:text> »</xsl:text>
+        <xsl:choose>
+          <xsl:when test="starts-with(normalize-space(.), '«') and substring(normalize-space(.), string-length(normalize-space(.)), 1) = '»'">
+            <cite class="tei-title bibl-title">
+              <xsl:if test="normalize-space(@level) != ''">
+                <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+              </xsl:if>
+              <xsl:if test="normalize-space(@type) != ''">
+                <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+              </xsl:if>
+              <xsl:apply-templates/>
+            </cite>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>« </xsl:text>
+            <cite class="tei-title bibl-title">
+              <xsl:if test="normalize-space(@level) != ''">
+                <xsl:attribute name="data-level"><xsl:value-of select="@level"/></xsl:attribute>
+              </xsl:if>
+              <xsl:if test="normalize-space(@type) != ''">
+                <xsl:attribute name="data-type"><xsl:value-of select="@type"/></xsl:attribute>
+              </xsl:if>
+              <xsl:apply-templates/>
+            </cite>
+            <xsl:text> »</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:when>
       <xsl:otherwise>
         <cite class="tei-title bibl-title">

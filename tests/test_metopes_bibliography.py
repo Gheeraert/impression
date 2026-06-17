@@ -297,3 +297,210 @@ def test_biblstruct_contribution_without_editor_has_no_empty_director_marker(tmp
     assert "(dir.)" not in entry_text
     assert ", ," not in entry_text
     assert ",." not in entry_text
+
+
+def test_biblstruct_two_authors_are_joined_with_et(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Martin, Paul</author>
+              <author>Durand, Marie</author>
+              <title level="m">Livre a deux auteurs</title>
+              <imprint>
+                <pubPlace>Rouen</pubPlace>
+                <publisher>PURH</publisher>
+                <date when="2024">2024</date>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Martin, Paul et Durand, Marie, Livre a deux auteurs, Rouen, PURH, 2024."
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
+    assert "()" not in entry_text
+
+
+def test_biblstruct_three_authors_use_commas_and_final_et(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Martin, Paul</author>
+              <author>Durand, Marie</author>
+              <author>Lefevre, Anne</author>
+              <title level="m">Livre a trois auteurs</title>
+              <imprint>
+                <date when="2023">2023</date>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Martin, Paul, Durand, Marie et Lefevre, Anne, Livre a trois auteurs, 2023."
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
+    assert "()" not in entry_text
+
+
+def test_biblstruct_four_authors_are_all_visible(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Martin, Paul</author>
+              <author>Durand, Marie</author>
+              <author>Lefevre, Anne</author>
+              <author>Petit, Jean</author>
+              <title level="m">Livre a quatre auteurs</title>
+              <imprint>
+                <date when="2022">2022</date>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Martin, Paul, Durand, Marie, Lefevre, Anne et Petit, Jean, Livre a quatre auteurs, 2022."
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
+    assert "()" not in entry_text
+
+
+def test_biblstruct_multiple_editors_get_single_dir_marker(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author>Auteur, Alice</author>
+              <title level="a">Chapitre dans volume collectif</title>
+            </analytic>
+            <monogr>
+              <editor>Martin, Paul</editor>
+              <editor>Durand, Marie</editor>
+              <editor>Lefevre, Anne</editor>
+              <title level="m">Volume collectif</title>
+              <imprint>
+                <pubPlace>Rouen</pubPlace>
+                <publisher>PURH</publisher>
+                <date when="2024">2024</date>
+                <biblScope unit="page">p. 15-32</biblScope>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Auteur, Alice, « Chapitre dans volume collectif », dans Martin, Paul, Durand, Marie et Lefevre, Anne (dir.), Volume collectif, Rouen, PURH, 2024, p. 15-32."
+    assert entry_text.count("(dir.)") == 1
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
+    assert "()" not in entry_text
+
+
+def test_biblstruct_analytic_multiple_authors(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author>Auteur, Alice</author>
+              <author>Auteur, Bernard</author>
+              <title level="a">Article a deux voix</title>
+            </analytic>
+            <monogr>
+              <title level="j">Revue savante</title>
+              <imprint>
+                <date when="2021">2021</date>
+                <biblScope unit="page">p. 101-120</biblScope>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Auteur, Alice et Auteur, Bernard, « Article a deux voix », Revue savante, 2021, p. 101-120."
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
+    assert "et ." not in entry_text
+
+
+def test_biblstruct_structured_persname_author_is_rendered(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>
+                <persName>
+                  <forename>Blaise</forename>
+                  <surname>Pascal</surname>
+                </persName>
+              </author>
+              <title level="m">Oeuvres</title>
+              <imprint>
+                <date when="1670">1670</date>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Blaise Pascal, Oeuvres, 1670."
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
+    assert "()" not in entry_text
+
+
+def test_biblstruct_article_title_already_quoted_is_not_double_quoted(tmp_path: Path) -> None:
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author>Dupont, Jeanne</author>
+              <title level="a">« Port-Royal et la lecture »</title>
+            </analytic>
+            <monogr>
+              <title level="j">Revue savante</title>
+              <imprint>
+                <date when="2024">2024</date>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+    entry_text = visible_text(doc.xpath("//li[contains(@class, 'bibl-entry')]")[0])
+
+    assert entry_text == "Dupont, Jeanne, « Port-Royal et la lecture », Revue savante, 2024."
+    assert "« «" not in entry_text
+    assert "» »" not in entry_text
+    assert ", ," not in entry_text
+    assert ",." not in entry_text
