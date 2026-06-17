@@ -666,7 +666,11 @@ class SiteBuilder:
         return rendered
 
     def _render_page_header(self, page: PageDef, theme_assets: ThemeAssets) -> str:
-        parts = ['<header class="page-header">', '<div class="page-header-grid">']
+        page_anchor = html.escape(page.node_id, quote=True)
+        if page_anchor:
+            parts = [f'<header class="page-header" id="{page_anchor}">', '<div class="page-header-grid">']
+        else:
+            parts = ['<header class="page-header">', '<div class="page-header-grid">']
         parts.append(self._render_cover_link(theme_assets, compact=True))
         parts.append('<div class="page-header-main">')
         if page.section_chain:

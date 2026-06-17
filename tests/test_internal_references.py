@@ -268,3 +268,5 @@ def test_internal_ref_to_current_page_group_id_stays_fragment_only(tmp_path: Pat
     link = doc.xpath("//a[normalize-space(.)='cette introduction']")[0]
 
     assert link.get("href") == "#intro"
+    assert doc.xpath("//*[@id='intro']")
+    assert doc.xpath("//header[contains(@class, 'page-header') and @id='intro']")
