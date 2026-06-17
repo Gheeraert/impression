@@ -28,6 +28,10 @@ from pathlib import Path
 from lxml import etree as ET
 
 from .semantic_model import (
+    BibliographicEntry,
+    BibliographicIdentifier,
+    BibliographicPerson,
+    BibliographicTitle,
     BibliographyBlock,
     BibliographyItem,
     Book,
@@ -432,10 +436,19 @@ class TeiToModelParser:
                 blocks.append(BibliographyBlock(items=items))
                 continue
 
+            if local == "biblStruct":
+                items: list[BibliographyItem] = []
+                while i < len(children) and self._local_name(children[i]) == "biblStruct":
+                    items.append(self._parse_bibliography_item(children[i], notes_store))
+                    i += 1
+                blocks.append(BibliographyBlock(items=items))
+                continue
+
             if local == "listBibl":
                 items = [
                     self._parse_bibliography_item(bibl_el, notes_store)
-                    for bibl_el in child.findall("./tei:bibl", namespaces=NS)
+                    for bibl_el in child
+                    if self._local_name(bibl_el) in {"bibl", "biblStruct"}
                 ]
                 blocks.append(BibliographyBlock(title=self._first_text(child, "./tei:head"), items=items))
                 i += 1
@@ -634,7 +647,113 @@ class TeiToModelParser:
         bibl_el: ET._Element,
         notes_store: dict[str, Footnote],
     ) -> BibliographyItem:
+        if self._local_name(bibl_el) == "biblStruct":
+            return BibliographyItem(structured=self._parse_bibl_struct(bibl_el))
         return BibliographyItem(content=self._parse_inline_children(bibl_el, notes_store))
+
+    def _parse_bibl_struct(self, bibl_el: ET._Element) -> BibliographicEntry:
+        analytic = bibl_el.find("./tei:analytic", namespaces=NS)
+        monogr = bibl_el.find("./tei:monogr", namespaces=NS)
+        imprint = monogr.find("./tei:imprint", namespaces=NS) if monogr is not None else None
+
+        analytic_title = self._parse_bibl_title(analytic, "a") if analytic is not None else None
+        monograph_title = self._parse_bibl_title(monogr, "m") if monogr is not None else None
+        journal_title = self._parse_bibl_title(monogr, "j") if monogr is not None else None
+
+        kind = "monograph"
+        if analytic_title and journal_title:
+            kind = "article"
+        elif analytic_title:
+            kind = "contribution"
+
+        return BibliographicEntry(
+            kind=kind,
+            authors=self._parse_bibl_people(analytic if analytic is not None else monogr, "author"),
+            editors=self._parse_bibl_people(monogr, "editor"),
+            analytic_title=analytic_title,
+            monograph_title=monograph_title,
+            journal_title=journal_title,
+            publisher=self._first_text(imprint, "./tei:publisher"),
+            pub_place=self._first_text(imprint, "./tei:pubPlace"),
+            date=self._parse_bibl_date(imprint),
+            volume=self._parse_bibl_scope(imprint, {"volume", "vol"}),
+            issue=self._parse_bibl_scope(imprint, {"issue", "number", "no", "n"}),
+            pages=self._parse_bibl_scope(imprint, {"page", "pages", "pp"}),
+            identifiers=self._parse_bibl_identifiers(bibl_el),
+        )
+
+    def _parse_bibl_people(self, context: ET._Element | None, tag_name: str) -> list[BibliographicPerson]:
+        if context is None:
+            return []
+        people: list[BibliographicPerson] = []
+        for node in context.findall(f"./tei:{tag_name}", namespaces=NS):
+            name = self._compose_pers_name(node.find("./tei:persName", namespaces=NS))
+            if not name:
+                name = self._normalized_text(node)
+            if name:
+                people.append(BibliographicPerson(name=name, role=tag_name))
+        return people
+
+    def _parse_bibl_title(self, context: ET._Element | None, level: str) -> BibliographicTitle | None:
+        if context is None:
+            return None
+        title_el = context.find(f"./tei:title[@level='{level}']", namespaces=NS)
+        if title_el is None and level == "m":
+            for candidate in context.findall("./tei:title", namespaces=NS):
+                if candidate.get("level") != "j":
+                    title_el = candidate
+                    break
+        if title_el is None:
+            return None
+        text = self._normalized_text(title_el)
+        if not text:
+            return None
+        return BibliographicTitle(text=text, level=title_el.get("level"), type=title_el.get("type"))
+
+    def _parse_bibl_date(self, imprint: ET._Element | None) -> str | None:
+        if imprint is None:
+            return None
+        date_el = imprint.find("./tei:date", namespaces=NS)
+        if date_el is None:
+            return None
+        return self._normalized_text(date_el) or date_el.get("when")
+
+    def _parse_bibl_scope(self, imprint: ET._Element | None, units: set[str]) -> str | None:
+        if imprint is None:
+            return None
+        for scope in imprint.findall("./tei:biblScope", namespaces=NS):
+            unit = (scope.get("unit") or "").strip().lower()
+            if unit in units:
+                text = self._normalized_text(scope)
+                if text:
+                    return text
+                start = scope.get("from")
+                end = scope.get("to")
+                if start and end:
+                    return f"p. {start}-{end}" if "page" in units or "pages" in units else f"{start}-{end}"
+                if start:
+                    return start
+        return None
+
+    def _parse_bibl_identifiers(self, bibl_el: ET._Element) -> list[BibliographicIdentifier]:
+        identifiers: list[BibliographicIdentifier] = []
+        for idno in bibl_el.findall(".//tei:idno", namespaces=NS):
+            kind = (idno.get("type") or "").strip().upper()
+            value = self._normalized_text(idno)
+            if kind and value:
+                identifiers.append(BibliographicIdentifier(type=kind, value=value))
+        for ref in bibl_el.findall(".//tei:ref", namespaces=NS):
+            raw_kind = (ref.get("type") or "").strip()
+            target = (ref.get("target") or "").strip()
+            value = self._normalized_text(ref) or target
+            kind = raw_kind.upper() if raw_kind else "URI"
+            if kind in {"SITE", "URL"}:
+                kind = "URI"
+            if kind == "DOI" and value:
+                identifiers.append(BibliographicIdentifier(type=kind, value=value))
+            elif target or value:
+                identifiers.append(BibliographicIdentifier(type=kind, value=value or target))
+        return identifiers
 
 
 # ----------------------------------------------------------------------

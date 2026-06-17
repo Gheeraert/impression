@@ -4,7 +4,7 @@ from pathlib import Path
 
 from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions
 from purh_site.pdf_builder import PdfBuilder
-from purh_site.semantic_model import FigureBlock, Italic, NoteRef, Paragraph, TableBlock, TextRun
+from purh_site.semantic_model import BibliographyBlock, FigureBlock, Italic, NoteRef, Paragraph, TableBlock, TextRun
 from purh_site.tei_to_model import parse_normalized_tei
 
 
@@ -303,6 +303,243 @@ def test_figure_uses_existing_alternative_image_when_main_image_is_missing(tmp_p
     assert alternative_path.resolve().as_posix() in tex
     assert "images/manquante.png" not in tex
     assert "Image absente ou non fournie" not in tex
+
+
+def test_biblstruct_monograph_is_parsed_and_rendered_to_latex(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <head>Bibliographie</head>
+          <biblStruct>
+            <monogr>
+              <author><persName><forename>Blaise</forename><surname>Pascal</surname></persName></author>
+              <title level="m">Pensées</title>
+              <imprint>
+                <pubPlace>Paris</pubPlace>
+                <publisher>Gallimard</publisher>
+                <date when="1976">1976</date>
+              </imprint>
+              <idno type="ISBN">9782070100010</idno>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    book = parse_normalized_tei(xml_path)
+    bibliography = next(block for block in book.body_divisions[0].blocks if isinstance(block, BibliographyBlock))
+    item = bibliography.items[0]
+    latex = LatexRenderer().render_book(book)
+
+    assert item.structured is not None
+    assert item.structured.kind == "monograph"
+    assert [author.name for author in item.structured.authors] == ["Blaise Pascal"]
+    assert item.structured.monograph_title is not None
+    assert item.structured.monograph_title.text == "Pensées"
+    assert item.structured.pub_place == "Paris"
+    assert item.structured.publisher == "Gallimard"
+    assert item.structured.date == "1976"
+    assert item.structured.identifiers[0].value == "9782070100010"
+    assert r"Blaise Pascal, \textit{Pensées}, Paris, Gallimard, 1976. ISBN 9782070100010." in latex
+    assert "None" not in latex
+
+
+def test_biblstruct_contribution_in_edited_volume_is_rendered_to_latex(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author><persName><forename>Jean</forename><surname>Dupont</surname></persName></author>
+              <title level="a">Un chapitre important</title>
+            </analytic>
+            <monogr>
+              <editor><persName><forename>Claire</forename><surname>Martin</surname></persName></editor>
+              <title level="m">Volume collectif</title>
+              <imprint>
+                <pubPlace>Rouen</pubPlace>
+                <publisher>PURH</publisher>
+                <date>2026</date>
+                <biblScope unit="page" from="15" to="32">p. 15-32</biblScope>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"Jean Dupont, \enquote{Un chapitre important}, dans Claire Martin (dir.)" in latex
+    assert r"\textit{Volume collectif}, Rouen, PURH, 2026, p. 15-32." in latex
+    assert "dans (dir.)" not in latex
+    assert "(dir.), ," not in latex
+
+
+def test_biblstruct_journal_article_is_rendered_to_latex(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author><persName><forename>Marie</forename><surname>Leroy</surname></persName></author>
+              <title level="a">Article savant</title>
+            </analytic>
+            <monogr>
+              <title level="j">Revue d’histoire littéraire</title>
+              <imprint>
+                <biblScope unit="volume">123</biblScope>
+                <biblScope unit="issue">2</biblScope>
+                <date>2024</date>
+                <biblScope unit="page">p. 45-67</biblScope>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"Marie Leroy, \enquote{Article savant}, \textit{Revue d’histoire littéraire}" in latex
+    assert "vol. 123" in latex
+    assert "no 2" in latex
+    assert "2024" in latex
+    assert "p. 45-67" in latex
+
+
+def test_biblstruct_multiple_authors_and_editors_are_joined_readably(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author><persName><forename>Alice</forename><surname>Auteur</surname></persName></author>
+              <author><persName><forename>Bruno</forename><surname>Auteur</surname></persName></author>
+              <title level="m">Livre à deux voix</title>
+            </monogr>
+          </biblStruct>
+          <biblStruct>
+            <analytic>
+              <author><persName><forename>Claire</forename><surname>Autrice</surname></persName></author>
+              <author><persName><forename>David</forename><surname>Auteur</surname></persName></author>
+              <author><persName><forename>Emma</forename><surname>Autrice</surname></persName></author>
+              <title level="a">Contribution collective</title>
+            </analytic>
+            <monogr>
+              <editor><persName><forename>Paul</forename><surname>Durand</surname></persName></editor>
+              <editor><persName><forename>Anne</forename><surname>Petit</surname></persName></editor>
+              <editor><persName><forename>Luc</forename><surname>Morel</surname></persName></editor>
+              <title level="m">Volume dirigé</title>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"Alice Auteur et Bruno Auteur, \textit{Livre à deux voix}." in latex
+    assert "Claire Autrice, David Auteur et Emma Autrice" in latex
+    assert "Paul Durand, Anne Petit et Luc Morel (dir.)" in latex
+    assert latex.count("(dir.)") == 1
+
+
+def test_biblstruct_article_title_already_quoted_is_not_double_quoted(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author>Autrice</author>
+              <title level="a">« Déjà guillemeté »</title>
+            </analytic>
+            <monogr>
+              <title level="j">Revue</title>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"\enquote{« Déjà guillemeté »}" not in latex
+    assert "« Déjà guillemeté »" in latex
+    assert latex.count("« Déjà guillemeté »") == 1
+
+
+def test_biblstruct_identifiers_are_rendered_readably(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Autrice</author>
+              <title level="m">Livre avec identifiants</title>
+              <idno type="ISBN-13">978-2-87775-000-1</idno>
+              <idno type="DOI">10.4000/test_pdf</idno>
+              <ref type="DOI" target="https://doi.org/10.4000/deja">https://doi.org/10.4000/deja</ref>
+              <idno type="URI">https://example.org/ouvrage</idno>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert "ISBN 978-2-87775-000-1." in latex
+    assert r"\href{https://doi.org/10.4000/test\_pdf}{10.4000/test\_pdf}" in latex
+    assert r"\href{https://doi.org/10.4000/deja}{https://doi.org/10.4000/deja}" in latex
+    assert r"URI \href{https://example.org/ouvrage}{https://example.org/ouvrage}." in latex
+    assert "https://doi.org/https://doi.org" not in latex
+
+
+def test_biblstruct_in_footnote_is_rendered_without_breaking_footnote(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <p>Texte<note>
+          <biblStruct>
+            <monogr>
+              <author><persName><forename>Blaise</forename><surname>Pascal</surname></persName></author>
+              <title level="m">Pensées</title>
+              <imprint><date>1976</date></imprint>
+            </monogr>
+          </biblStruct>
+        </note>.</p>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"\footnote{Blaise Pascal, \textit{Pensées}, 1976.}" in latex
+    assert r"\footnote{\begin{PurhBibliography}" not in latex
+
+
+def test_simple_bibl_rendering_is_not_regressed(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <bibl>Entrée déjà formulée.</bibl>
+        </listBibl>
+        """,
+    )
+
+    book = parse_normalized_tei(xml_path)
+    bibliography = next(block for block in book.body_divisions[0].blocks if isinstance(block, BibliographyBlock))
+    latex = LatexRenderer().render_book(book)
+
+    assert bibliography.items[0].structured is None
+    assert r"\noindent\hangindent=1.5em\hangafter=1 Entrée déjà formulée.\par" in latex
 
 
 def test_simple_tei_table_is_parsed_to_semantic_model(tmp_path: Path) -> None:

@@ -196,6 +196,51 @@ class BibliographyItem:
     """Entrée bibliographique déjà formulée dans le XML."""
 
     content: list[InlineNode] = field(default_factory=list)
+    structured: "BibliographicEntry | None" = None
+
+
+@dataclass(slots=True)
+class BibliographicPerson:
+    """Personne citée dans une entrée bibliographique structurée."""
+
+    name: str
+    role: str | None = None
+
+
+@dataclass(slots=True)
+class BibliographicTitle:
+    """Titre TEI bibliographique avec son niveau documentaire."""
+
+    text: str
+    level: str | None = None
+    type: str | None = None
+
+
+@dataclass(slots=True)
+class BibliographicIdentifier:
+    """Identifiant bibliographique simple : ISBN, DOI, URI, etc."""
+
+    type: str
+    value: str
+
+
+@dataclass(slots=True)
+class BibliographicEntry:
+    """Entrée bibliographique structurée issue de ``biblStruct``."""
+
+    kind: str
+    authors: list[BibliographicPerson] = field(default_factory=list)
+    editors: list[BibliographicPerson] = field(default_factory=list)
+    analytic_title: BibliographicTitle | None = None
+    monograph_title: BibliographicTitle | None = None
+    journal_title: BibliographicTitle | None = None
+    publisher: str | None = None
+    pub_place: str | None = None
+    date: str | None = None
+    volume: str | None = None
+    issue: str | None = None
+    pages: str | None = None
+    identifiers: list[BibliographicIdentifier] = field(default_factory=list)
 
 
 @dataclass(slots=True)

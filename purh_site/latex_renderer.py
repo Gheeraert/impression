@@ -24,6 +24,10 @@ from pathlib import Path
 from typing import Iterable
 
 from .semantic_model import (
+    BibliographicEntry,
+    BibliographicIdentifier,
+    BibliographicPerson,
+    BibliographicTitle,
     BibliographyBlock,
     BibliographyItem,
     BlockNode,
@@ -793,6 +797,13 @@ class LatexRenderer:
     def _render_bibliography_block(self, bibliography: BibliographyBlock) -> str:
         lines: list[str] = []
 
+        if self._in_footnote:
+            return "; ".join(
+                rendered
+                for rendered in (self._render_bibliography_item_content(item) for item in bibliography.items)
+                if rendered.strip()
+            )
+
         if bibliography.title:
             title = self._escape_text(bibliography.title)
             lines.append(rf"\section*{{{title}}}")
@@ -805,11 +816,142 @@ class LatexRenderer:
         return "\n".join(lines)
 
     def _render_bibliography_item(self, item: BibliographyItem) -> str:
-        content = self._render_inline_nodes(item.content)
+        content = self._render_bibliography_item_content(item)
         if not content.strip():
             return ""
         hang = self.options.bibliography_hangindent_em
         return rf"\noindent\hangindent={hang}em\hangafter=1 {content}\par"
+
+    def _render_bibliography_item_content(self, item: BibliographyItem) -> str:
+        if item.structured is not None:
+            return self._render_bibliographic_entry(item.structured)
+        return self._render_inline_nodes(item.content)
+
+    def _render_bibliographic_entry(self, entry: BibliographicEntry) -> str:
+        if entry.kind == "article":
+            return self._render_journal_article_entry(entry)
+        if entry.kind == "contribution":
+            return self._render_contribution_entry(entry)
+        return self._render_monograph_entry(entry)
+
+    def _render_monograph_entry(self, entry: BibliographicEntry) -> str:
+        parts = [
+            self._format_people(entry.authors),
+            self._format_bibl_title(entry.monograph_title),
+        ]
+        parts.extend(self._publication_parts(entry))
+        text = self._join_bibl_parts(parts)
+        return self._append_identifier_sentence(text, entry.identifiers)
+
+    def _render_contribution_entry(self, entry: BibliographicEntry) -> str:
+        parts = [
+            self._format_people(entry.authors),
+            self._format_bibl_title(entry.analytic_title),
+        ]
+        container_parts = [
+            self._format_editors(entry.editors),
+            self._format_bibl_title(entry.monograph_title),
+        ]
+        container_parts.extend(self._publication_parts(entry))
+        container_parts.append(entry.pages)
+        container = self._join_bibl_parts(container_parts)
+        if container:
+            parts.append(f"dans {container}")
+
+        text = self._join_bibl_parts(parts)
+        return self._append_identifier_sentence(text, entry.identifiers)
+
+    def _render_journal_article_entry(self, entry: BibliographicEntry) -> str:
+        parts = [
+            self._format_people(entry.authors),
+            self._format_bibl_title(entry.analytic_title),
+            self._format_bibl_title(entry.journal_title),
+            self._prefixed_bibl_value("vol.", entry.volume),
+            self._prefixed_bibl_value("no", entry.issue),
+            entry.date,
+            entry.pages,
+        ]
+        text = self._join_bibl_parts(parts)
+        return self._append_identifier_sentence(text, entry.identifiers)
+
+    def _publication_parts(self, entry: BibliographicEntry) -> list[str | None]:
+        return [entry.pub_place, entry.publisher, entry.date]
+
+    def _format_people(self, people: list[BibliographicPerson]) -> str:
+        names = [self._escape_text(person.name) for person in people if person.name.strip()]
+        return self._join_readable_names(names)
+
+    def _format_editors(self, editors: list[BibliographicPerson]) -> str:
+        names = self._format_people(editors)
+        return f"{names} (dir.)" if names else ""
+
+    def _join_readable_names(self, names: list[str]) -> str:
+        if not names:
+            return ""
+        if len(names) == 1:
+            return names[0]
+        if len(names) == 2:
+            return f"{names[0]} et {names[1]}"
+        return f"{', '.join(names[:-1])} et {names[-1]}"
+
+    def _format_bibl_title(self, title: BibliographicTitle | None) -> str:
+        if title is None or not title.text.strip():
+            return ""
+        escaped = self._escape_text(title.text)
+        level = (title.level or "").strip().lower()
+        if level == "a":
+            stripped = title.text.strip()
+            if stripped.startswith("«") and stripped.endswith("»"):
+                return escaped
+            return rf"\enquote{{{escaped}}}"
+        if level in {"m", "j"}:
+            return rf"\textit{{{escaped}}}"
+        return escaped
+
+    def _prefixed_bibl_value(self, prefix: str, value: str | None) -> str:
+        if not value:
+            return ""
+        escaped = self._escape_text(value)
+        if value.strip().lower().startswith(prefix.lower()):
+            return escaped
+        return f"{prefix} {escaped}"
+
+    def _join_bibl_parts(self, parts: Iterable[str | None]) -> str:
+        clean = [part.strip(" ,") for part in parts if part and part.strip(" ,")]
+        return ", ".join(clean)
+
+    def _append_identifier_sentence(self, text: str, identifiers: list[BibliographicIdentifier]) -> str:
+        result = text.rstrip()
+        if result and not result.endswith("."):
+            result += "."
+        for identifier in identifiers:
+            rendered = self._render_bibl_identifier(identifier)
+            if rendered:
+                result = f"{result} {rendered}".strip()
+        return result
+
+    def _render_bibl_identifier(self, identifier: BibliographicIdentifier) -> str:
+        kind = identifier.type.strip().upper()
+        value = identifier.value.strip()
+        if not kind or not value:
+            return ""
+        if kind in {"ISBN", "ISBN-13"}:
+            return f"ISBN {self._escape_text(value)}."
+        if kind == "DOI":
+            return f"DOI {self._bibl_identifier_link(value, self._doi_target(value))}."
+        if kind in {"URI", "URL", "SITE"}:
+            return f"URI {self._bibl_identifier_link(value, value)}."
+        return f"{self._escape_text(kind)} {self._escape_text(value)}."
+
+    def _doi_target(self, value: str) -> str:
+        if value.lower().startswith(("http://", "https://")):
+            return value
+        return f"https://doi.org/{value}"
+
+    def _bibl_identifier_link(self, label: str, target: str) -> str:
+        if not target.strip():
+            return self._escape_text(label)
+        return rf"\href{{{self._escape_url(target)}}}{{{self._escape_text(label)}}}"
 
     def _render_list_block(self, list_block: ListBlock) -> str:
         env = "enumerate" if list_block.kind == ListKind.ORDERED else "itemize"
@@ -969,6 +1111,19 @@ class LatexRenderer:
             if raw_path and Path(raw_path).exists():
                 return self._latex_image_path(raw_path)
         return ""
+
+    def _escape_url(self, value: str | None) -> str:
+        if value is None:
+            return ""
+        replacements = {
+            "\\": "/",
+            "{": r"\{",
+            "}": r"\}",
+            "%": r"\%",
+            "#": r"\#",
+            "_": r"\_",
+        }
+        return "".join(replacements.get(char, char) for char in value)
 
     def _escape_text(self, value: str | None) -> str:
         if value is None:

@@ -274,6 +274,50 @@ def write_realistic_metopes_tei(runtime_dir: Path) -> Path:
           <listBibl>
             <head>Bibliographie générale</head>
             <bibl>Claire Directrice, <title>Volume collectif</title>, PURH, 2026.</bibl>
+            <biblStruct>
+              <monogr>
+                <author><persName><forename>Blaise</forename><surname>Pascal</surname></persName></author>
+                <title level="m">Pensées</title>
+                <imprint>
+                  <pubPlace>Paris</pubPlace>
+                  <publisher>Gallimard</publisher>
+                  <date>1976</date>
+                </imprint>
+                <idno type="ISBN">9782070100010</idno>
+              </monogr>
+            </biblStruct>
+            <biblStruct>
+              <analytic>
+                <author><persName><forename>Jean</forename><surname>Dupont</surname></persName></author>
+                <title level="a">Contribution structurée</title>
+              </analytic>
+              <monogr>
+                <editor><persName><forename>Claire</forename><surname>Directrice</surname></persName></editor>
+                <title level="m">Volume collectif</title>
+                <imprint>
+                  <pubPlace>Rouen</pubPlace>
+                  <publisher>PURH</publisher>
+                  <date>2026</date>
+                  <biblScope unit="page">p. 15-32</biblScope>
+                </imprint>
+                <idno type="DOI">10.4000/impressions.test</idno>
+              </monogr>
+            </biblStruct>
+            <biblStruct>
+              <analytic>
+                <author><persName><forename>Marie</forename><surname>Leroy</surname></persName></author>
+                <title level="a">Article savant</title>
+              </analytic>
+              <monogr>
+                <title level="j">Revue de test</title>
+                <imprint>
+                  <biblScope unit="volume">12</biblScope>
+                  <biblScope unit="issue">3</biblScope>
+                  <date>2025</date>
+                  <biblScope unit="page">p. 45-56</biblScope>
+                </imprint>
+              </monogr>
+            </biblStruct>
           </listBibl>
         </body>
       </group>
@@ -347,6 +391,10 @@ def test_purh_style_realistic_metopes_sample_compiles_with_lualatex() -> None:
         assert "images/figure-reelle.png" in tex
         assert r"\begin{tabularx}{\linewidth}{XX}" in tex
         assert "Tableau de synthèse" in tex
+        assert "ISBN 9782070100010" in tex
+        assert r"\enquote{Contribution structurée}" in tex
+        assert "https://doi.org/10.4000/impressions.test" in tex
+        assert "https://doi.org/https://doi.org" not in tex
         assert "None" not in tex
         assert "Sans titre" not in tex
         assert "{memoir}" not in tex
