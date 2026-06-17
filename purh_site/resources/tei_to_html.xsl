@@ -141,48 +141,30 @@
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <xsl:call-template name="render-figure-media"/>
-      <figcaption>
-        <xsl:if test="tei:head">
-          <div class="figure-title"><xsl:apply-templates select="tei:head[1]/node()"/></div>
-        </xsl:if>
-        <xsl:for-each select="tei:p | tei:figDesc">
-          <div><xsl:apply-templates select="."/></div>
-        </xsl:for-each>
-      </figcaption>
+      <xsl:if test="tei:head or tei:p">
+        <figcaption>
+          <xsl:if test="tei:head">
+            <xsl:apply-templates select="tei:head[1]/node()"/>
+          </xsl:if>
+          <xsl:for-each select="tei:p">
+            <div><xsl:apply-templates select="."/></div>
+          </xsl:for-each>
+        </figcaption>
+      </xsl:if>
     </figure>
   </xsl:template>
 
   <xsl:template name="render-figure-media">
     <xsl:choose>
-      <xsl:when test="tei:graphic[@url]">
-        <xsl:variable name="image-src"><xsl:call-template name="resolved-image-src"><xsl:with-param name="url" select="tei:graphic[1]/@url"/></xsl:call-template></xsl:variable>
-        <xsl:variable name="image-alt"><xsl:value-of select="normalize-space(tei:head[1])"/></xsl:variable>
-        <button type="button" class="figure-zoom-trigger media-zoom-trigger" aria-label="Agrandir l'image">
-          <xsl:attribute name="data-lightbox-src"><xsl:value-of select="$image-src"/></xsl:attribute>
-          <xsl:attribute name="data-lightbox-alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
-          <xsl:if test="string-length($image-alt) &gt; 0">
-            <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-alt"/></xsl:attribute>
-          </xsl:if>
-          <img>
-            <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
-            <xsl:attribute name="alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
-          </img>
-        </button>
+      <xsl:when test="tei:graphic[normalize-space(@url) != '']">
+        <xsl:for-each select="tei:graphic[normalize-space(@url) != '']">
+          <xsl:call-template name="render-graphic-image"/>
+        </xsl:for-each>
       </xsl:when>
       <xsl:when test="tei:media[@url and starts-with(@mimeType, 'image/')]">
-        <xsl:variable name="image-src"><xsl:call-template name="resolved-image-src"><xsl:with-param name="url" select="tei:media[1]/@url"/></xsl:call-template></xsl:variable>
-        <xsl:variable name="image-alt"><xsl:value-of select="normalize-space(tei:head[1])"/></xsl:variable>
-        <button type="button" class="figure-zoom-trigger media-zoom-trigger" aria-label="Agrandir l'image">
-          <xsl:attribute name="data-lightbox-src"><xsl:value-of select="$image-src"/></xsl:attribute>
-          <xsl:attribute name="data-lightbox-alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
-          <xsl:if test="string-length($image-alt) &gt; 0">
-            <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-alt"/></xsl:attribute>
-          </xsl:if>
-          <img>
-            <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
-            <xsl:attribute name="alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
-          </img>
-        </button>
+        <xsl:for-each select="tei:media[@url and starts-with(@mimeType, 'image/')]">
+          <xsl:call-template name="render-media-image"/>
+        </xsl:for-each>
       </xsl:when>
       <xsl:when test="tei:media[@url and starts-with(@mimeType, 'audio/')]">
         <audio controls="controls"><source><xsl:attribute name="src"><xsl:call-template name="resolved-audio-src"><xsl:with-param name="url" select="tei:media[1]/@url"/></xsl:call-template></xsl:attribute><xsl:attribute name="type"><xsl:value-of select="tei:media[1]/@mimeType"/></xsl:attribute></source></audio>
@@ -193,10 +175,62 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template name="render-graphic-image">
+    <xsl:variable name="image-src"><xsl:call-template name="resolved-image-src"><xsl:with-param name="url" select="@url"/></xsl:call-template></xsl:variable>
+    <xsl:variable name="image-alt">
+      <xsl:choose>
+        <xsl:when test="normalize-space(../tei:figDesc[1]) != ''"><xsl:value-of select="normalize-space(../tei:figDesc[1])"/></xsl:when>
+        <xsl:otherwise><xsl:value-of select="normalize-space(../tei:head[1])"/></xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <button type="button" class="figure-zoom-trigger media-zoom-trigger" aria-label="Agrandir l'image">
+      <xsl:attribute name="data-lightbox-src"><xsl:value-of select="$image-src"/></xsl:attribute>
+      <xsl:if test="string-length($image-alt) &gt; 0">
+        <xsl:attribute name="data-lightbox-alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
+        <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-alt"/></xsl:attribute>
+      </xsl:if>
+      <img>
+        <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
+        <xsl:if test="string-length($image-alt) &gt; 0">
+          <xsl:attribute name="alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
+        </xsl:if>
+        <xsl:if test="normalize-space(@width) != ''">
+          <xsl:attribute name="width"><xsl:value-of select="@width"/></xsl:attribute>
+        </xsl:if>
+        <xsl:if test="normalize-space(@height) != ''">
+          <xsl:attribute name="height"><xsl:value-of select="@height"/></xsl:attribute>
+        </xsl:if>
+      </img>
+    </button>
+  </xsl:template>
+
+  <xsl:template name="render-media-image">
+    <xsl:variable name="image-src"><xsl:call-template name="resolved-image-src"><xsl:with-param name="url" select="@url"/></xsl:call-template></xsl:variable>
+    <xsl:variable name="image-alt">
+      <xsl:choose>
+        <xsl:when test="normalize-space(../tei:figDesc[1]) != ''"><xsl:value-of select="normalize-space(../tei:figDesc[1])"/></xsl:when>
+        <xsl:otherwise><xsl:value-of select="normalize-space(../tei:head[1])"/></xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <button type="button" class="figure-zoom-trigger media-zoom-trigger" aria-label="Agrandir l'image">
+      <xsl:attribute name="data-lightbox-src"><xsl:value-of select="$image-src"/></xsl:attribute>
+      <xsl:if test="string-length($image-alt) &gt; 0">
+        <xsl:attribute name="data-lightbox-alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
+        <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-alt"/></xsl:attribute>
+      </xsl:if>
+      <img>
+        <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
+        <xsl:if test="string-length($image-alt) &gt; 0">
+          <xsl:attribute name="alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
+        </xsl:if>
+      </img>
+    </button>
+  </xsl:template>
+
   <xsl:template name="resolved-image-src">
     <xsl:param name="url"/>
     <xsl:choose>
-      <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/')"><xsl:value-of select="$url"/></xsl:when>
+      <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/') or starts-with($url, 'data:')"><xsl:value-of select="$url"/></xsl:when>
       <xsl:otherwise><xsl:value-of select="concat($assets_image_base, '/', $url)"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
