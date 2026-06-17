@@ -259,17 +259,13 @@ class TeiToModelParser:
 
             group_type = (child.get("type") or "").strip()
 
-            # Cas important : les parties d'un volume collectif.
-            if SECTION_TYPE_RE.match(group_type):
-                part_title = self._first_text(child, "./tei:head") or self._first_text(
-                    child,
-                    ".//tei:head[@subtype='level1']",
-                )
+            # Cas important : les parties/conteneurs d'un volume collectif.
+            if self._is_group_container(child):
                 yield Division(
                     div_id=child.get("{http://www.w3.org/XML/1998/namespace}id")
                     or f"part-{next(self._generated_div_counter)}",
                     div_type=DivisionType.PART,
-                    title=part_title or "Partie",
+                    title=self._group_title(child) or "Partie",
                 )
                 yield from self._iter_group_divisions(child)
                 continue
@@ -293,6 +289,9 @@ class TeiToModelParser:
             division.contributors.extend(self._parse_title_page_contributors(front))
             division.blocks.extend(self._parse_front_special_blocks(front, division.notes))
 
+        if not division.contributors:
+            division.contributors.extend(self._parse_group_contributors(group_el))
+
         if body is not None:
             division.blocks.extend(self._parse_container_blocks(body, division.notes))
             division.sections.extend(self._parse_direct_sections(body, division.notes))
@@ -302,7 +301,8 @@ class TeiToModelParser:
             division.sections.extend(self._parse_direct_sections(back, division.notes))
 
         division.title = (
-            (division.title_page.title if division.title_page else None)
+            self._group_title(group_el)
+            or (division.title_page.title if division.title_page else None)
             or self._first_text(body, "./tei:head")
             or self._first_text(front, ".//tei:head")
         )
@@ -791,6 +791,51 @@ class TeiToModelParser:
 
         return group_el.find(f".//tei:{name}", namespaces=NS)
 
+    def _is_group_container(self, group_el: ET._Element) -> bool:
+        group_type = (group_el.get("type") or "").strip()
+        if group_type == "part" or SECTION_TYPE_RE.match(group_type):
+            return True
+        return any(
+            self._local_name(child) == "group"
+            for child in group_el
+            if isinstance(child.tag, str)
+        ) and group_type not in {
+            "chapter",
+            "article",
+            "introduction",
+            "conclusion",
+            "bibliography",
+            "foreword",
+            "acknowledgments",
+            "preface",
+            "postface",
+            "appendix",
+            "dedication",
+            "afterword",
+        }
+
+    def _group_title(self, group_el: ET._Element) -> str | None:
+        for attr in ("data-page-title", "data-article-title", "n"):
+            value = (group_el.get(attr) or "").strip()
+            if value:
+                return self._normalize_text(value)
+        return (
+            self._first_text(group_el, "./tei:head")
+            or self._first_text(group_el, "./tei:body/tei:div[1]/tei:head")
+            or self._first_text(group_el, ".//tei:head[@subtype='level1']")
+        )
+
+    def _parse_group_contributors(self, group_el: ET._Element) -> list[Contributor]:
+        value = (group_el.get("data-page-authors") or "").strip()
+        if not value:
+            return []
+        contributors: list[Contributor] = []
+        for raw_entry in value.split("||"):
+            name = raw_entry.split("@@", 1)[0].strip()
+            if name:
+                contributors.append(Contributor(full_name=name, role="author"))
+        return contributors
+
     def _map_division_type(self, raw_type: str | None) -> DivisionType:
         if not raw_type:
             return DivisionType.OTHER
@@ -803,6 +848,7 @@ class TeiToModelParser:
             "preface": DivisionType.PREFACE,
             "introduction": DivisionType.INTRODUCTION,
             "chapter": DivisionType.CHAPTER,
+            "article": DivisionType.CHAPTER,
             "conclusion": DivisionType.CONCLUSION,
             "bibliography": DivisionType.BIBLIOGRAPHY,
             "appendix": DivisionType.APPENDIX,
