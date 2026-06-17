@@ -18,6 +18,7 @@ Elle privilégie :
 
 from dataclasses import dataclass, field
 from datetime import datetime
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -195,6 +196,12 @@ class PdfBuilder:
             )
 
         log_path.write_text("", encoding="utf-8")
+        tex_cache_dir = output_dir / ".texlive-cache"
+        tex_cache_dir.mkdir(parents=True, exist_ok=True)
+        env = os.environ.copy()
+        cache_path = tex_cache_dir.as_posix()
+        env.setdefault("TEXMFVAR", cache_path)
+        env.setdefault("TEXMFCACHE", cache_path)
 
         for run_index in range(1, self.latex_runs + 1):
             command = [
@@ -216,6 +223,7 @@ class PdfBuilder:
                 errors="replace",
                 timeout=self.timeout_seconds,
                 check=False,
+                env=env,
             )
 
             with log_path.open("a", encoding="utf-8") as handle:
