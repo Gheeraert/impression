@@ -16,6 +16,13 @@ from .tei_reader import read_tei_element
 from .tei_writer import write_tei_element
 from .latex_reader import LatexParseError, read_latex, read_latex_document
 from .latex_writer import write_latex, write_latex_document
+from .roundtrip import (
+    Diagnostic,
+    RoundTripResult,
+    compare_tei_elements,
+    run_tei_latex_tei_roundtrip,
+    tei_latex_tei_roundtrip,
+)
 
 __all__ = [
     "DivNode",
@@ -28,10 +35,15 @@ __all__ = [
     "ParagraphNode",
     "RefNode",
     "TextNode",
+    "Diagnostic",
     "LatexParseError",
+    "RoundTripResult",
+    "compare_tei_elements",
     "read_latex",
     "read_latex_document",
     "read_tei_element",
+    "run_tei_latex_tei_roundtrip",
+    "tei_latex_tei_roundtrip",
     "write_latex",
     "write_latex_document",
     "write_tei_element",
