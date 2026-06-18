@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from .config import BuildConfig
 from .local_server import PreviewServer
+from .reversible_integration import run_reversible_export_for_file
 from .site_builder import SiteBuilder, has_editor_pdf
 
 
@@ -40,6 +41,7 @@ class App(ttk.Frame):
     def _build_ui(self) -> None:
         self.master.title("IMPRESSIONS — livre web TEI")
         self.master.geometry("1080x780")
+        self._build_menu()
         self.pack(fill="both", expand=True)
 
         title = ttk.Label(
@@ -111,6 +113,16 @@ class App(ttk.Frame):
         self._refresh_pdf_export_controls()
         self._log("Interface prête.")
 
+    def _build_menu(self) -> None:
+        menubar = tk.Menu(self.master)
+        tools_menu = tk.Menu(menubar, tearoff=False)
+        tools_menu.add_command(
+            label="Tester la réversibilité TEI ↔ LaTeX…",
+            command=self._run_reversible_export,
+        )
+        menubar.add_cascade(label="Outils", menu=tools_menu)
+        self.master.config(menu=menubar)
+
     def _add_path_selector(self, row: int, label: str, variable: tk.StringVar, browse_command, button_text: str) -> None:
         ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
         ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
@@ -140,6 +152,43 @@ class App(ttk.Frame):
         if path:
             self.master_xml_var.set(path)
             self._log(f"Fichier maître : {path}")
+
+    def _run_reversible_export(self) -> None:
+        path = filedialog.askopenfilename(
+            title="Choisir un fichier XML TEI à tester",
+            filetypes=[("Fichiers XML", "*.xml"), ("Tous les fichiers", "*.*")],
+        )
+        if not path:
+            return
+
+        output = filedialog.askdirectory(
+            title="Choisir le dossier de sortie expérimental (annuler = dossier du XML)"
+        )
+        output_dir = Path(output) if output else None
+
+        try:
+            result = run_reversible_export_for_file(Path(path), output_dir)
+        except Exception as exc:
+            self._log(f"Erreur export réversible : {exc}")
+            self._log(traceback.format_exc())
+            messagebox.showerror("Réversibilité TEI / LaTeX", str(exc))
+            return
+
+        self._log(result.message)
+        self._log(f"LaTeX réversible : {result.latex_path}")
+        self._log(f"XML round-trip : {result.roundtrip_xml_path}")
+        self._log(f"Diagnostics : {result.diagnostics_path}")
+
+        details = (
+            f"{result.message}\n\n"
+            f"LaTeX : {result.latex_path}\n"
+            f"XML round-trip : {result.roundtrip_xml_path}\n"
+            f"Diagnostics : {result.diagnostics_path}"
+        )
+        if result.success:
+            messagebox.showinfo("Réversibilité TEI / LaTeX", details)
+        else:
+            messagebox.showwarning("Réversibilité TEI / LaTeX", details)
 
     def _choose_xml_files(self) -> None:
         paths = filedialog.askopenfilenames(title="Choisir un ou plusieurs fichiers XML", filetypes=[("Fichiers XML", "*.xml")])
