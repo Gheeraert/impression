@@ -291,11 +291,12 @@ def test_download_button_css_is_button_like_and_reading_line_height_is_compact()
     css = (Path(__file__).resolve().parents[1] / 'purh_site' / 'resources' / 'site.css').read_text(encoding='utf-8')
 
     assert '.download-button {' in css
+    assert '.download-button::before' in css
     assert 'display: inline-flex;' in css
-    assert 'border-radius: 999px;' in css
+    assert 'border-radius: 14px;' in css
     assert 'text-decoration: none;' in css
     assert '.download-button:focus-visible' in css
-    assert 'line-height: 1.58;' in css
+    assert 'line-height: 1.48;' in css
     assert ';10' not in css
 
 
