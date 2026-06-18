@@ -20,6 +20,9 @@ Inline or braced-content commands:
 \teiRef[...]{...}
 \teiItem[...]{...}
 \teiGraphic[...]
+\teiPtr[...]
+\teiLb[...]
+\teiPb[...]
 \teiTitle[...]{...}
 \teiForeign[...]{...}
 \teiTerm[...]{...}
@@ -34,8 +37,10 @@ Inline or braced-content commands:
 \teiSaid[...]{...}
 ```
 
-The scholarly inline commands above are braced-content macros. Their
-attributes remain ordinary options written as `key={value}`.
+The scholarly inline commands above are braced-content macros. `teiGraphic`,
+`teiPtr`, `teiLb`, and `teiPb` are empty macros with no braced content; they
+represent empty TEI elements placed in the document flow. Attributes remain
+ordinary options written as `key={value}`.
 
 Environment forms:
 
@@ -97,6 +102,8 @@ Current conventions:
   `when`, `from`, `to`, `notBefore`, `notAfter`, `calendar`, and `level`.
   Citation and bibliography attributes such as `source`, `corresp`, `resp`,
   `who`, and `cert` follow the same rule.
+  Milestone attributes such as `ed`, `facs`, `rendition`, and `target` also
+  follow the same rule.
 - Unknown attributes are preserved as far as possible.
 - Attribute values are always braced: `key={value}`.
 - Options are separated by commas.

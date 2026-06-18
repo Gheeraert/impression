@@ -23,6 +23,9 @@ it is not a request to route this code into the application.
 | `item` | yes | yes | `teiItem` macro | yes | yes | Preserves `n` and inline children. |
 | `figure` | yes | yes | `teiFigure` environment | yes | yes | Preserves `head` and `graphic` children. |
 | `graphic` | yes | yes | `teiGraphic` macro | yes | yes | Empty-content macro with attributes such as `target`. |
+| `ptr` | yes | yes | `teiPtr` macro | yes | yes | Empty milestone/link element, preserves placement and attributes. |
+| `lb` | yes | yes | `teiLb` macro | yes | yes | Empty line-break milestone, preserves placement and attributes. |
+| `pb` | yes | yes | `teiPb` macro | yes | yes | Empty page-break milestone, preserves placement and attributes. |
 | `title` | yes | yes | `teiTitle` macro | yes | yes | Preserves attributes such as `level`. |
 | `foreign` | yes | yes | `teiForeign` macro | yes | yes | Scholarly inline macro. |
 | `term` | yes | yes | `teiTerm` macro | yes | yes | Scholarly inline macro. |
@@ -62,6 +65,9 @@ it is not a request to route this code into the application.
 - `resp`
 - `who`
 - `cert`
+- `ed`
+- `facs`
+- `rendition`
 - simple unknown attributes, preserved as options in controlled LaTeX where possible.
 
 ## Elements To Cover Next
@@ -70,9 +76,6 @@ These elements are not yet specialized in the controlled LaTeX grammar. They
 should continue to round-trip through the generic `teiElement` fallback until a
 future pass gives them dedicated semantics.
 
-- `ptr`
-- `lb`
-- `pb`
 - finer bibliographic elements such as `author`, `editor`, `publisher`, `biblScope`, and `idno`
 - `table`
 - `row`

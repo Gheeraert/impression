@@ -21,7 +21,6 @@ class LatexParseError(ValueError):
 MACRO_TO_ELEMENT = {
     "teiDate": "date",
     "teiForeign": "foreign",
-    "teiGraphic": "graphic",
     "teiHead": "head",
     "teiHi": "hi",
     "teiItem": "item",
@@ -38,6 +37,13 @@ MACRO_TO_ELEMENT = {
     "teiSaid": "said",
     "teiTerm": "term",
     "teiTitle": "title",
+}
+
+EMPTY_MACRO_TO_ELEMENT = {
+    "teiGraphic": "graphic",
+    "teiLb": "lb",
+    "teiPb": "pb",
+    "teiPtr": "ptr",
 }
 
 ENVIRONMENT_TO_ELEMENT = {
@@ -119,9 +125,9 @@ class _Parser:
     def _parse_macro(self, macro_name: str) -> ElementNode:
         self.pos += len(macro_name) + 1
         attrs = self._parse_options()
+        if macro_name in EMPTY_MACRO_TO_ELEMENT:
+            return make_element_node(EMPTY_MACRO_TO_ELEMENT[macro_name], attrs, [], namespace=TEI_NS)
         element_name = MACRO_TO_ELEMENT[macro_name]
-        if macro_name == "teiGraphic":
-            return make_element_node(element_name, attrs, [], namespace=TEI_NS)
         if self.pos >= len(self.latex) or self.latex[self.pos] != "{":
             raise LatexParseError(f"Expected braced content for \\{macro_name}.")
         content = self._read_group()
@@ -193,7 +199,8 @@ class _Parser:
         raise LatexParseError("Unclosed braced group.")
 
     def _controlled_macro_at_pos(self) -> str | None:
-        for macro_name in sorted(MACRO_TO_ELEMENT, key=len, reverse=True):
+        macro_names = [*MACRO_TO_ELEMENT, *EMPTY_MACRO_TO_ELEMENT]
+        for macro_name in sorted(macro_names, key=len, reverse=True):
             if self.latex.startswith(f"\\{macro_name}", self.pos):
                 return macro_name
         return None

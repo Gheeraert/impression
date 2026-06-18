@@ -278,6 +278,36 @@ class BiblNode(ElementNode):
         super().__init__("bibl", attrs or {}, children or [], namespace)
 
 
+class PtrNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("ptr", attrs or {}, children or [], namespace)
+
+
+class LbNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("lb", attrs or {}, children or [], namespace)
+
+
+class PbNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("pb", attrs or {}, children or [], namespace)
+
+
 SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
     "bibl": BiblNode,
     "cit": CitNode,
@@ -298,6 +328,9 @@ SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
     "date": DateNode,
     "num": NumNode,
     "label": LabelNode,
+    "lb": LbNode,
+    "pb": PbNode,
+    "ptr": PtrNode,
     "q": QNode,
     "said": SaidNode,
 }

@@ -21,10 +21,16 @@ ENVIRONMENT_ELEMENTS = {
     "quote": "teiQuote",
 }
 
+EMPTY_MACRO_ELEMENTS = {
+    "graphic": "teiGraphic",
+    "lb": "teiLb",
+    "pb": "teiPb",
+    "ptr": "teiPtr",
+}
+
 MACRO_ELEMENTS = {
     "date": "teiDate",
     "foreign": "teiForeign",
-    "graphic": "teiGraphic",
     "head": "teiHead",
     "hi": "teiHi",
     "item": "teiItem",
@@ -76,6 +82,8 @@ def _write_element(node: ElementNode) -> str:
     name = node.local_name
     if name in ENVIRONMENT_ELEMENTS:
         return _environment(ENVIRONMENT_ELEMENTS[name], _options(node), _children_latex(node))
+    if name in EMPTY_MACRO_ELEMENTS:
+        return _empty_macro(EMPTY_MACRO_ELEMENTS[name], _options(node))
     if name in MACRO_ELEMENTS:
         return _macro(MACRO_ELEMENTS[name], _options(node), _children_latex(node))
     return _generic_element(node)
@@ -99,6 +107,10 @@ def _environment(name: str, options: str, content: str) -> str:
 def _macro(name: str, options: str, content: str) -> str:
     if content:
         return f"\\{name}{options}{{{content}}}"
+    return f"\\{name}{options}"
+
+
+def _empty_macro(name: str, options: str) -> str:
     return f"\\{name}{options}"
 
 
