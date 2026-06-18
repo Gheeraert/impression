@@ -22,6 +22,7 @@ it is not a request to route this code into the application.
 | `seg` | yes | yes | generic `teiElement` environment | yes | yes | Not specialized; preserved by fallback. |
 | unknown TEI element | yes | yes | generic `teiElement` environment | yes | yes | Preserves name, attributes, children, and mixed content. |
 | nested unknown TEI element | yes | yes | nested `teiElement` environment | yes | yes | Preserves nesting and order. |
+| `title`, `persName`, `placeName`, `date`, `bibl`, `cit` | yes | yes | generic `teiElement` environment | yes | yes | Realistic-fragment proof only; not specialized yet. |
 
 ## Covered Attributes
 
