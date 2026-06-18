@@ -338,13 +338,67 @@ class CellNode(ElementNode):
         super().__init__("cell", attrs or {}, children or [], namespace)
 
 
+class AuthorNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("author", attrs or {}, children or [], namespace)
+
+
+class EditorNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("editor", attrs or {}, children or [], namespace)
+
+
+class PublisherNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("publisher", attrs or {}, children or [], namespace)
+
+
+class BiblScopeNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("biblScope", attrs or {}, children or [], namespace)
+
+
+class IdnoNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("idno", attrs or {}, children or [], namespace)
+
+
 SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
+    "author": AuthorNode,
     "bibl": BiblNode,
+    "biblScope": BiblScopeNode,
     "cit": CitNode,
     "div": DivNode,
+    "editor": EditorNode,
     "head": HeadNode,
     "p": ParagraphNode,
     "hi": HiNode,
+    "idno": IdnoNode,
     "note": NoteNode,
     "ref": RefNode,
     "figure": FigureNode,
@@ -360,6 +414,7 @@ SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
     "label": LabelNode,
     "lb": LbNode,
     "pb": PbNode,
+    "publisher": PublisherNode,
     "ptr": PtrNode,
     "q": QNode,
     "said": SaidNode,

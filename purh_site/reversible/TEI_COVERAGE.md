@@ -19,6 +19,11 @@ it is not a request to route this code into the application.
 | `said` | yes | yes | `teiSaid` macro | yes | yes | Conserves attributes such as `who`. |
 | `cit` | yes | yes | `teiCit` environment | yes | yes | Conservative serialization, not an interpreted citation model. |
 | `bibl` | yes | yes | `teiBibl` environment | yes | yes | Conservative serialization, not structured bibliography handling. |
+| `author` | yes | yes | `teiAuthor` macro | yes | yes | Conservative bibliography macro; nested names may still use fallback. |
+| `editor` | yes | yes | `teiEditor` macro | yes | yes | Conservative bibliography macro. |
+| `publisher` | yes | yes | `teiPublisher` macro | yes | yes | Conservative bibliography macro. |
+| `biblScope` | yes | yes | `teiBiblScope` macro | yes | yes | Preserves scope attributes such as `unit`, `from`, `to`. |
+| `idno` | yes | yes | `teiIdno` macro | yes | yes | Preserves identifier attributes such as `type`. |
 | `list` | yes | yes | `teiList` environment | yes | yes | Preserves ordered item children. |
 | `item` | yes | yes | `teiItem` macro | yes | yes | Preserves `n` and inline children. |
 | `figure` | yes | yes | `teiFigure` environment | yes | yes | Preserves `head` and `graphic` children. |
@@ -73,6 +78,7 @@ it is not a request to route this code into the application.
 - `rendition`
 - `rows`
 - `cols`
+- `unit`
 - simple unknown attributes, preserved as options in controlled LaTeX where possible.
 
 ## Elements To Cover Next
@@ -81,4 +87,4 @@ These elements are not yet specialized in the controlled LaTeX grammar. They
 should continue to round-trip through the generic `teiElement` fallback until a
 future pass gives them dedicated semantics.
 
-- finer bibliographic elements such as `author`, `editor`, `publisher`, `biblScope`, and `idno`
+- other header or bibliographic elements such as `forename`, `surname`, `affiliation`, `address`, `pubPlace`, `availability`, and `licence`

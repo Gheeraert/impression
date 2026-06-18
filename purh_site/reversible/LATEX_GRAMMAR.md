@@ -35,6 +35,11 @@ Inline or braced-content commands:
 \teiLabel[...]{...}
 \teiQ[...]{...}
 \teiSaid[...]{...}
+\teiAuthor[...]{...}
+\teiEditor[...]{...}
+\teiPublisher[...]{...}
+\teiBiblScope[...]{...}
+\teiIdno[...]{...}
 ```
 
 Content macros always have a braced group, even when their content is empty,
@@ -42,6 +47,10 @@ for example `\teiP{}` or `\teiHi[rend={italic}]{}`. `teiGraphic`, `teiPtr`,
 `teiLb`, and `teiPb` are the only empty macros; they must not have braced
 content and represent empty TEI elements placed in the document flow.
 Attributes remain ordinary options written as `key={value}`.
+
+The bibliography macros `teiAuthor`, `teiEditor`, `teiPublisher`,
+`teiBiblScope`, and `teiIdno` are conservative serializations. They do not yet
+form an interpreted bibliographic model.
 
 Environment forms:
 
@@ -123,6 +132,8 @@ Current conventions:
   follow the same rule.
   Table attributes such as `rows`, `cols`, `role`, `rend`, and `n` also follow
   the same rule.
+  Bibliographic fine-grained attributes such as `unit`, `from`, `to`,
+  `subtype`, and `role` also follow the same rule.
 - Unknown attributes are preserved as far as possible.
 - Attribute values are always braced: `key={value}`.
 - Options are separated by commas.

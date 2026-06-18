@@ -19,10 +19,14 @@ class LatexParseError(ValueError):
 
 
 MACRO_TO_ELEMENT = {
+    "teiAuthor": "author",
+    "teiBiblScope": "biblScope",
     "teiDate": "date",
+    "teiEditor": "editor",
     "teiForeign": "foreign",
     "teiHead": "head",
     "teiHi": "hi",
+    "teiIdno": "idno",
     "teiItem": "item",
     "teiLabel": "label",
     "teiName": "name",
@@ -32,6 +36,7 @@ MACRO_TO_ELEMENT = {
     "teiP": "p",
     "teiPersName": "persName",
     "teiPlaceName": "placeName",
+    "teiPublisher": "publisher",
     "teiQ": "q",
     "teiRef": "ref",
     "teiSaid": "said",

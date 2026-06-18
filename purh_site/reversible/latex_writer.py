@@ -32,10 +32,14 @@ EMPTY_MACRO_ELEMENTS = {
 }
 
 MACRO_ELEMENTS = {
+    "author": "teiAuthor",
+    "biblScope": "teiBiblScope",
     "date": "teiDate",
+    "editor": "teiEditor",
     "foreign": "teiForeign",
     "head": "teiHead",
     "hi": "teiHi",
+    "idno": "teiIdno",
     "item": "teiItem",
     "label": "teiLabel",
     "name": "teiName",
@@ -45,6 +49,7 @@ MACRO_ELEMENTS = {
     "p": "teiP",
     "persName": "teiPersName",
     "placeName": "teiPlaceName",
+    "publisher": "teiPublisher",
     "q": "teiQ",
     "ref": "teiRef",
     "said": "teiSaid",

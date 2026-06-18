@@ -60,7 +60,7 @@ def test_cit_with_quote_and_bibl_preserves_child_order() -> None:
     assert result.emitted.xpath("boolean(./tei:bibl[@source='#src1'])", namespaces=NS)
 
 
-def test_bibl_with_structured_children_keeps_unknown_children_by_fallback() -> None:
+def test_bibl_with_structured_children_keeps_children_and_specialized_bibl_macros() -> None:
     result = run(
         '<bibl xmlns="http://www.tei-c.org/ns/1.0" xml:lang="fr" type="book">'
         '<title level="m">Titre</title>, '
@@ -74,8 +74,8 @@ def test_bibl_with_structured_children_keeps_unknown_children_by_fallback() -> N
     assert "\\begin{teiBibl}[xmllang={fr},type={book}]" in result.latex
     assert "\\teiTitle[level={m}]{Titre}" in result.latex
     assert "\\teiDate[when={2020}]{2020}" in result.latex
-    assert "\\begin{teiElement}[name={author}]" in result.latex
-    assert "\\begin{teiElement}[name={idno},type={isbn}]" in result.latex
+    assert "\\teiAuthor{Autrice}" in result.latex
+    assert "\\teiIdno[type={isbn}]{123}" in result.latex
     assert result.emitted.get(f"{{{XML_NS}}}lang") == "fr"
     assert result.emitted.get("type") == "book"
     assert result.emitted.xpath("boolean(./tei:author)", namespaces=NS)
