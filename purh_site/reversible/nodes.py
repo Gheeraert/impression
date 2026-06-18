@@ -138,6 +138,106 @@ class FigureNode(ElementNode):
         super().__init__("figure", attrs or {}, children or [], namespace)
 
 
+class TitleNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("title", attrs or {}, children or [], namespace)
+
+
+class ForeignNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("foreign", attrs or {}, children or [], namespace)
+
+
+class TermNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("term", attrs or {}, children or [], namespace)
+
+
+class NameNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("name", attrs or {}, children or [], namespace)
+
+
+class PersNameNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("persName", attrs or {}, children or [], namespace)
+
+
+class PlaceNameNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("placeName", attrs or {}, children or [], namespace)
+
+
+class OrgNameNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("orgName", attrs or {}, children or [], namespace)
+
+
+class DateNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("date", attrs or {}, children or [], namespace)
+
+
+class NumNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("num", attrs or {}, children or [], namespace)
+
+
+class LabelNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("label", attrs or {}, children or [], namespace)
+
+
 SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
     "div": DivNode,
     "head": HeadNode,
@@ -146,6 +246,16 @@ SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
     "note": NoteNode,
     "ref": RefNode,
     "figure": FigureNode,
+    "title": TitleNode,
+    "foreign": ForeignNode,
+    "term": TermNode,
+    "name": NameNode,
+    "persName": PersNameNode,
+    "placeName": PlaceNameNode,
+    "orgName": OrgNameNode,
+    "date": DateNode,
+    "num": NumNode,
+    "label": LabelNode,
 }
 
 

@@ -86,15 +86,17 @@ def test_roundtrip_unknown_nested_elements_have_no_diagnostics() -> None:
     )
 
 
-def test_roundtrip_future_inline_elements_use_generic_fallback() -> None:
+def test_roundtrip_specialized_future_inline_elements_use_dedicated_macros() -> None:
     result = assert_clean_roundtrip(
         '<p xmlns="http://www.tei-c.org/ns/1.0">'
         'Un <title level="m">titre</title> et un <persName ref="#p1">nom</persName>.'
         "</p>"
     )
 
-    assert "\\begin{teiElement}[name={title},level={m}]" in result.latex
-    assert "\\begin{teiElement}[name={persName},ref={\\#p1}]" in result.latex
+    assert "\\teiTitle[level={m}]{titre}" in result.latex
+    assert "\\teiPersName[ref={\\#p1}]{nom}" in result.latex
+    assert "name={title}" not in result.latex
+    assert "name={persName}" not in result.latex
     assert result.emitted.xpath("boolean(./tei:title[@level='m'])", namespaces={"tei": TEI_NS})
     assert result.emitted.xpath("boolean(./tei:persName[@ref='#p1'])", namespaces={"tei": TEI_NS})
 

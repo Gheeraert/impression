@@ -73,11 +73,11 @@ def test_realistic_fragment_latex_uses_specialized_macros_and_generic_fallbacks(
     assert "\\begin{teiList}[type={ordered}]" in latex
     assert "\\teiItem[n={1}]" in latex
     assert "\\teiItem[n={2}]" in latex
-    assert "\\begin{teiElement}[name={title},level={m}]" in latex
-    assert "\\begin{teiElement}[name={title},level={a}]" in latex
-    assert "\\begin{teiElement}[name={persName},ref={\\#baudelaire}]" in latex
-    assert "\\begin{teiElement}[name={persName},ref={\\#p1}]" in latex
-    assert "\\begin{teiElement}[name={placeName},ref={\\#paris}]" in latex
-    assert "\\begin{teiElement}[name={date},when={1857}]" in latex
+    assert "\\teiTitle[level={m}]" in latex
+    assert "\\teiTitle[level={a}]" in latex
+    assert "\\teiPersName[ref={\\#baudelaire}]" in latex
+    assert "\\teiPersName[ref={\\#p1}]" in latex
+    assert "\\teiPlaceName[ref={\\#paris}]" in latex
+    assert "\\teiDate[when={1857}]" in latex
     assert "\\begin{teiElement}[name={bibl}]" in latex
     assert "\\begin{teiElement}[name={cit}]" in latex

@@ -20,13 +20,23 @@ ENVIRONMENT_ELEMENTS = {
 }
 
 MACRO_ELEMENTS = {
+    "date": "teiDate",
+    "foreign": "teiForeign",
     "graphic": "teiGraphic",
     "head": "teiHead",
     "hi": "teiHi",
     "item": "teiItem",
+    "label": "teiLabel",
+    "name": "teiName",
     "note": "teiNote",
+    "num": "teiNum",
+    "orgName": "teiOrgName",
     "p": "teiP",
+    "persName": "teiPersName",
+    "placeName": "teiPlaceName",
     "ref": "teiRef",
+    "term": "teiTerm",
+    "title": "teiTitle",
 }
 
 

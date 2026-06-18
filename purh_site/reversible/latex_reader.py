@@ -19,13 +19,23 @@ class LatexParseError(ValueError):
 
 
 MACRO_TO_ELEMENT = {
+    "teiDate": "date",
+    "teiForeign": "foreign",
     "teiGraphic": "graphic",
     "teiHead": "head",
     "teiHi": "hi",
     "teiItem": "item",
+    "teiLabel": "label",
+    "teiName": "name",
     "teiNote": "note",
+    "teiNum": "num",
+    "teiOrgName": "orgName",
     "teiP": "p",
+    "teiPersName": "persName",
+    "teiPlaceName": "placeName",
     "teiRef": "ref",
+    "teiTerm": "term",
+    "teiTitle": "title",
 }
 
 ENVIRONMENT_TO_ELEMENT = {

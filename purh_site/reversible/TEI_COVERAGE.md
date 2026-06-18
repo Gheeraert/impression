@@ -19,10 +19,20 @@ it is not a request to route this code into the application.
 | `item` | yes | yes | `teiItem` macro | yes | yes | Preserves `n` and inline children. |
 | `figure` | yes | yes | `teiFigure` environment | yes | yes | Preserves `head` and `graphic` children. |
 | `graphic` | yes | yes | `teiGraphic` macro | yes | yes | Empty-content macro with attributes such as `target`. |
+| `title` | yes | yes | `teiTitle` macro | yes | yes | Preserves attributes such as `level`. |
+| `foreign` | yes | yes | `teiForeign` macro | yes | yes | Scholarly inline macro. |
+| `term` | yes | yes | `teiTerm` macro | yes | yes | Scholarly inline macro. |
+| `name` | yes | yes | `teiName` macro | yes | yes | Scholarly inline macro. |
+| `persName` | yes | yes | `teiPersName` macro | yes | yes | Preserves `ref` and similar attributes. |
+| `placeName` | yes | yes | `teiPlaceName` macro | yes | yes | Preserves `ref` and similar attributes. |
+| `orgName` | yes | yes | `teiOrgName` macro | yes | yes | Scholarly inline macro. |
+| `date` | yes | yes | `teiDate` macro | yes | yes | Preserves date attributes such as `when`. |
+| `num` | yes | yes | `teiNum` macro | yes | yes | Preserves attributes such as `type`. |
+| `label` | yes | yes | `teiLabel` macro | yes | yes | Preserves attributes such as `n`. |
 | `seg` | yes | yes | generic `teiElement` environment | yes | yes | Not specialized; preserved by fallback. |
 | unknown TEI element | yes | yes | generic `teiElement` environment | yes | yes | Preserves name, attributes, children, and mixed content. |
 | nested unknown TEI element | yes | yes | nested `teiElement` environment | yes | yes | Preserves nesting and order. |
-| `title`, `persName`, `placeName`, `date`, `bibl`, `cit` | yes | yes | generic `teiElement` environment | yes | yes | Realistic-fragment proof only; not specialized yet. |
+| `bibl`, `cit` | yes | yes | generic `teiElement` environment | yes | yes | Realistic-fragment proof only; not specialized yet. |
 
 ## Covered Attributes
 
@@ -35,6 +45,15 @@ it is not a request to route this code into the application.
 - `target`
 - `n`
 - `role`
+- `ref`
+- `key`
+- `when`
+- `from`
+- `to`
+- `notBefore`
+- `notAfter`
+- `calendar`
+- `level`
 - simple unknown attributes, preserved as options in controlled LaTeX where possible.
 
 ## Elements To Cover Next
@@ -43,16 +62,6 @@ These elements are not yet specialized in the controlled LaTeX grammar. They
 should continue to round-trip through the generic `teiElement` fallback until a
 future pass gives them dedicated semantics.
 
-- `title`
-- `foreign`
-- `term`
-- `name`
-- `persName`
-- `placeName`
-- `orgName`
-- `date`
-- `num`
-- `label`
 - `ptr`
 - `lb`
 - `pb`

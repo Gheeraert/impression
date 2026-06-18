@@ -20,7 +20,20 @@ Inline or braced-content commands:
 \teiRef[...]{...}
 \teiItem[...]{...}
 \teiGraphic[...]
+\teiTitle[...]{...}
+\teiForeign[...]{...}
+\teiTerm[...]{...}
+\teiName[...]{...}
+\teiPersName[...]{...}
+\teiPlaceName[...]{...}
+\teiOrgName[...]{...}
+\teiDate[...]{...}
+\teiNum[...]{...}
+\teiLabel[...]{...}
 ```
+
+The scholarly inline commands above are braced-content macros. Their
+attributes remain ordinary options written as `key={value}`.
 
 Environment forms:
 
@@ -67,7 +80,8 @@ Current conventions:
 - `xml:id` becomes `xmlid`.
 - `xml:lang` becomes `xmllang`.
 - Ordinary TEI attributes keep their local name, for example `type`,
-  `subtype`, `rend`, `place`, `target`, `n`, and `role`.
+  `subtype`, `rend`, `place`, `target`, `n`, `role`, `ref`, `key`,
+  `when`, `from`, `to`, `notBefore`, `notAfter`, `calendar`, and `level`.
 - Unknown attributes are preserved as far as possible.
 - Attribute values are always braced: `key={value}`.
 - Options are separated by commas.
