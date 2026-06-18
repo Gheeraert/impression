@@ -287,6 +287,18 @@ def test_download_links_are_rendered_as_buttons(tmp_path: Path) -> None:
     assert '<button class="download-button"' not in index_html
 
 
+def test_download_button_css_is_button_like_and_reading_line_height_is_compact() -> None:
+    css = (Path(__file__).resolve().parents[1] / 'purh_site' / 'resources' / 'site.css').read_text(encoding='utf-8')
+
+    assert '.download-button {' in css
+    assert 'display: inline-flex;' in css
+    assert 'border-radius: 999px;' in css
+    assert 'text-decoration: none;' in css
+    assert '.download-button:focus-visible' in css
+    assert 'line-height: 1.58;' in css
+    assert ';10' not in css
+
+
 def test_editor_pdf_disables_generated_latex_and_pdf_even_when_requested(tmp_path: Path) -> None:
     xml_path = tmp_path / 'book.xml'
     xml_path.write_text(TEI_SAMPLE, encoding='utf-8')

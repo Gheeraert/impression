@@ -19,7 +19,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   color: var(--text);
   background: var(--bg);
-  line-height: 1.72;
+  line-height: 1.58;
 }
 
 a { color: var(--accent); }
@@ -221,34 +221,45 @@ a { color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: 22px;
   background: var(--panel-2);
+  line-height: 1.56;
 }
 
 .home-panel--downloads .download-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .download-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.9rem;
-  padding: 0.78rem 1.15rem;
+  min-height: 2.75rem;
+  padding: 0.76rem 1.2rem;
   border: 1px solid var(--accent);
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--accent);
+  color: #fff;
   text-decoration: none;
-  font: 600 0.95rem/1.2 Arial, Helvetica, sans-serif;
-  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  font: 700 0.95rem/1.2 Arial, Helvetica, sans-serif;
+  box-shadow: 0 0.25rem 0.75rem rgba(20, 38, 70, 0.18);
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .download-button:hover,
 .download-button:focus-visible {
-  background: #fff;
-  border-color: var(--accent);
+  background: #183b72;
+  border-color: #183b72;
+  box-shadow: 0 0.42rem 1rem rgba(20, 38, 70, 0.24);
+  color: #fff;
+  text-decoration: none;
   transform: translateY(-1px);
+}
+
+.download-button:focus-visible {
+  outline: 3px solid rgba(35, 75, 139, 0.28);
+  outline-offset: 3px;
 }
 
 .home-hero-grid,
@@ -966,5 +977,5 @@ sub.tei-sub {
   width: auto;
   height: auto;
   opacity: 0.96;
-  transition: opacity 0.2s ease, transform 0.2s ease;10
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }

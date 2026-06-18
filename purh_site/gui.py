@@ -28,6 +28,7 @@ class App(ttk.Frame):
         self.pdf_export_mode_var = tk.StringVar(value="none")
         self.pdf_export_status_var = tk.StringVar(value="")
         self.pdf_export_widgets: list[ttk.Radiobutton] = []
+        self.build_button: ttk.Button | None = None
         self.xml_files: list[Path] = []
         self.port_var = tk.StringVar(value="8000,8080")
         self.auto_preview_var = tk.BooleanVar(value=True)
@@ -89,7 +90,8 @@ class App(ttk.Frame):
         button_bar.grid(row=12, column=0, columnspan=3, sticky="w", pady=(8, 12))
         ttk.Button(button_bar, text="Charger config…", command=self._load_config).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(button_bar, text="Enregistrer config…", command=self._save_config).grid(row=0, column=1, padx=(0, 8))
-        ttk.Button(button_bar, text="Construire le site", command=self._build).grid(row=0, column=2, padx=(0, 8))
+        self.build_button = ttk.Button(button_bar, text="Construire le site", command=self._build)
+        self.build_button.grid(row=0, column=2, padx=(0, 8))
         ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0,
                                                                                                               column=3,
                                                                                                               padx=(
@@ -321,6 +323,7 @@ class App(ttk.Frame):
         master_xml_text = self.master_xml_var.get().strip()
         self._refresh_pdf_export_controls()
 
+        wait_dialog = self._show_build_wait_dialog()
         try:
             if master_xml_text:
                 master_xml = Path(master_xml_text).resolve()
@@ -354,6 +357,54 @@ class App(ttk.Frame):
             self._log(f"Erreur : {exc}")
             self._log(traceback.format_exc())
             messagebox.showerror("Erreur pendant le build", str(exc))
+        finally:
+            self._close_build_wait_dialog(wait_dialog)
+
+    def _show_build_wait_dialog(self) -> tk.Toplevel:
+        if self.build_button is not None:
+            self.build_button.configure(state="disabled")
+
+        dialog = tk.Toplevel(self.master)
+        dialog.title("Génération en cours")
+        dialog.resizable(False, False)
+        dialog.transient(self.master)
+        dialog.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        frame = ttk.Frame(dialog, padding=18)
+        frame.grid(row=0, column=0, sticky="nsew")
+        ttk.Label(
+            frame,
+            text="Génération du site en cours…",
+            font=("TkDefaultFont", 10, "bold"),
+        ).grid(row=0, column=0, sticky="w")
+        ttk.Label(
+            frame,
+            text="Veuillez patienter pendant la génération.",
+        ).grid(row=1, column=0, sticky="w", pady=(6, 12))
+        progress = ttk.Progressbar(frame, mode="indeterminate", length=280)
+        progress.grid(row=2, column=0, sticky="ew")
+        progress.start(12)
+
+        dialog.update_idletasks()
+        x = self.master.winfo_rootx() + max((self.master.winfo_width() - dialog.winfo_width()) // 2, 0)
+        y = self.master.winfo_rooty() + max((self.master.winfo_height() - dialog.winfo_height()) // 2, 0)
+        dialog.geometry(f"+{x}+{y}")
+        dialog.lift(self.master)
+        self.update_idletasks()
+        return dialog
+
+    def _close_build_wait_dialog(self, dialog: tk.Toplevel | None) -> None:
+        if dialog is not None:
+            try:
+                for child in dialog.winfo_children():
+                    for grandchild in child.winfo_children():
+                        if isinstance(grandchild, ttk.Progressbar):
+                            grandchild.stop()
+                dialog.destroy()
+            except tk.TclError:
+                pass
+        if self.build_button is not None:
+            self.build_button.configure(state="normal")
 
     def _preview_result(self, result) -> None:
         ports = self._parse_ports()
