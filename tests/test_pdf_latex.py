@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions
+from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions, _short_running_title
 from purh_site.pdf_builder import PdfBuilder
 from purh_site.semantic_model import BibliographyBlock, FigureBlock, Italic, NoteRef, Paragraph, TableBlock, TextRun
 from purh_site.tei_to_model import parse_normalized_tei
@@ -849,6 +849,121 @@ def test_latex_renderer_purh_style_activates_running_heads(tmp_path: Path) -> No
     assert r"\fancyhead[RO]{\PURHHeaderFont\thepage}" in latex
     assert r"\renewcommand{\chaptermark}[1]{\markboth{#1}{}}" in latex
     assert r"\fancypagestyle{plain}" in latex
+
+
+def test_title_page_puts_publisher_at_bottom(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+    title_page = latex[latex.index(r"\begin{titlepage}"):latex.index(r"\end{titlepage}")]
+
+    assert r"\begin{titlepage}" in title_page
+    assert r"\thispagestyle{empty}" in title_page
+    assert title_page.index(r"\vfill") < title_page.index("PURH")
+
+
+def test_table_of_contents_is_at_end(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert latex.index(r"\chapter{Chapitre PDF}") < latex.index(r"\tableofcontents")
+    assert latex.index(r"\tableofcontents") < latex.index(r"\end{document}")
+    assert r"\tableofcontents" not in latex[latex.index(r"\frontmatter"):latex.index(r"\mainmatter")]
+
+
+def test_starred_chapters_reset_running_headers(tmp_path: Path) -> None:
+    xml_path = tmp_path / "front.normalized.xml"
+    xml_path.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt><title type="main">Livre PDF</title></titleStmt>
+      <publicationStmt><publisher>PURH</publisher></publicationStmt>
+      <sourceDesc><p>Source.</p></sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <front>
+      <div type="introduction">
+        <head>Introduction</head>
+        <p>Texte introduction.</p>
+      </div>
+    </front>
+    <group type="book">
+      <group type="chapter" data-page-title="Chapitre principal">
+        <body><p>Texte chapitre.</p></body>
+      </group>
+    </group>
+  </text>
+</TEI>
+""",
+        encoding="utf-8",
+    )
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    chapter_index = latex.index(r"\chapter*{Introduction}")
+    mark_index = latex.index(r"\markboth{Introduction}{Introduction}", chapter_index)
+    text_index = latex.index("Texte introduction.", chapter_index)
+    assert chapter_index < mark_index < text_index
+
+
+def test_short_running_title_keeps_short_titles() -> None:
+    assert _short_running_title("Introduction") == "Introduction"
+
+
+def test_short_running_title_truncates_without_ending_on_stopword() -> None:
+    title = "Aspects ludiques dans l’appareil héraldique des manuscrits de Léon X (1513-1521)"
+
+    short = _short_running_title(title)
+
+    assert short == "Aspects ludiques dans l’appareil héraldique…"
+    assert " des…" not in short
+    assert " de…" not in short
+
+
+def test_long_chapter_title_keeps_full_title_but_uses_short_mark(tmp_path: Path) -> None:
+    long_title = "Aspects ludiques dans l’appareil héraldique des manuscrits de Léon X (1513-1521)"
+    short_title = "Aspects ludiques dans l’appareil héraldique…"
+    xml_path = tmp_path / "long-title.normalized.xml"
+    xml_path.write_text(
+        f"""<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt><title type="main">Livre PDF</title></titleStmt>
+      <publicationStmt><publisher>PURH</publisher></publicationStmt>
+      <sourceDesc><p>Source.</p></sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <group type="book">
+      <group type="chapter" data-page-title="{long_title}">
+        <body><p>Texte chapitre.</p></body>
+      </group>
+    </group>
+  </text>
+</TEI>
+""",
+        encoding="utf-8",
+    )
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert rf"\chapter{{{long_title}}}" in latex
+    assert rf"\markboth{{{short_title}}}{{{short_title}}}" in latex
+    assert rf"\addcontentsline{{toc}}{{chapter}}{{{short_title}}}" not in latex
+
+
+def test_blank_pages_are_empty(tmp_path: Path) -> None:
+    xml_path = write_tei(tmp_path, "<p>Texte style PURH.</p>")
+
+    latex = render_latex_with_options(xml_path, LatexRenderOptions(style="purh"))
+
+    assert r"\usepackage{emptypage}" in latex
+    assert r"\thispagestyle{empty}" in latex
 
 
 def test_latex_renderer_purh_style_defines_editorial_macros(tmp_path: Path) -> None:

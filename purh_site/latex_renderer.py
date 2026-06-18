@@ -61,6 +61,68 @@ from .semantic_model import (
 )
 
 
+RUNNING_TITLE_STOPWORDS = {
+    "de",
+    "d’",
+    "d'",
+    "du",
+    "des",
+    "le",
+    "la",
+    "les",
+    "l’",
+    "l'",
+    "un",
+    "une",
+    "à",
+    "au",
+    "aux",
+    "en",
+    "dans",
+    "sur",
+    "sous",
+    "par",
+    "pour",
+    "avec",
+    "sans",
+    "chez",
+    "et",
+    "ou",
+    "mais",
+    "donc",
+    "or",
+    "ni",
+    "car",
+}
+
+
+def _short_running_title(title: str, max_chars: int = 58) -> str:
+    """Return a readable shortened title for running headers."""
+
+    normalized = re.sub(r"\s+", " ", (title or "").strip())
+    if len(normalized) <= max_chars:
+        return normalized
+
+    words = normalized.split()
+    kept: list[str] = []
+    for word in words:
+        candidate = " ".join([*kept, word])
+        if len(candidate) + 1 > max_chars:
+            break
+        kept.append(word)
+
+    if not kept:
+        return normalized[: max(1, max_chars - 1)].rstrip() + "…"
+
+    while len(kept) > 1:
+        last = kept[-1].strip(" ,;:.!?()[]{}").lower()
+        if last not in RUNNING_TITLE_STOPWORDS:
+            break
+        kept.pop()
+
+    return " ".join(kept).rstrip(" ,;:") + "…"
+
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -127,16 +189,16 @@ class LatexRenderer:
         parts.append("\\frontmatter")
         parts.append(self._render_front_divisions(book))
 
-        if self.options.include_toc:
-            parts.append("\\cleardoublepage")
-            parts.append("\\tableofcontents")
-
         parts.append("\\mainmatter")
         parts.append(self._render_body_divisions(book))
 
         if book.back_divisions:
             parts.append("\\backmatter")
             parts.append(self._render_back_divisions(book))
+
+        if self.options.include_toc:
+            parts.append("\\cleardoublepage")
+            parts.append("\\tableofcontents")
 
         parts.append("\\end{document}")
         return "\n\n".join(part for part in parts if part.strip()) + "\n"
@@ -299,6 +361,7 @@ class LatexRenderer:
 \usepackage{{csquotes}}
 \usepackage{{microtype}}
 \usepackage{{indentfirst}}
+\usepackage{{emptypage}}
 
 \IfFontExistsTF{{Chaparral Pro}}
   {{\setmainfont{{Chaparral Pro}}}}
@@ -549,7 +612,12 @@ class LatexRenderer:
 
     def _render_volume_title_page(self, book: Book) -> str:
         contributors = self._join_contributor_names(book.metadata.contributors)
-        lines: list[str] = ["\\thispagestyle{empty}", "\\begin{center}", "\\vspace*{0.15\\textheight}"]
+        lines: list[str] = [
+            "\\begin{titlepage}",
+            "\\thispagestyle{empty}",
+            "\\centering",
+            "\\vspace*{0.15\\textheight}",
+        ]
         lines.append(rf"{{\Huge\bfseries {self._escape_text(book.metadata.title)}\par}}")
 
         if book.metadata.subtitle:
@@ -559,10 +627,11 @@ class LatexRenderer:
             lines.append(rf"\PurhContributors{{{self._escape_text(contributors)}}}")
 
         publication_line = self._volume_publication_line(book)
+        lines.append("\\vfill")
         if publication_line:
             lines.append(rf"\PurhTitleExtra{{{self._escape_text(publication_line)}}}")
 
-        lines.extend(["\\vfill", "\\end{center}", "\\clearpage"])
+        lines.extend(["\\end{titlepage}", "\\clearpage"])
         return "\n".join(lines)
 
     def _render_front_divisions(self, book: Book) -> str:
@@ -639,27 +708,32 @@ class LatexRenderer:
             return ""
 
         escaped_title = self._escape_text(title)
+        running_title = self._escape_text(_short_running_title(title))
+        running_mark = rf"\markboth{{{running_title}}}{{{running_title}}}"
 
         if division.div_type == DivisionType.PART:
             return (
                     rf"\part*{{{escaped_title}}}" + "\n"
+                    + running_mark + "\n"
                     + rf"\addcontentsline{{toc}}{{part}}{{{escaped_title}}}"
             )
 
         numbered = division.div_type == DivisionType.CHAPTER
         if numbered and not frontmatter and not backmatter:
-            return rf"\chapter{{{escaped_title}}}"
+            return rf"\chapter{{{escaped_title}}}" + "\n" + running_mark
 
         if division.div_type == DivisionType.APPENDIX and not self._appendix_started:
             self._appendix_started = True
             return (
                 "\\appendix\n"
-                rf"\chapter{{{escaped_title}}}"
+                rf"\chapter{{{escaped_title}}}" + "\n"
+                + running_mark
             )
 
         # Par défaut, on reste non numéroté pour les liminaires et la plupart des post-liminaires.
         return (
                 rf"\chapter*{{{escaped_title}}}" + "\n"
+                + running_mark + "\n"
                 + rf"\addcontentsline{{toc}}{{chapter}}{{{escaped_title}}}"
         )
 
