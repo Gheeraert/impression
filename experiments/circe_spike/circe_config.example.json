@@ -1,0 +1,9 @@
+{
+  "base_url": "https://circe.unicaen.fr",
+  "upload_endpoint": "",
+  "conversions_endpoint": "",
+  "convert_endpoint": "",
+  "download_endpoint": "",
+  "convert_payload_extra": {},
+  "notes": "A completer apres inspection de l'API reelle ou de la documentation Circe."
+}
