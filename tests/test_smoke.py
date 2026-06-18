@@ -3,7 +3,7 @@ from pathlib import Path
 from lxml import etree
 
 from purh_site.config import BuildConfig
-from purh_site.site_builder import SiteBuilder
+from purh_site.site_builder import SiteBuilder, has_editor_pdf
 
 TEI_SAMPLE = """<?xml version='1.0' encoding='UTF-8'?>
 <TEI xmlns='http://www.tei-c.org/ns/1.0'>
@@ -285,6 +285,115 @@ def test_download_links_are_rendered_as_buttons(tmp_path: Path) -> None:
     assert '<a class="download-button" href="book.normalized.xml" download>' in index_html
     assert '<a class="download-button" href="assets/PDF/ouvrage.pdf" download>' in index_html
     assert '<button class="download-button"' not in index_html
+
+
+def test_editor_pdf_disables_generated_latex_and_pdf_even_when_requested(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+    assets_dir = tmp_path / 'source_assets'
+    pdf_path = assets_dir / 'PDF' / 'ouvrage.pdf'
+    pdf_path.parent.mkdir(parents=True)
+    pdf_path.write_bytes(b'%PDF-editor')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / 'site',
+            assets_dir=assets_dir,
+            pdf_export_mode='latex_pdf',
+            latex_engine='moteur-inutile',
+        ),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+    report = result.report_path.read_text(encoding='utf-8')
+
+    assert 'Télécharger le PDF éditeur' in index_html
+    assert 'Télécharger le LaTeX' not in index_html
+    assert 'Télécharger le PDF généré' not in index_html
+    assert not (tmp_path / 'site' / 'assets' / 'generated' / 'book.tex').exists()
+    assert not (tmp_path / 'site' / 'assets' / 'generated' / 'book.pdf').exists()
+    assert 'Génération LaTeX/PDF : désactivée car un PDF éditeur est disponible.' in report
+
+
+def test_latex_is_generated_when_no_editor_pdf_exists_and_mode_latex(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', pdf_export_mode='latex'),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+    report = result.report_path.read_text(encoding='utf-8')
+
+    assert (tmp_path / 'site' / 'assets' / 'generated' / 'book.tex').exists()
+    assert 'Télécharger le LaTeX' in index_html
+    assert 'href="assets/generated/book.tex"' in index_html
+    assert 'Télécharger le PDF généré' not in index_html
+    assert not (tmp_path / 'site' / 'assets' / 'generated' / 'book.pdf').exists()
+    assert 'LaTeX généré : assets/generated/book.tex' in report
+
+
+def test_pdf_generation_failure_does_not_break_html_build(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / 'site',
+            pdf_export_mode='latex_pdf',
+            latex_engine='moteur-inexistant-impressions',
+        ),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+    report = result.report_path.read_text(encoding='utf-8')
+
+    assert result.html_path.exists()
+    assert (tmp_path / 'site' / 'assets' / 'generated' / 'book.tex').exists()
+    assert 'Télécharger le LaTeX' in index_html
+    assert 'Télécharger le PDF généré' not in index_html
+    assert '[WARNING] PDF non généré' in report
+    assert 'Voir : assets/generated/pdf_build_report.txt' in report
+
+
+def test_latex_generation_with_hidden_normalized_tei_keeps_xml_download_disabled(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / 'site',
+            write_normalized_tei=False,
+            pdf_export_mode='latex',
+        ),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert result.normalized_tei_path is None
+    assert not (tmp_path / 'site' / 'book.normalized.xml').exists()
+    assert (tmp_path / 'site' / 'assets' / 'generated' / 'book.normalized.xml').exists()
+    assert (tmp_path / 'site' / 'assets' / 'generated' / 'book.tex').exists()
+    assert 'href="book.normalized.xml"' not in index_html
+    assert 'Télécharger le XML-TEI' not in index_html
+    assert 'Télécharger le LaTeX' in index_html
+
+
+def test_has_editor_pdf_detects_pdf_folder_case_insensitively(tmp_path: Path) -> None:
+    assets_dir = tmp_path / 'assets'
+    assert has_editor_pdf(assets_dir) is False
+
+    pdf_dir = assets_dir / 'pdf'
+    pdf_dir.mkdir(parents=True)
+    assert has_editor_pdf(assets_dir) is False
+
+    (pdf_dir / 'ouvrage.PDF').write_bytes(b'%PDF-editor')
+    assert has_editor_pdf(assets_dir) is True
 
 
 TEI_SAMPLE_WITHOUT_TITLE_OR_COLLECTION = """<?xml version='1.0' encoding='UTF-8'?>

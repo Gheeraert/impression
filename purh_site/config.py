@@ -16,6 +16,8 @@ class BuildConfig:
     collection_issn: str = ""
     write_normalized_tei: bool = True
     site_title_fallback: str = "Livre PURH"
+    pdf_export_mode: str = "none"
+    latex_engine: str = "lualatex"
 
     @property
     def output_assets_dir(self) -> Path:

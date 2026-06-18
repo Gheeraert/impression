@@ -11,7 +11,9 @@ from urllib.parse import unquote, urldefrag, urljoin, urlparse
 from lxml import etree, html as lxml_html
 
 from .config import BuildConfig
+from .latex_renderer import LatexRenderOptions
 from .normalizer import NormalizeReport, TeiNormalizer
+from .pdf_builder import PdfBuildResult, PdfBuilder
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
@@ -32,10 +34,28 @@ class ThemeAssets:
     pdf_href: str | None = None
     footer_logo_href: str | None = None
 
+@dataclass(slots=True)
+class PdfSiteArtifacts:
+    latex_href: str | None = None
+    generated_pdf_href: str | None = None
+    build_result: PdfBuildResult | None = None
+    disabled_by_editor_pdf: bool = False
+
 @dataclass(frozen=True, slots=True)
 class AnchorTarget:
     file_name: str
     is_page_root: bool = False
+
+
+def has_editor_pdf(assets_dir: Path | None) -> bool:
+    """Retourne True si un dossier assets contient au moins un PDF éditeur."""
+
+    if not assets_dir or not assets_dir.exists():
+        return False
+    for child in assets_dir.iterdir():
+        if child.is_dir() and child.name.lower() == "pdf":
+            return any(path.is_file() and path.suffix.lower() == ".pdf" for path in child.rglob("*"))
+    return False
 
 _INLINE_TAGS_PATTERN = r"em|strong|span|sup|sub|i|b"
 _PROTECTED_HTML_BLOCK_RE = re.compile(
@@ -287,6 +307,7 @@ class SiteBuilder:
         self._apply_config_fallbacks(site_meta, config, tree)
         anchor_index = self._collect_anchor_index(tree, pages)
         theme_assets = self._discover_theme_assets(config.output_assets_dir)
+        pdf_artifacts = self._build_pdf_site_artifacts(tree, config, normalized_tei_path, theme_assets)
         back_cover_html, back_cover_source = self._resolve_back_cover_html(tree, config)
         self._write_index_page(
             config.output_dir,
@@ -294,6 +315,8 @@ class SiteBuilder:
             nav,
             theme_assets,
             normalized_tei_href=normalized_tei_path.name if normalized_tei_path else None,
+            latex_href=pdf_artifacts.latex_href,
+            generated_pdf_href=pdf_artifacts.generated_pdf_href,
             back_cover_html=back_cover_html,
         )
         for page in pages:
@@ -316,6 +339,7 @@ class SiteBuilder:
             report_lines.append(f"Logo PURH : {theme_assets.purh_logo_href}")
         if theme_assets.pdf_href:
             report_lines.append(f"PDF détecté : {theme_assets.pdf_href}")
+        report_lines.extend(self._pdf_site_report_lines(theme_assets, pdf_artifacts))
         if back_cover_source:
             report_lines.append(f"Quatrième de couverture : {back_cover_source}")
         quality_issues = self._run_site_quality_checks(config.output_dir)
@@ -332,6 +356,70 @@ class SiteBuilder:
             normalized_tei_path=normalized_tei_path,
             report_path=report_path,
         )
+
+    def _build_pdf_site_artifacts(
+        self,
+        tree: etree._ElementTree,
+        config: BuildConfig,
+        normalized_tei_path: Path | None,
+        theme_assets: ThemeAssets,
+    ) -> PdfSiteArtifacts:
+        mode = self._normalized_pdf_export_mode(config.pdf_export_mode)
+        if theme_assets.pdf_href:
+            return PdfSiteArtifacts(disabled_by_editor_pdf=(mode != "none"))
+        if mode == "none":
+            return PdfSiteArtifacts()
+
+        generated_dir = config.output_assets_dir / "generated"
+        ensure_dir(generated_dir)
+        pdf_input_path = normalized_tei_path
+        if pdf_input_path is None:
+            pdf_input_path = generated_dir / "book.normalized.xml"
+            tree.write(
+                str(pdf_input_path),
+                encoding="utf-8",
+                xml_declaration=True,
+                pretty_print=True,
+            )
+
+        result = PdfBuilder(
+            latex_options=LatexRenderOptions(style="purh"),
+            compile_pdf=(mode == "latex_pdf"),
+            latex_engine=config.latex_engine,
+        ).build_from_normalized_tei(pdf_input_path, generated_dir)
+
+        return PdfSiteArtifacts(
+            latex_href="assets/generated/book.tex" if result.tex_path.exists() else None,
+            generated_pdf_href=(
+                "assets/generated/book.pdf"
+                if result.success and result.pdf_path.exists()
+                else None
+            ),
+            build_result=result,
+        )
+
+    def _normalized_pdf_export_mode(self, value: str) -> str:
+        mode = (value or "none").strip().lower()
+        return mode if mode in {"none", "latex", "latex_pdf"} else "none"
+
+    def _pdf_site_report_lines(
+        self,
+        theme_assets: ThemeAssets,
+        artifacts: PdfSiteArtifacts,
+    ) -> list[str]:
+        lines: list[str] = []
+        if theme_assets.pdf_href and artifacts.disabled_by_editor_pdf:
+            lines.append("Génération LaTeX/PDF : désactivée car un PDF éditeur est disponible.")
+        if artifacts.latex_href:
+            lines.append(f"LaTeX généré : {artifacts.latex_href}")
+        if artifacts.generated_pdf_href:
+            lines.append(f"PDF généré : {artifacts.generated_pdf_href}")
+        if artifacts.build_result and not artifacts.build_result.success:
+            lines.append(
+                "[WARNING] PDF non généré : moteur LaTeX indisponible ou compilation échouée."
+            )
+            lines.append("Voir : assets/generated/pdf_build_report.txt")
+        return lines
 
     def _apply_config_fallbacks(
         self,
@@ -485,6 +573,8 @@ class SiteBuilder:
             nav: list[NavItem],
             theme_assets: ThemeAssets,
             normalized_tei_href: str | None,
+            latex_href: str | None,
+            generated_pdf_href: str | None,
             back_cover_html: str | None,
     ) -> None:
         nav_html = self._render_sidebar(nav, current_file_name=None)
@@ -505,7 +595,14 @@ class SiteBuilder:
         hero_parts.append('</div>')
         hero_parts.append(self._render_cover_link(theme_assets, compact=False))
         hero_parts.append('</div></section>')
-        hero_parts.append(self._render_home_downloads(normalized_tei_href, theme_assets.pdf_href))
+        hero_parts.append(
+            self._render_home_downloads(
+                normalized_tei_href,
+                theme_assets.pdf_href,
+                latex_href=latex_href,
+                generated_pdf_href=generated_pdf_href,
+            )
+        )
         hero_parts.append('<section class="home-panel"><h2>Sommaire</h2>')
         hero_parts.append(self._render_toc(nav))
         hero_parts.append('</section>')
@@ -636,20 +733,39 @@ class SiteBuilder:
     def _render_toc(self, nav: list[NavItem]) -> str:
         return self._render_nav_list(nav)
 
-    def _render_home_downloads(self, normalized_tei_href: str | None, pdf_href: str | None) -> str:
+    def _render_home_downloads(
+        self,
+        normalized_tei_href: str | None,
+        editor_pdf_href: str | None,
+        *,
+        latex_href: str | None = None,
+        generated_pdf_href: str | None = None,
+    ) -> str:
         parts = ['<section class="home-panel home-panel--downloads">']
         parts.append('<h2>Téléchargements</h2>')
         parts.append('<div class="download-buttons">')
         if normalized_tei_href:
             parts.append(
                 f'<a class="download-button" href="{html.escape(normalized_tei_href)}" download>'
-                'Télécharger le XML - TEI'
+                'Télécharger le XML-TEI'
                 '</a>'
             )
-        if pdf_href:
+        if latex_href:
             parts.append(
-                f'<a class="download-button" href="{html.escape(pdf_href)}" download>'
+                f'<a class="download-button" href="{html.escape(latex_href)}" download>'
+                'Télécharger le LaTeX'
+                '</a>'
+            )
+        if editor_pdf_href:
+            parts.append(
+                f'<a class="download-button" href="{html.escape(editor_pdf_href)}" download>'
                 'Télécharger le PDF éditeur'
+                '</a>'
+            )
+        elif generated_pdf_href:
+            parts.append(
+                f'<a class="download-button" href="{html.escape(generated_pdf_href)}" download>'
+                'Télécharger le PDF généré'
                 '</a>'
             )
         parts.append('</div></section>')
@@ -1018,7 +1134,10 @@ class SiteBuilder:
     def _discover_pdf_href(self, output_assets_dir: Path) -> str | None:
         for child in output_assets_dir.iterdir():
             if child.is_dir() and child.name.lower() == "pdf":
-                pdf_files = sorted(path for path in child.rglob("*.pdf") if path.is_file())
+                pdf_files = sorted(
+                    path for path in child.rglob("*")
+                    if path.is_file() and path.suffix.lower() == ".pdf"
+                )
                 if pdf_files:
                     relative = pdf_files[0].relative_to(output_assets_dir).as_posix()
                     return f'assets/{relative}'

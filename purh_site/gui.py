@@ -8,7 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from .config import BuildConfig
 from .local_server import PreviewServer
-from .site_builder import SiteBuilder
+from .site_builder import SiteBuilder, has_editor_pdf
 
 
 class App(ttk.Frame):
@@ -25,6 +25,9 @@ class App(ttk.Frame):
         self.collection_number_var = tk.StringVar()
         self.collection_issn_var = tk.StringVar()
         self.output_dir_var = tk.StringVar()
+        self.pdf_export_mode_var = tk.StringVar(value="none")
+        self.pdf_export_status_var = tk.StringVar(value="")
+        self.pdf_export_widgets: list[ttk.Radiobutton] = []
         self.xml_files: list[Path] = []
         self.port_var = tk.StringVar(value="8000,8080")
         self.auto_preview_var = tk.BooleanVar(value=True)
@@ -63,8 +66,10 @@ class App(ttk.Frame):
         self._add_entry_row(7, "ISSN de la collection (optionnel)", self.collection_issn_var)
         self._add_path_selector(8, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
 
+        self._add_pdf_export_controls(9)
+
         preview_bar = ttk.Frame(self)
-        preview_bar.grid(row=9, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        preview_bar.grid(row=10, column=0, columnspan=3, sticky="w", pady=(0, 8))
         ttk.Label(preview_bar, text="Ports de prévisualisation").grid(row=0, column=0, sticky="w")
         ttk.Entry(preview_bar, textvariable=self.port_var, width=18).grid(row=0, column=1, sticky="w", padx=(8, 16))
         ttk.Checkbutton(preview_bar, text="Lancer le serveur local et ouvrir le navigateur après build", variable=self.auto_preview_var).grid(row=0, column=2, sticky="w")
@@ -78,10 +83,10 @@ class App(ttk.Frame):
             ),
             wraplength=920,
         )
-        helper.grid(row=10, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        helper.grid(row=11, column=0, columnspan=3, sticky="w", pady=(0, 8))
 
         button_bar = ttk.Frame(self)
-        button_bar.grid(row=11, column=0, columnspan=3, sticky="w", pady=(8, 12))
+        button_bar.grid(row=12, column=0, columnspan=3, sticky="w", pady=(8, 12))
         ttk.Button(button_bar, text="Charger config…", command=self._load_config).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(button_bar, text="Enregistrer config…", command=self._save_config).grid(row=0, column=1, padx=(0, 8))
         ttk.Button(button_bar, text="Construire le site", command=self._build).grid(row=0, column=2, padx=(0, 8))
@@ -94,13 +99,14 @@ class App(ttk.Frame):
         ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=5)
 
         log_label = ttk.Label(self, text="Journal")
-        log_label.grid(row=12, column=0, sticky="w")
+        log_label.grid(row=13, column=0, sticky="w")
         self.log = tk.Text(self, wrap="word", height=24)
-        self.log.grid(row=13, column=0, columnspan=3, sticky="nsew")
+        self.log.grid(row=14, column=0, columnspan=3, sticky="nsew")
         self.log.configure(state="disabled")
 
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(13, weight=1)
+        self.rowconfigure(14, weight=1)
+        self._refresh_pdf_export_controls()
         self._log("Interface prête.")
 
     def _add_path_selector(self, row: int, label: str, variable: tk.StringVar, browse_command, button_text: str) -> None:
@@ -111,6 +117,21 @@ class App(ttk.Frame):
     def _add_entry_row(self, row: int, label: str, variable: tk.StringVar) -> None:
         ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
         ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
+
+    def _add_pdf_export_controls(self, row: int) -> None:
+        ttk.Label(self, text="Sorties PDF / LaTeX").grid(row=row, column=0, sticky="w", pady=(0, 6))
+        frame = ttk.Frame(self)
+        frame.grid(row=row, column=1, columnspan=2, sticky="w", pady=(0, 6))
+        options = [
+            ("Ne rien générer", "none"),
+            ("Générer le LaTeX seul", "latex"),
+            ("Générer le LaTeX + PDF", "latex_pdf"),
+        ]
+        for index, (label, value) in enumerate(options):
+            radio = ttk.Radiobutton(frame, text=label, variable=self.pdf_export_mode_var, value=value)
+            radio.grid(row=0, column=index, sticky="w", padx=(0, 16))
+            self.pdf_export_widgets.append(radio)
+        ttk.Label(frame, textvariable=self.pdf_export_status_var).grid(row=1, column=0, columnspan=3, sticky="w", pady=(4, 0))
 
     def _choose_master_xml(self) -> None:
         path = filedialog.askopenfilename(title="Choisir un fichier XML maître", filetypes=[("Fichiers XML", "*.xml")])
@@ -138,6 +159,7 @@ class App(ttk.Frame):
         path = filedialog.askdirectory(title="Choisir un dossier assets")
         if path:
             self.assets_dir_var.set(path)
+            self._refresh_pdf_export_controls()
             self._log(f"Dossier assets : {path}")
 
     def _choose_back_cover(self) -> None:
@@ -174,6 +196,7 @@ class App(ttk.Frame):
             "output_dir": self.output_dir_var.get().strip(),
             "preview_ports": self.port_var.get().strip(),
             "auto_preview": bool(self.auto_preview_var.get()),
+            "pdf_export_mode": self.pdf_export_mode_var.get(),
         }
 
     def _apply_config(self, data: dict[str, object]) -> None:
@@ -191,6 +214,7 @@ class App(ttk.Frame):
         self.collection_issn_var.set(as_text("collection_issn"))
         self.output_dir_var.set(as_text("output_dir"))
         self.port_var.set(as_text("preview_ports") or "8000,8080")
+        self.pdf_export_mode_var.set(as_text("pdf_export_mode") or "none")
 
         raw_auto_preview = data.get("auto_preview", True)
         if isinstance(raw_auto_preview, str):
@@ -209,6 +233,7 @@ class App(ttk.Frame):
                 path = Path(str(item))
                 self.xml_files.append(path)
                 self.files_list.insert("end", str(path))
+        self._refresh_pdf_export_controls()
 
     def _save_config(self) -> None:
         """Enregistre l'état courant de l'interface dans un fichier JSON."""
@@ -262,6 +287,7 @@ class App(ttk.Frame):
 
     def _make_build_config(self, output_dir: Path, assets_dir: Path | None) -> BuildConfig:
         back_cover = Path(self.back_cover_var.get()).resolve() if self.back_cover_var.get().strip() else None
+        pdf_export_mode = "none" if has_editor_pdf(assets_dir) else self.pdf_export_mode_var.get()
         return BuildConfig(
             output_dir=output_dir,
             assets_dir=assets_dir,
@@ -269,7 +295,20 @@ class App(ttk.Frame):
             collection_title=self.collection_title_var.get().strip(),
             collection_number=self.collection_number_var.get().strip(),
             collection_issn=self.collection_issn_var.get().strip(),
+            pdf_export_mode=pdf_export_mode,
         )
+
+    def _refresh_pdf_export_controls(self) -> None:
+        assets_dir = Path(self.assets_dir_var.get()).resolve() if self.assets_dir_var.get().strip() else None
+        editor_pdf_found = has_editor_pdf(assets_dir)
+        state = "disabled" if editor_pdf_found else "normal"
+        if editor_pdf_found:
+            self.pdf_export_mode_var.set("none")
+            self.pdf_export_status_var.set("PDF éditeur détecté : la génération LaTeX/PDF est désactivée.")
+        else:
+            self.pdf_export_status_var.set("")
+        for widget in self.pdf_export_widgets:
+            widget.configure(state=state)
 
     def _build(self) -> None:
         output_dir_text = self.output_dir_var.get().strip()
@@ -280,6 +319,7 @@ class App(ttk.Frame):
         output_dir = Path(output_dir_text)
         assets_dir = Path(self.assets_dir_var.get()).resolve() if self.assets_dir_var.get().strip() else None
         master_xml_text = self.master_xml_var.get().strip()
+        self._refresh_pdf_export_controls()
 
         try:
             if master_xml_text:

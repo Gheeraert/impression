@@ -10,8 +10,10 @@ import zlib
 
 import pytest
 
+from purh_site.config import BuildConfig
 from purh_site.latex_renderer import LatexRenderOptions
 from purh_site.pdf_builder import PdfBuilder
+from purh_site.site_builder import SiteBuilder
 
 
 RUN_LATEX = os.environ.get("IMPRESSIONS_RUN_LATEX_INTEGRATION") == "1"
@@ -399,6 +401,36 @@ def test_purh_style_realistic_metopes_sample_compiles_with_lualatex() -> None:
         assert "Sans titre" not in tex
         assert "{memoir}" not in tex
         assert "polyglossia" not in tex
+        success = True
+    finally:
+        if success:
+            cleanup_runtime_dir(runtime_dir)
+
+
+def test_generated_pdf_is_downloaded_when_lualatex_integration_enabled() -> None:
+    runtime_dir = make_runtime_dir()
+    xml_path = write_compile_tei(runtime_dir)
+    success = False
+
+    try:
+        result = SiteBuilder().build_from_master(
+            xml_path,
+            BuildConfig(output_dir=runtime_dir / "site", pdf_export_mode="latex_pdf"),
+        )
+
+        index_html = result.html_path.read_text(encoding="utf-8")
+        generated_dir = runtime_dir / "site" / "assets" / "generated"
+
+        assert result.html_path.exists()
+        assert (generated_dir / "book.tex").exists()
+        assert (generated_dir / "book.pdf").exists()
+        assert (generated_dir / "latex_build.log").exists()
+        assert (generated_dir / "pdf_build_report.txt").exists()
+        assert "Télécharger le LaTeX" in index_html
+        assert 'href="assets/generated/book.tex"' in index_html
+        assert "Télécharger le PDF généré" in index_html
+        assert 'href="assets/generated/book.pdf"' in index_html
+        assert "Télécharger le PDF éditeur" not in index_html
         success = True
     finally:
         if success:
