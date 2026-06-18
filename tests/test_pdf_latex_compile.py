@@ -430,6 +430,7 @@ def test_generated_pdf_is_downloaded_when_lualatex_integration_enabled() -> None
         assert 'href="assets/generated/book.tex"' in index_html
         assert "Télécharger le PDF généré" in index_html
         assert 'href="assets/generated/book.pdf"' in index_html
+        assert 'name="citation_pdf_url" content="assets/generated/book.pdf"' in index_html
         assert "Télécharger le PDF éditeur" not in index_html
         success = True
     finally:

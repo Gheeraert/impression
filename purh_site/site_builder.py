@@ -308,6 +308,7 @@ class SiteBuilder:
         anchor_index = self._collect_anchor_index(tree, pages)
         theme_assets = self._discover_theme_assets(config.output_assets_dir)
         pdf_artifacts = self._build_pdf_site_artifacts(tree, config, normalized_tei_path, theme_assets)
+        citation_pdf_href = theme_assets.pdf_href or pdf_artifacts.generated_pdf_href
         back_cover_html, back_cover_source = self._resolve_back_cover_html(tree, config)
         self._write_index_page(
             config.output_dir,
@@ -317,10 +318,20 @@ class SiteBuilder:
             normalized_tei_href=normalized_tei_path.name if normalized_tei_path else None,
             latex_href=pdf_artifacts.latex_href,
             generated_pdf_href=pdf_artifacts.generated_pdf_href,
+            citation_pdf_href=citation_pdf_href,
             back_cover_html=back_cover_html,
         )
         for page in pages:
-            self._write_content_page(config.output_dir, tree, site_meta, nav, page, theme_assets, anchor_index)
+            self._write_content_page(
+                config.output_dir,
+                tree,
+                site_meta,
+                nav,
+                page,
+                theme_assets,
+                anchor_index,
+                citation_pdf_href=citation_pdf_href,
+            )
 
         report_path = config.output_dir / "build_report.txt"
         report_lines = [
@@ -575,6 +586,7 @@ class SiteBuilder:
             normalized_tei_href: str | None,
             latex_href: str | None,
             generated_pdf_href: str | None,
+            citation_pdf_href: str | None,
             back_cover_html: str | None,
     ) -> None:
         nav_html = self._render_sidebar(nav, current_file_name=None)
@@ -615,6 +627,7 @@ class SiteBuilder:
             theme_assets=theme_assets,
             page_grid_class='page-grid page-grid--home',
             abstract_html=back_cover_html,
+            citation_pdf_href=citation_pdf_href,
         )
         page_html = normalize_inline_html_spacing(page_html)
         page_html = normalize_french_typography_html(page_html)
@@ -629,6 +642,7 @@ class SiteBuilder:
         page: PageDef,
         theme_assets: ThemeAssets,
         anchor_index: dict[str, AnchorTarget],
+        citation_pdf_href: str | None,
     ) -> None:
         page_group = self._find_page_group(tree, page.node_id)
         if page_group is None:
@@ -647,6 +661,7 @@ class SiteBuilder:
             theme_assets=theme_assets,
             page_grid_class='page-grid',
             page=page,
+            citation_pdf_href=citation_pdf_href,
         )
         page_html = normalize_inline_html_spacing(page_html)
         page_html = normalize_french_typography_html(page_html)
@@ -1196,6 +1211,7 @@ class SiteBuilder:
         theme_assets: ThemeAssets,
         page: PageDef | None = None,
         abstract_html: str | None = None,
+        citation_pdf_href: str | None = None,
     ) -> str:
         tags: list[str] = []
         volume_title = self._full_volume_title(site_meta)
@@ -1216,7 +1232,7 @@ class SiteBuilder:
                 self._meta_tag('citation_series_number', site_meta.collection_number),
                 self._meta_tag('citation_doi', site_meta.doi),
                 self._meta_tag('citation_language', 'fr'),
-                self._meta_tag('citation_pdf_url', self._build_public_asset_url(theme_assets.pdf_href, site_meta) if theme_assets.pdf_href else ''),
+                self._meta_tag('citation_pdf_url', self._build_public_asset_url(citation_pdf_href, site_meta) if citation_pdf_href else ''),
                 self._meta_tag('citation_abstract_html_url', page_url),
                 self._meta_tag('DC.Title', citation_title),
                 self._meta_tag('DC.Type', 'book'),
@@ -1273,9 +1289,16 @@ class SiteBuilder:
         page_grid_class: str = 'page-grid',
         page: PageDef | None = None,
         abstract_html: str | None = None,
+        citation_pdf_href: str | None = None,
     ) -> str:
         banner = self._render_banner(site_meta, theme_assets)
-        zotero_meta = self._render_zotero_meta(site_meta, theme_assets, page=page, abstract_html=abstract_html)
+        zotero_meta = self._render_zotero_meta(
+            site_meta,
+            theme_assets,
+            page=page,
+            abstract_html=abstract_html,
+            citation_pdf_href=citation_pdf_href,
+        )
         return f'''<!DOCTYPE html>
 <html lang="fr">
 <head>
