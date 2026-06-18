@@ -33,12 +33,16 @@ MACRO_TO_ELEMENT = {
     "teiP": "p",
     "teiPersName": "persName",
     "teiPlaceName": "placeName",
+    "teiQ": "q",
     "teiRef": "ref",
+    "teiSaid": "said",
     "teiTerm": "term",
     "teiTitle": "title",
 }
 
 ENVIRONMENT_TO_ELEMENT = {
+    "teiBibl": "bibl",
+    "teiCit": "cit",
     "teiDiv": "div",
     "teiFigure": "figure",
     "teiList": "list",

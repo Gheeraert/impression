@@ -1,6 +1,8 @@
 """Experimental reversible TEI document core."""
 
 from .nodes import (
+    BiblNode,
+    CitNode,
     DivNode,
     ElementNode,
     FigureNode,
@@ -17,7 +19,9 @@ from .nodes import (
     ParagraphNode,
     PersNameNode,
     PlaceNameNode,
+    QNode,
     RefNode,
+    SaidNode,
     TermNode,
     TextNode,
     TitleNode,
@@ -36,6 +40,8 @@ from .roundtrip import (
 
 __all__ = [
     "DivNode",
+    "BiblNode",
+    "CitNode",
     "ElementNode",
     "FigureNode",
     "ForeignNode",
@@ -51,7 +57,9 @@ __all__ = [
     "ParagraphNode",
     "PersNameNode",
     "PlaceNameNode",
+    "QNode",
     "RefNode",
+    "SaidNode",
     "TermNode",
     "TextNode",
     "TitleNode",

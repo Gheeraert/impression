@@ -79,5 +79,5 @@ def test_realistic_fragment_latex_uses_specialized_macros_and_generic_fallbacks(
     assert "\\teiPersName[ref={\\#p1}]" in latex
     assert "\\teiPlaceName[ref={\\#paris}]" in latex
     assert "\\teiDate[when={1857}]" in latex
-    assert "\\begin{teiElement}[name={bibl}]" in latex
-    assert "\\begin{teiElement}[name={cit}]" in latex
+    assert "\\begin{teiBibl}" in latex
+    assert "\\begin{teiCit}" in latex

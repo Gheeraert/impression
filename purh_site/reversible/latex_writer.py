@@ -13,6 +13,8 @@ from .nodes import ElementNode, Node, TextNode
 
 
 ENVIRONMENT_ELEMENTS = {
+    "bibl": "teiBibl",
+    "cit": "teiCit",
     "div": "teiDiv",
     "figure": "teiFigure",
     "list": "teiList",
@@ -34,7 +36,9 @@ MACRO_ELEMENTS = {
     "p": "teiP",
     "persName": "teiPersName",
     "placeName": "teiPlaceName",
+    "q": "teiQ",
     "ref": "teiRef",
+    "said": "teiSaid",
     "term": "teiTerm",
     "title": "teiTitle",
 }

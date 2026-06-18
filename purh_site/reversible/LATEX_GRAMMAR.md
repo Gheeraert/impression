@@ -30,6 +30,8 @@ Inline or braced-content commands:
 \teiDate[...]{...}
 \teiNum[...]{...}
 \teiLabel[...]{...}
+\teiQ[...]{...}
+\teiSaid[...]{...}
 ```
 
 The scholarly inline commands above are braced-content macros. Their
@@ -53,7 +55,18 @@ Environment forms:
 \begin{teiFigure}[...]
 ...
 \end{teiFigure}
+
+\begin{teiCit}[...]
+...
+\end{teiCit}
+
+\begin{teiBibl}[...]
+...
+\end{teiBibl}
 ```
+
+`teiCit` and `teiBibl` are conservative serializations. They are not yet an
+interpreted bibliographic model.
 
 Unknown or not-yet-specialized TEI elements are preserved with a generic
 environment:
@@ -82,6 +95,8 @@ Current conventions:
 - Ordinary TEI attributes keep their local name, for example `type`,
   `subtype`, `rend`, `place`, `target`, `n`, `role`, `ref`, `key`,
   `when`, `from`, `to`, `notBefore`, `notAfter`, `calendar`, and `level`.
+  Citation and bibliography attributes such as `source`, `corresp`, `resp`,
+  `who`, and `cert` follow the same rule.
 - Unknown attributes are preserved as far as possible.
 - Attribute values are always braced: `key={value}`.
 - Options are separated by commas.

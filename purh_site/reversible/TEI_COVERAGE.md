@@ -15,6 +15,10 @@ it is not a request to route this code into the application.
 | `note` | yes | yes | `teiNote` macro | yes | yes | Preserves `place`, `xml:id`, and inline position. |
 | `ref` | yes | yes | `teiRef` macro | yes | yes | Preserves `target`. |
 | `quote` | yes | yes | `teiQuote` environment | yes | yes | Covered through controlled environment tests. |
+| `q` | yes | yes | `teiQ` macro | yes | yes | Conserves inline quotation content and attributes. |
+| `said` | yes | yes | `teiSaid` macro | yes | yes | Conserves attributes such as `who`. |
+| `cit` | yes | yes | `teiCit` environment | yes | yes | Conservative serialization, not an interpreted citation model. |
+| `bibl` | yes | yes | `teiBibl` environment | yes | yes | Conservative serialization, not structured bibliography handling. |
 | `list` | yes | yes | `teiList` environment | yes | yes | Preserves ordered item children. |
 | `item` | yes | yes | `teiItem` macro | yes | yes | Preserves `n` and inline children. |
 | `figure` | yes | yes | `teiFigure` environment | yes | yes | Preserves `head` and `graphic` children. |
@@ -32,7 +36,6 @@ it is not a request to route this code into the application.
 | `seg` | yes | yes | generic `teiElement` environment | yes | yes | Not specialized; preserved by fallback. |
 | unknown TEI element | yes | yes | generic `teiElement` environment | yes | yes | Preserves name, attributes, children, and mixed content. |
 | nested unknown TEI element | yes | yes | nested `teiElement` environment | yes | yes | Preserves nesting and order. |
-| `bibl`, `cit` | yes | yes | generic `teiElement` environment | yes | yes | Realistic-fragment proof only; not specialized yet. |
 
 ## Covered Attributes
 
@@ -54,6 +57,11 @@ it is not a request to route this code into the application.
 - `notAfter`
 - `calendar`
 - `level`
+- `source`
+- `corresp`
+- `resp`
+- `who`
+- `cert`
 - simple unknown attributes, preserved as options in controlled LaTeX where possible.
 
 ## Elements To Cover Next
@@ -65,10 +73,7 @@ future pass gives them dedicated semantics.
 - `ptr`
 - `lb`
 - `pb`
-- `bibl`
-- `cit`
-- `q`
-- `said`
+- finer bibliographic elements such as `author`, `editor`, `publisher`, `biblScope`, and `idno`
 - `table`
 - `row`
 - `cell`

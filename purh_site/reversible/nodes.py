@@ -238,7 +238,49 @@ class LabelNode(ElementNode):
         super().__init__("label", attrs or {}, children or [], namespace)
 
 
+class QNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("q", attrs or {}, children or [], namespace)
+
+
+class SaidNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("said", attrs or {}, children or [], namespace)
+
+
+class CitNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("cit", attrs or {}, children or [], namespace)
+
+
+class BiblNode(ElementNode):
+    def __init__(
+        self,
+        attrs: dict[str, str] | None = None,
+        children: list[Node] | None = None,
+        namespace: str | None = TEI_NS,
+    ) -> None:
+        super().__init__("bibl", attrs or {}, children or [], namespace)
+
+
 SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
+    "bibl": BiblNode,
+    "cit": CitNode,
     "div": DivNode,
     "head": HeadNode,
     "p": ParagraphNode,
@@ -256,6 +298,8 @@ SPECIALIZED_NODE_TYPES: dict[str, type[ElementNode]] = {
     "date": DateNode,
     "num": NumNode,
     "label": LabelNode,
+    "q": QNode,
+    "said": SaidNode,
 }
 
 
