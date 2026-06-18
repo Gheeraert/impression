@@ -14,6 +14,7 @@ from .nodes import (
 )
 from .tei_reader import read_tei_element
 from .tei_writer import write_tei_element
+from .latex_reader import LatexParseError, read_latex, read_latex_document
 from .latex_writer import write_latex, write_latex_document
 
 __all__ = [
@@ -27,6 +28,9 @@ __all__ = [
     "ParagraphNode",
     "RefNode",
     "TextNode",
+    "LatexParseError",
+    "read_latex",
+    "read_latex_document",
     "read_tei_element",
     "write_latex",
     "write_latex_document",
