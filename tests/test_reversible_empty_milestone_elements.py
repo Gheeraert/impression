@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import pytest
 from lxml import etree
 
-from purh_site.reversible import run_tei_latex_tei_roundtrip
+from purh_site.reversible import LatexParseError, read_latex_document, run_tei_latex_tei_roundtrip
 from purh_site.utils import TEI_NS, XML_NS
 
 
@@ -94,3 +95,42 @@ def test_milestone_attributes_survive() -> None:
     assert "xmlid={pb\\_001}" in result.latex
     assert "xmllang={fr}" in result.latex
     assert "rendition={\\#r1}" in result.latex
+
+
+def test_empty_macro_with_braced_content_is_rejected_for_pb() -> None:
+    with pytest.raises(LatexParseError, match=r"\\teiPb.*must not have braced content"):
+        read_latex_document(r"\teiPb[n={12}]{contenu interdit}")
+
+
+def test_empty_macro_with_braced_content_is_rejected_for_ptr() -> None:
+    with pytest.raises(LatexParseError, match=r"\\teiPtr.*must not have braced content"):
+        read_latex_document(r"\teiPtr[target={\#x}]{texte}")
+
+
+def test_braced_empty_paragraph_round_trips_without_diagnostics() -> None:
+    result = run('<p xmlns="http://www.tei-c.org/ns/1.0"/>')
+
+    assert result.diagnostics == []
+    assert result.latex == r"\teiP{}"
+    assert result.emitted.tag == f"{{{TEI_NS}}}p"
+    assert result.emitted.text is None
+    assert len(result.emitted) == 0
+
+
+def test_braced_empty_head_round_trips_without_error() -> None:
+    result = run('<head xmlns="http://www.tei-c.org/ns/1.0"/>')
+
+    assert result.diagnostics == []
+    assert result.latex == r"\teiHead{}"
+    assert result.emitted.tag == f"{{{TEI_NS}}}head"
+    assert result.emitted.text is None
+
+
+def test_braced_empty_hi_preserves_attribute() -> None:
+    result = run('<hi xmlns="http://www.tei-c.org/ns/1.0" rend="italic"/>')
+
+    assert result.diagnostics == []
+    assert result.latex == r"\teiHi[rend={italic}]{}"
+    assert result.emitted.tag == f"{{{TEI_NS}}}hi"
+    assert result.emitted.get("rend") == "italic"
+    assert result.emitted.text is None

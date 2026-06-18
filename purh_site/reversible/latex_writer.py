@@ -105,9 +105,7 @@ def _environment(name: str, options: str, content: str) -> str:
 
 
 def _macro(name: str, options: str, content: str) -> str:
-    if content:
-        return f"\\{name}{options}{{{content}}}"
-    return f"\\{name}{options}"
+    return f"\\{name}{options}{{{content}}}"
 
 
 def _empty_macro(name: str, options: str) -> str:

@@ -126,6 +126,8 @@ class _Parser:
         self.pos += len(macro_name) + 1
         attrs = self._parse_options()
         if macro_name in EMPTY_MACRO_TO_ELEMENT:
+            if self.pos < len(self.latex) and self.latex[self.pos] == "{":
+                raise LatexParseError(f"Empty controlled macro \\{macro_name} must not have braced content.")
             return make_element_node(EMPTY_MACRO_TO_ELEMENT[macro_name], attrs, [], namespace=TEI_NS)
         element_name = MACRO_TO_ELEMENT[macro_name]
         if self.pos >= len(self.latex) or self.latex[self.pos] != "{":

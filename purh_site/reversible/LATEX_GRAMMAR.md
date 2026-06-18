@@ -37,10 +37,11 @@ Inline or braced-content commands:
 \teiSaid[...]{...}
 ```
 
-The scholarly inline commands above are braced-content macros. `teiGraphic`,
-`teiPtr`, `teiLb`, and `teiPb` are empty macros with no braced content; they
-represent empty TEI elements placed in the document flow. Attributes remain
-ordinary options written as `key={value}`.
+Content macros always have a braced group, even when their content is empty,
+for example `\teiP{}` or `\teiHi[rend={italic}]{}`. `teiGraphic`, `teiPtr`,
+`teiLb`, and `teiPb` are the only empty macros; they must not have braced
+content and represent empty TEI elements placed in the document flow.
+Attributes remain ordinary options written as `key={value}`.
 
 Environment forms:
 
