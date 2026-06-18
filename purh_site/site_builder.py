@@ -649,7 +649,7 @@ class SiteBuilder:
         if pdf_href:
             parts.append(
                 f'<a class="download-button" href="{html.escape(pdf_href)}" download>'
-                'Télécharger le PDF'
+                'Télécharger le PDF éditeur'
                 '</a>'
             )
         parts.append('</div></section>')

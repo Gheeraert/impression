@@ -202,6 +202,91 @@ def test_article_images_are_normalized_in_default_css(tmp_path: Path) -> None:
     assert 'max-height: clamp(260px, 46vh, 520px);' in css
 
 
+def test_existing_editor_pdf_is_detected_and_downloaded_from_assets(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+    assets_dir = tmp_path / 'source_assets'
+    pdf_path = assets_dir / 'PDF' / 'ouvrage.pdf'
+    pdf_path.parent.mkdir(parents=True)
+    pdf_path.write_bytes(b'%PDF-editor')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert (tmp_path / 'site' / 'assets' / 'PDF' / 'ouvrage.pdf').exists()
+    assert 'href="assets/PDF/ouvrage.pdf"' in index_html
+    assert '<a class="download-button" href="assets/PDF/ouvrage.pdf" download>' in index_html
+    assert 'Télécharger le PDF éditeur' in index_html
+    assert not (tmp_path / 'site' / 'book.tex').exists()
+    assert not (tmp_path / 'site' / 'book.pdf').exists()
+
+
+def test_no_pdf_download_button_when_assets_have_no_pdf(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+    assets_dir = tmp_path / 'source_assets'
+    (assets_dir / 'images').mkdir(parents=True)
+    (assets_dir / 'images' / 'cover.jpg').write_bytes(b'fake-cover')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert 'Télécharger le PDF éditeur' not in index_html
+    assert '.pdf' not in index_html.lower()
+    assert not (tmp_path / 'site' / 'book.tex').exists()
+    assert not (tmp_path / 'site' / 'book.pdf').exists()
+
+
+def test_multiple_editor_pdfs_choose_first_sorted_candidate(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+    assets_dir = tmp_path / 'source_assets'
+    pdf_dir = assets_dir / 'PDF'
+    pdf_dir.mkdir(parents=True)
+    (pdf_dir / 'b.pdf').write_bytes(b'%PDF-b')
+    (pdf_dir / 'a.pdf').write_bytes(b'%PDF-a')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert (tmp_path / 'site' / 'assets' / 'PDF' / 'a.pdf').exists()
+    assert (tmp_path / 'site' / 'assets' / 'PDF' / 'b.pdf').exists()
+    assert 'href="assets/PDF/a.pdf"' in index_html
+    assert 'href="assets/PDF/b.pdf"' not in index_html
+
+
+def test_download_links_are_rendered_as_buttons(tmp_path: Path) -> None:
+    xml_path = tmp_path / 'book.xml'
+    xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
+    assets_dir = tmp_path / 'source_assets'
+    pdf_path = assets_dir / 'PDF' / 'ouvrage.pdf'
+    pdf_path.parent.mkdir(parents=True)
+    pdf_path.write_bytes(b'%PDF-editor')
+
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir),
+    )
+
+    index_html = result.html_path.read_text(encoding='utf-8')
+
+    assert '<a class="download-button" href="book.normalized.xml" download>' in index_html
+    assert '<a class="download-button" href="assets/PDF/ouvrage.pdf" download>' in index_html
+    assert '<button class="download-button"' not in index_html
+
+
 TEI_SAMPLE_WITHOUT_TITLE_OR_COLLECTION = """<?xml version='1.0' encoding='UTF-8'?>
 <TEI xmlns='http://www.tei-c.org/ns/1.0'>
   <teiHeader>
