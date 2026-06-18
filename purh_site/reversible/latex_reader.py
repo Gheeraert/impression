@@ -68,7 +68,10 @@ class _Parser:
 
         while self.pos < len(self.latex):
             if end_environment and self._starts_end_environment(end_environment):
-                self._flush_text(nodes, text_start, self.pos)
+                text_end = self.pos
+                if text_end > text_start and self.latex[text_end - 1] == "\n":
+                    text_end -= 1
+                self._flush_text(nodes, text_start, text_end)
                 self._consume_end_environment(end_environment)
                 return nodes
 
@@ -116,6 +119,7 @@ class _Parser:
         env_name = self._read_group()
         if env_name == "teiElement":
             attrs = self._parse_options()
+            self._consume_cosmetic_environment_newline()
             element_name = attrs.pop("name", None)
             namespace = attrs.pop("namespace", TEI_NS)
             if not element_name:
@@ -125,6 +129,7 @@ class _Parser:
         if env_name not in ENVIRONMENT_TO_ELEMENT:
             raise LatexParseError(f"Unknown controlled environment: {env_name}.")
         attrs = self._parse_options()
+        self._consume_cosmetic_environment_newline()
         children = self.parse_nodes(end_environment=env_name)
         return make_element_node(ENVIRONMENT_TO_ELEMENT[env_name], attrs, children, namespace=TEI_NS)
 
@@ -187,6 +192,10 @@ class _Parser:
 
     def _consume_end_environment(self, env_name: str) -> None:
         self.pos += len(f"\\end{{{env_name}}}")
+
+    def _consume_cosmetic_environment_newline(self) -> None:
+        if self.pos < len(self.latex) and self.latex[self.pos] == "\n":
+            self.pos += 1
 
 
 def read_latex(latex: str) -> Node:

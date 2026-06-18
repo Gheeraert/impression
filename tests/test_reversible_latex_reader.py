@@ -33,6 +33,15 @@ def structural_signature(element: etree._Element) -> tuple:
     )
 
 
+def full_round_trip(xml: str) -> tuple[etree._Element, etree._Element]:
+    source = etree.fromstring(xml.encode("utf-8"))
+    first_tree = read_tei_element(source)
+    latex = write_latex(first_tree)
+    second_tree = read_latex_document(latex)
+    emitted = write_tei_element(second_tree)
+    return source, emitted
+
+
 def test_reads_simple_paragraph() -> None:
     node = read_latex_document(r"\teiP{Un paragraphe.}")
 
@@ -85,6 +94,7 @@ def test_reads_div_with_head_and_paragraph() -> None:
     assert node.get_attr("type") == "chapter"
     assert node.xml_id == "ch_001"
     assert [element.local_name for element in elements] == ["head", "p"]
+    assert [child for child in node.children if isinstance(child, TextNode)] == []
 
 
 def test_reads_generic_tei_element() -> None:
@@ -104,6 +114,7 @@ def test_reads_generic_tei_element() -> None:
     assert type(unknown) is ElementNode
     assert unknown.local_name == "unknown"
     assert unknown.get_attr("role") == "x"
+    assert text_content(node) == "A B C"
 
 
 def test_reads_graphic_without_content() -> None:
@@ -167,6 +178,75 @@ def test_partial_round_trip_tei_tree_latex_tree_tei() -> None:
     emitted = write_tei_element(second_tree)
 
     assert structural_signature(emitted) == structural_signature(source)
+
+
+def test_full_round_trip_preserves_div_environment_structure() -> None:
+    source, emitted = full_round_trip(
+        '<div xmlns="http://www.tei-c.org/ns/1.0" type="chapter" xml:id="ch_001">\n'
+        "  <head>Introduction</head>\n"
+        '  <p xml:id="p_001">Texte avec <hi rend="italic">italique</hi>.</p>\n'
+        "</div>"
+    )
+
+    assert structural_signature(emitted) == structural_signature(source)
+
+
+def test_full_round_trip_preserves_list_environment_structure() -> None:
+    source, emitted = full_round_trip(
+        '<list xmlns="http://www.tei-c.org/ns/1.0" type="ordered">\n'
+        '  <item n="1">Premier item</item>\n'
+        '  <item n="2">Second item avec <hi rend="small-caps">petites capitales</hi>.</item>\n'
+        "</list>"
+    )
+
+    assert structural_signature(emitted) == structural_signature(source)
+
+
+def test_full_round_trip_preserves_figure_environment_structure() -> None:
+    source, emitted = full_round_trip(
+        '<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_001">\n'
+        "  <head>Figure 1</head>\n"
+        '  <graphic target="images/fig1.png"/>\n'
+        "</figure>"
+    )
+
+    assert structural_signature(emitted) == structural_signature(source)
+
+
+def test_full_round_trip_preserves_generic_element_environment_structure() -> None:
+    source, emitted = full_round_trip(
+        '<seg xmlns="http://www.tei-c.org/ns/1.0" type="lemma">A <unknown role="x">B</unknown> C</seg>'
+    )
+
+    assert structural_signature(emitted) == structural_signature(source)
+
+
+def test_cosmetic_newline_after_begin_does_not_create_document_text() -> None:
+    node = read_latex_document(
+        "\\begin{teiDiv}\n"
+        "\\teiHead{Introduction}\\teiP{Texte.}\n"
+        "\\end{teiDiv}"
+    )
+
+    assert [child.local_name for child in node.children if isinstance(child, ElementNode)] == ["head", "p"]
+    assert [child for child in node.children if isinstance(child, TextNode)] == []
+
+
+def test_inline_spaces_inside_paragraph_are_preserved() -> None:
+    node = read_latex_document(r"\teiP{Un \teiHi{mot} ici}")
+
+    assert [child.text for child in node.children if isinstance(child, TextNode)] == ["Un ", " ici"]
+    assert text_content(node) == "Un mot ici"
+
+
+def test_significant_text_inside_generic_environment_is_preserved() -> None:
+    node = read_latex_document(
+        "\\begin{teiElement}[name={seg}]\n"
+        "Texte significatif\n"
+        "\\end{teiElement}"
+    )
+
+    assert text_content(node) == "Texte significatif"
 
 
 def test_read_latex_can_return_text_node_for_plain_text() -> None:
