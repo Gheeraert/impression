@@ -21,6 +21,7 @@ Le renderer assume que le parseur TEI a déjà produit un modèle propre :
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import re
 from typing import Iterable
 
 from .semantic_model import (
@@ -853,7 +854,7 @@ class LatexRenderer:
             self._format_bibl_title(entry.monograph_title),
         ]
         container_parts.extend(self._publication_parts(entry))
-        container_parts.append(entry.pages)
+        container_parts.append(self._format_pages(entry.pages))
         container = self._join_bibl_parts(container_parts)
         if container:
             parts.append(f"dans {container}")
@@ -866,10 +867,10 @@ class LatexRenderer:
             self._format_people(entry.authors),
             self._format_bibl_title(entry.analytic_title),
             self._format_bibl_title(entry.journal_title),
-            self._prefixed_bibl_value("vol.", entry.volume),
-            self._prefixed_bibl_value("no", entry.issue),
+            self._format_volume(entry.volume),
+            self._format_issue(entry.issue),
             entry.date,
-            entry.pages,
+            self._format_pages(entry.pages),
         ]
         text = self._join_bibl_parts(parts)
         return self._append_identifier_sentence(text, entry.identifiers)
@@ -908,22 +909,44 @@ class LatexRenderer:
             return rf"\textit{{{escaped}}}"
         return escaped
 
-    def _prefixed_bibl_value(self, prefix: str, value: str | None) -> str:
+    def _format_pages(self, value: str | None) -> str:
         if not value:
             return ""
-        escaped = self._escape_text(value)
-        if value.strip().lower().startswith(prefix.lower()):
-            return escaped
-        return f"{prefix} {escaped}"
+        text = value.strip()
+        text = re.sub(r"^(p{1,2}\.)\s*~?\s*", "", text, flags=re.IGNORECASE)
+        if not text:
+            return ""
+        return rf"p.~{self._escape_text(text)}"
+
+    def _format_volume(self, value: str | None) -> str:
+        if not value:
+            return ""
+        text = value.strip()
+        text = re.sub(r"^vol\.\s*~?\s*", "", text, flags=re.IGNORECASE)
+        if not text:
+            return ""
+        return rf"vol.~{self._escape_text(text)}"
+
+    def _format_issue(self, value: str | None) -> str:
+        if not value:
+            return ""
+        text = value.strip()
+        text = re.sub(
+            r"^(?:no|n°|nº|n\\textsuperscript\{o\})\s*~?\s*",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if not text:
+            return ""
+        return rf"n\textsuperscript{{o}}~{self._escape_text(text)}"
 
     def _join_bibl_parts(self, parts: Iterable[str | None]) -> str:
         clean = [part.strip(" ,") for part in parts if part and part.strip(" ,")]
         return ", ".join(clean)
 
     def _append_identifier_sentence(self, text: str, identifiers: list[BibliographicIdentifier]) -> str:
-        result = text.rstrip()
-        if result and not result.endswith("."):
-            result += "."
+        result = self._ensure_sentence_period(text)
         for identifier in identifiers:
             rendered = self._render_bibl_identifier(identifier)
             if rendered:
@@ -932,7 +955,7 @@ class LatexRenderer:
 
     def _render_bibl_identifier(self, identifier: BibliographicIdentifier) -> str:
         kind = identifier.type.strip().upper()
-        value = identifier.value.strip()
+        value = identifier.value.strip().rstrip(".")
         if not kind or not value:
             return ""
         if kind in {"ISBN", "ISBN-13"}:
@@ -942,6 +965,14 @@ class LatexRenderer:
         if kind in {"URI", "URL", "SITE"}:
             return f"URI {self._bibl_identifier_link(value, value)}."
         return f"{self._escape_text(kind)} {self._escape_text(value)}."
+
+    def _ensure_sentence_period(self, text: str) -> str:
+        result = re.sub(r"\s+", " ", text).strip(" ,")
+        result = re.sub(r"(?:,\s*)+\.", ".", result)
+        result = re.sub(r"\.{2,}$", ".", result)
+        if result and not result.endswith("."):
+            result += "."
+        return result
 
     def _doi_target(self, value: str) -> str:
         if value.lower().startswith(("http://", "https://")):

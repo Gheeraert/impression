@@ -373,7 +373,7 @@ def test_biblstruct_contribution_in_edited_volume_is_rendered_to_latex(tmp_path:
     latex = render_latex(xml_path)
 
     assert r"Jean Dupont, \enquote{Un chapitre important}, dans Claire Martin (dir.)" in latex
-    assert r"\textit{Volume collectif}, Rouen, PURH, 2026, p. 15-32." in latex
+    assert r"\textit{Volume collectif}, Rouen, PURH, 2026, p.~15-32." in latex
     assert "dans (dir.)" not in latex
     assert "(dir.), ," not in latex
 
@@ -405,10 +405,138 @@ def test_biblstruct_journal_article_is_rendered_to_latex(tmp_path: Path) -> None
     latex = render_latex(xml_path)
 
     assert r"Marie Leroy, \enquote{Article savant}, \textit{Revue d’histoire littéraire}" in latex
-    assert "vol. 123" in latex
-    assert "no 2" in latex
+    assert "vol.~123" in latex
+    assert r"n\textsuperscript{o}~2" in latex
     assert "2024" in latex
-    assert "p. 45-67" in latex
+    assert "p.~45-67" in latex
+    assert "vol. 123" not in latex
+    assert "no 2" not in latex
+
+
+def test_biblstruct_pages_are_normalized_in_purh_style(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic><author>Alice</author><title level="a">Premier</title></analytic>
+            <monogr><title level="j">Revue</title><imprint><biblScope unit="page">45-67</biblScope></imprint></monogr>
+          </biblStruct>
+          <biblStruct>
+            <analytic><author>Bruno</author><title level="a">Deuxième</title></analytic>
+            <monogr><title level="j">Revue</title><imprint><biblScope unit="page">p. 45-67</biblScope></imprint></monogr>
+          </biblStruct>
+          <biblStruct>
+            <analytic><author>Claire</author><title level="a">Troisième</title></analytic>
+            <monogr><title level="j">Revue</title><imprint><biblScope unit="page">p.~45-67</biblScope></imprint></monogr>
+          </biblStruct>
+          <biblStruct>
+            <analytic><author>David</author><title level="a">Quatrième</title></analytic>
+            <monogr><title level="j">Revue</title><imprint><biblScope unit="page">15</biblScope></imprint></monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert latex.count("p.~45-67") == 3
+    assert "p.~15" in latex
+    assert "p. p." not in latex
+    assert "p.~p." not in latex
+
+
+def test_biblstruct_journal_volume_and_issue_use_french_latex_style(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic><author>Alice</author><title level="a">Article</title></analytic>
+            <monogr>
+              <title level="j">Revue</title>
+              <imprint>
+                <biblScope unit="volume">vol. 123</biblScope>
+                <biblScope unit="issue">no 2</biblScope>
+              </imprint>
+            </monogr>
+          </biblStruct>
+          <biblStruct>
+            <analytic><author>Bruno</author><title level="a">Article bis</title></analytic>
+            <monogr>
+              <title level="j">Revue</title>
+              <imprint>
+                <biblScope unit="volume">123</biblScope>
+                <biblScope unit="issue">n° 2</biblScope>
+              </imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert latex.count("vol.~123") == 2
+    assert latex.count(r"n\textsuperscript{o}~2") == 2
+    assert "vol. 123" not in latex
+    assert "no 2" not in latex
+
+
+def test_biblstruct_contribution_pages_use_non_breaking_space(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <analytic>
+              <author>Jean Dupont</author>
+              <title level="a">Chapitre</title>
+            </analytic>
+            <monogr>
+              <editor>Claire Martin</editor>
+              <title level="m">Volume collectif</title>
+              <imprint><biblScope unit="page">p. 15-32</biblScope></imprint>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert "p.~15-32" in latex
+    assert "p. 15-32" not in latex
+
+
+def test_biblstruct_missing_publication_parts_do_not_leave_orphan_punctuation(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Autrice</author>
+              <title level="m">Titre seul avec date</title>
+              <imprint><date>2026</date></imprint>
+            </monogr>
+          </biblStruct>
+          <biblStruct>
+            <monogr>
+              <title level="m">Titre seul</title>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"Autrice, \textit{Titre seul avec date}, 2026." in latex
+    assert r"\textit{Titre seul}." in latex
+    assert ", ," not in latex
+    assert ", ." not in latex
+    assert "None" not in latex
 
 
 def test_biblstruct_multiple_authors_and_editors_are_joined_readably(tmp_path: Path) -> None:
@@ -500,6 +628,34 @@ def test_biblstruct_identifiers_are_rendered_readably(tmp_path: Path) -> None:
     assert r"\href{https://doi.org/10.4000/deja}{https://doi.org/10.4000/deja}" in latex
     assert r"URI \href{https://example.org/ouvrage}{https://example.org/ouvrage}." in latex
     assert "https://doi.org/https://doi.org" not in latex
+    assert ".." not in latex
+
+
+def test_biblstruct_identifiers_do_not_duplicate_periods_or_doi_prefix(tmp_path: Path) -> None:
+    xml_path = write_tei(
+        tmp_path,
+        """
+        <listBibl>
+          <biblStruct>
+            <monogr>
+              <author>Autrice</author>
+              <title level="m">Livre avec ponctuation</title>
+              <idno type="DOI">10.4000/brut.</idno>
+              <idno type="DOI">https://doi.org/10.4000/deja.</idno>
+              <idno type="URI">https://example.org/ouvrage.</idno>
+            </monogr>
+          </biblStruct>
+        </listBibl>
+        """,
+    )
+
+    latex = render_latex(xml_path)
+
+    assert r"DOI \href{https://doi.org/10.4000/brut}{10.4000/brut}." in latex
+    assert r"DOI \href{https://doi.org/10.4000/deja}{https://doi.org/10.4000/deja}." in latex
+    assert r"URI \href{https://example.org/ouvrage}{https://example.org/ouvrage}." in latex
+    assert "https://doi.org/https://doi.org" not in latex
+    assert ".." not in latex
 
 
 def test_biblstruct_in_footnote_is_rendered_without_breaking_footnote(tmp_path: Path) -> None:
