@@ -15,10 +15,13 @@ from .nodes import ElementNode, Node, TextNode
 ENVIRONMENT_ELEMENTS = {
     "bibl": "teiBibl",
     "cit": "teiCit",
+    "cell": "teiCell",
     "div": "teiDiv",
     "figure": "teiFigure",
     "list": "teiList",
     "quote": "teiQuote",
+    "row": "teiRow",
+    "table": "teiTable",
 }
 
 EMPTY_MACRO_ELEMENTS = {

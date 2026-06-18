@@ -26,6 +26,9 @@ it is not a request to route this code into the application.
 | `ptr` | yes | yes | `teiPtr` macro | yes | yes | Empty milestone/link element, preserves placement and attributes. |
 | `lb` | yes | yes | `teiLb` macro | yes | yes | Empty line-break milestone, preserves placement and attributes. |
 | `pb` | yes | yes | `teiPb` macro | yes | yes | Empty page-break milestone, preserves placement and attributes. |
+| `table` | yes | yes | `teiTable` environment | yes | yes | Reversible semantic table serialization, not typographic LaTeX. |
+| `row` | yes | yes | `teiRow` environment | yes | yes | Preserves cell order and attributes. |
+| `cell` | yes | yes | `teiCell` environment | yes | yes | Preserves mixed content and nested paragraphs. |
 | `title` | yes | yes | `teiTitle` macro | yes | yes | Preserves attributes such as `level`. |
 | `foreign` | yes | yes | `teiForeign` macro | yes | yes | Scholarly inline macro. |
 | `term` | yes | yes | `teiTerm` macro | yes | yes | Scholarly inline macro. |
@@ -68,6 +71,8 @@ it is not a request to route this code into the application.
 - `ed`
 - `facs`
 - `rendition`
+- `rows`
+- `cols`
 - simple unknown attributes, preserved as options in controlled LaTeX where possible.
 
 ## Elements To Cover Next
@@ -77,6 +82,3 @@ should continue to round-trip through the generic `teiElement` fallback until a
 future pass gives them dedicated semantics.
 
 - finer bibliographic elements such as `author`, `editor`, `publisher`, `biblScope`, and `idno`
-- `table`
-- `row`
-- `cell`

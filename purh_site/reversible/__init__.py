@@ -2,6 +2,7 @@
 
 from .nodes import (
     BiblNode,
+    CellNode,
     CitNode,
     DivNode,
     ElementNode,
@@ -25,6 +26,8 @@ from .nodes import (
     QNode,
     RefNode,
     SaidNode,
+    RowNode,
+    TableNode,
     TermNode,
     TextNode,
     TitleNode,
@@ -44,6 +47,7 @@ from .roundtrip import (
 __all__ = [
     "DivNode",
     "BiblNode",
+    "CellNode",
     "CitNode",
     "ElementNode",
     "FigureNode",
@@ -66,6 +70,8 @@ __all__ = [
     "QNode",
     "RefNode",
     "SaidNode",
+    "RowNode",
+    "TableNode",
     "TermNode",
     "TextNode",
     "TitleNode",

@@ -69,10 +69,26 @@ Environment forms:
 \begin{teiBibl}[...]
 ...
 \end{teiBibl}
+
+\begin{teiTable}[...]
+...
+\end{teiTable}
+
+\begin{teiRow}[...]
+...
+\end{teiRow}
+
+\begin{teiCell}[...]
+...
+\end{teiCell}
 ```
 
 `teiCit` and `teiBibl` are conservative serializations. They are not yet an
 interpreted bibliographic model.
+
+`teiTable`, `teiRow`, and `teiCell` are reversible semantic serializations of
+TEI table structures. They are not typographic LaTeX tables and must not be
+treated as `tabular`, `longtable`, or `booktabs` output.
 
 Unknown or not-yet-specialized TEI elements are preserved with a generic
 environment:
@@ -105,6 +121,8 @@ Current conventions:
   `who`, and `cert` follow the same rule.
   Milestone attributes such as `ed`, `facs`, `rendition`, and `target` also
   follow the same rule.
+  Table attributes such as `rows`, `cols`, `role`, `rend`, and `n` also follow
+  the same rule.
 - Unknown attributes are preserved as far as possible.
 - Attribute values are always braced: `key={value}`.
 - Options are separated by commas.

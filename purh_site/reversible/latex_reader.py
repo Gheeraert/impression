@@ -48,11 +48,14 @@ EMPTY_MACRO_TO_ELEMENT = {
 
 ENVIRONMENT_TO_ELEMENT = {
     "teiBibl": "bibl",
+    "teiCell": "cell",
     "teiCit": "cit",
     "teiDiv": "div",
     "teiFigure": "figure",
     "teiList": "list",
     "teiQuote": "quote",
+    "teiRow": "row",
+    "teiTable": "table",
 }
 
 KNOWN_TEXT_ESCAPES = {
