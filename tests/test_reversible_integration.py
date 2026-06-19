@@ -75,6 +75,99 @@ def test_latei_body_is_reversible_and_latei_main_is_driver_only(tmp_path: Path) 
     assert compare_tei_elements(source, emitted) == []
 
 
+def test_latei_driver_uses_header_metadata_and_keeps_header_reversible(tmp_path: Path) -> None:
+    xml_path = write_xml(
+        tmp_path / "metopes.xml",
+        '<TEI xmlns="http://www.tei-c.org/ns/1.0">'
+        "<teiHeader>"
+        "<fileDesc>"
+        "<titleStmt>"
+        '<title type="main">Titre principal</title>'
+        '<title type="sub">Sous-titre</title>'
+        "<author>Alice Auteur</author>"
+        "</titleStmt>"
+        "<publicationStmt>"
+        "<publisher>PURH</publisher>"
+        '<date type="publishing" when="2026-06-20">2026</date>'
+        '<ab type="book"><idno type="ISBN-13">979-10-000-0000-0</idno></ab>'
+        '<ab type="digital_download" subtype="PDF">'
+        '<idno type="ISBN">979-10-000-0000-1</idno>'
+        '<idno type="DOI">10.0000/purh.test</idno>'
+        "</ab>"
+        "</publicationStmt>"
+        "<sourceDesc><p>Source</p></sourceDesc>"
+        "</fileDesc>"
+        "</teiHeader>"
+        "<text><body><div type=\"chapter\" xml:id=\"ch_001\">"
+        "<head>Introduction</head><p>Texte.</p>"
+        "</div></body></text>"
+        "</TEI>",
+    )
+
+    result = run_reversible_export_for_file(xml_path)
+    body = result.latei_body_path.read_text(encoding="utf-8")
+    main = result.latei_main_path.read_text(encoding="utf-8")
+    macros = result.latei_macros_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert r"name={teiHeader}" in body
+    assert r"\newcommand{\PURHBookTitle}{Titre principal}" in main
+    assert r"\newcommand{\PURHBookSubtitle}{Sous-titre}" in main
+    assert r"\newcommand{\PURHBookAuthor}{Alice Auteur}" in main
+    assert r"\newcommand{\PURHPublisher}{PURH}" in main
+    assert r"\newcommand{\PURHYear}{2026}" in main
+    assert r"\newcommand{\PURHISBN}{979-10-000-0000-1}" in main
+    assert r"\newcommand{\PURHDOI}{10.0000/purh.test}" in main
+    assert r"\PurhSubtitle{\PURHBookSubtitle}" in main
+    assert r"\PurhContributors{\PURHBookAuthor}" in main
+    assert r"\PurhTitleExtra{ISBN PDF 979-10-000-0000-1}" in main
+    assert r"\PurhTitleExtra{ISBN imprime 979-10-000-0000-0}" in main
+    assert "name={teiHeader}" in macros
+    assert "teiHeader is metadata, not running text" in macros
+
+    source = etree.parse(str(xml_path)).getroot()
+    emitted = write_tei_element(read_latex_document(body))
+
+    assert emitted.find(".//{http://www.tei-c.org/ns/1.0}teiHeader") is not None
+    assert compare_tei_elements(source, emitted) == []
+
+
+def test_latei_macros_render_head_from_structural_context(tmp_path: Path) -> None:
+    xml_path = write_xml(
+        tmp_path / "heads.xml",
+        '<TEI xmlns="http://www.tei-c.org/ns/1.0">'
+        "<text><body>"
+        '<div type="chapter"><head>Chapitre</head><p>Texte.</p></div>'
+        '<div type="section"><head>Section</head><p>Texte.</p></div>'
+        '<div type="section2"><head>Sous-section</head><p>Texte.</p></div>'
+        '<div type="section3"><head>Sous-sous-section</head><p>Texte.</p></div>'
+        "<figure><head>Figure 1</head><graphic target=\"fig.png\"/></figure>"
+        '<table><head>Tableau 1</head><row><cell>A</cell></row></table>'
+        "</body></text>"
+        "</TEI>",
+    )
+
+    result = run_reversible_export_for_file(xml_path)
+    body = result.latei_body_path.read_text(encoding="utf-8")
+    macros = result.latei_macros_path.read_text(encoding="utf-8")
+
+    assert result.success is True
+    assert r"\teiHead{Chapitre}" in body
+    assert r"\chapter{#1}" in macros
+    assert r"\section{#1}" in macros
+    assert r"\subsection{#1}" in macros
+    assert r"\subsubsection{#1}" in macros
+    assert r"\lateiSetHeadContext{chapter}" in macros
+    assert r"\lateiSetHeadContext{figure}" in macros
+    assert r"\lateiSetHeadContext{table}" in macros
+    assert r"\lateiSetHeadContext{list}" in macros
+
+    source = etree.parse(str(xml_path)).getroot()
+    emitted = write_tei_element(read_latex_document(body))
+
+    assert compare_tei_elements(source, emitted) == []
+
+
 def test_latei_driver_is_portable_with_spaces_and_accents_in_names(tmp_path: Path) -> None:
     xml_path = write_xml(
         tmp_path / "Mon livre été.xml",

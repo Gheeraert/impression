@@ -15,8 +15,8 @@ from typing import Sequence
 from lxml import etree
 
 from .latei_driver import build_latei_driver, compile_latei_pdf
+from .latei_metadata import extract_latei_metadata
 from .reversible import Diagnostic, run_tei_latex_tei_roundtrip
-from .utils import TEI_NS
 
 
 @dataclass(slots=True)
@@ -124,6 +124,7 @@ def run_reversible_export_for_file(
             message=message,
         )
 
+    metadata = extract_latei_metadata(element)
     result = run_tei_latex_tei_roundtrip(element)
 
     resolved_output_dir.mkdir(parents=True, exist_ok=True)
@@ -133,7 +134,7 @@ def run_reversible_export_for_file(
         latei_body_path,
         latei_main_path,
         macros_tex_path=latei_macros_path,
-        title=_document_title(element),
+        metadata=metadata,
     )
     pdf_result = compile_latei_pdf(
         latei_main_path,
@@ -210,20 +211,6 @@ def _format_diagnostics(diagnostics: list[Diagnostic]) -> str:
 def _write_error_report(path: Path, message: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"Reversible export failed.\n{message}\n", encoding="utf-8")
-
-
-def _document_title(element: etree._Element) -> str | None:
-    ns = {"tei": TEI_NS}
-    candidates = [
-        "string(.//tei:teiHeader//tei:titleStmt/tei:title[@type='main'][1])",
-        "string(.//tei:teiHeader//tei:titleStmt/tei:title[1])",
-        "string(.//tei:head[1])",
-    ]
-    for expression in candidates:
-        value = str(element.xpath(expression, namespaces=ns)).strip()
-        if value:
-            return value
-    return etree.QName(element).localname
 
 
 def main(argv: Sequence[str] | None = None) -> int:

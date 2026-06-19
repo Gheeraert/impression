@@ -13,6 +13,7 @@ import shutil
 import subprocess
 
 from .latex_renderer import render_purh_preamble_for_latei
+from .latei_metadata import LateiMetadata
 
 
 LATEI_MACROS_PATH = Path(__file__).resolve().parent / "resources" / "latei_macros.tex"
@@ -31,6 +32,7 @@ def build_latei_driver(
     main_tex_path: Path,
     *,
     macros_tex_path: Path | None = None,
+    metadata: LateiMetadata | None = None,
     title: str | None = None,
 ) -> Path:
     """Write a PURH LaTEI main file that inputs the reversible body file."""
@@ -43,14 +45,26 @@ def build_latei_driver(
 
     body_input = _latex_input_path(body_tex_path, relative_to=main_tex_path.parent)
     macros_input = _latex_input_path(local_macros_path, relative_to=main_tex_path.parent)
-    document_title = _latex_text(title or "LaTEI PURH")
+    metadata = metadata or LateiMetadata(title=title or "LaTEI PURH")
 
     content = "\n\n".join(
         [
-            render_purh_preamble_for_latei(title=title or "LaTEI PURH"),
+            render_purh_preamble_for_latei(
+                title=metadata.title or title or "LaTEI PURH",
+                subtitle=metadata.subtitle or None,
+                contributors=metadata.contributors,
+                publisher=metadata.publisher or None,
+                publication_year=metadata.publication_year or None,
+                doi=metadata.doi or None,
+                isbn_print=metadata.isbn_print or None,
+                isbn_pdf=metadata.isbn_pdf or None,
+                collection_title=metadata.collection_title or None,
+                collection_number=metadata.collection_number or None,
+                issn=metadata.issn or metadata.collection_issn or None,
+            ),
             rf"\input{{{macros_input}}}",
             r"\begin{document}",
-            _title_page(document_title),
+            _title_page(metadata),
             r"\mainmatter",
             rf"\input{{{body_input}}}",
             r"\end{document}",
@@ -158,20 +172,42 @@ def compile_latei_pdf(
     )
 
 
-def _title_page(title: str) -> str:
-    return "\n".join(
+def _title_page(metadata: LateiMetadata) -> str:
+    lines = [
+        r"\begin{titlepage}",
+        r"\thispagestyle{empty}",
+        r"\centering",
+        r"\vspace*{0.15\textheight}",
+        r"{\Huge\bfseries \PURHBookTitle\par}",
+    ]
+    if metadata.subtitle:
+        lines.append(r"\PurhSubtitle{\PURHBookSubtitle}")
+    if metadata.contributor_line:
+        lines.append(r"\PurhContributors{\PURHBookAuthor}")
+    lines.append(r"\vfill")
+    publication_parts = [
+        part
+        for part in (metadata.publisher, metadata.publication_year)
+        if part
+    ]
+    if publication_parts:
+        lines.append(rf"\PurhTitleExtra{{{_latex_text(' - '.join(publication_parts))}}}")
+    if metadata.isbn_pdf:
+        lines.append(rf"\PurhTitleExtra{{ISBN PDF {_latex_text(metadata.isbn_pdf)}}}")
+    if metadata.isbn_print:
+        lines.append(rf"\PurhTitleExtra{{ISBN imprime {_latex_text(metadata.isbn_print)}}}")
+    if metadata.isbn_epub:
+        lines.append(rf"\PurhTitleExtra{{ISBN ePub {_latex_text(metadata.isbn_epub)}}}")
+    if metadata.doi:
+        lines.append(rf"\PurhTitleExtra{{DOI {_latex_text(metadata.doi)}}}")
+    lines.extend(
         [
-            r"\begin{titlepage}",
-            r"\thispagestyle{empty}",
-            r"\centering",
-            r"\vspace*{0.15\textheight}",
-            rf"{{\Huge\bfseries {title}\par}}",
-            r"\vfill",
             r"{\small Document LaTEI PURH experimental\par}",
             r"\end{titlepage}",
             r"\clearpage",
         ]
     )
+    return "\n".join(lines)
 
 
 def _latex_input_path(path: Path, *, relative_to: Path) -> str:
@@ -181,7 +217,8 @@ def _latex_input_path(path: Path, *, relative_to: Path) -> str:
         value = resolved.relative_to(base).as_posix()
     except ValueError:
         value = resolved.as_posix()
-    return f'"{value.replace(chr(34), "").replace("}", r"\}")}"'
+    safe_value = value.replace('"', "").replace("}", r"\}")
+    return f'"{safe_value}"'
 
 
 def _write_latei_log(

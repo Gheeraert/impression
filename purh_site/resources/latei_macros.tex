@@ -6,7 +6,29 @@
 \usepackage{xstring}
 
 \NewDocumentCommand{\teiP}{O{} +m}{\par #2\par}
-\NewDocumentCommand{\teiHead}{O{} +m}{\section*{#2}}
+
+% Heads are contextual in TEI: the same <head> can name a chapter, section,
+% figure, table, or list. The surrounding LaTEI environment sets this context.
+\newcommand{\lateiHeadContext}{fallback}
+\newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
+\NewDocumentCommand{\lateiRenderHead}{m}{%
+  \IfStrEq{\lateiHeadContext}{chapter}{\chapter{#1}}{%
+    \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
+      \IfStrEq{\lateiHeadContext}{subsection}{\subsection{#1}}{%
+        \IfStrEq{\lateiHeadContext}{subsubsection}{\subsubsection{#1}}{%
+          \IfStrEq{\lateiHeadContext}{figure}{\par\smallskip\noindent\textbf{#1}\par\smallskip}{%
+            \IfStrEq{\lateiHeadContext}{table}{\par\smallskip\noindent\textbf{#1}\par\smallskip}{%
+              \IfStrEq{\lateiHeadContext}{list}{\item[]\textbf{#1}}{%
+                \par\smallskip\noindent\textbf{#1}\par\smallskip% fallback head
+              }%
+            }%
+          }%
+        }%
+      }%
+    }%
+  }%
+}
+\NewDocumentCommand{\teiHead}{O{} +m}{\lateiRenderHead{#2}}
 
 % Apply rend values predictably, including combined values in any order.
 \NewDocumentCommand{\lateiHiBold}{m +m}{%
@@ -70,20 +92,46 @@
 \NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
 \NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}
 
-\NewDocumentEnvironment{teiDiv}{O{} +b}{#2}{}
+\NewDocumentEnvironment{teiDiv}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{fallback}%
+  \IfSubStr{#1}{type={chapter}}{\lateiSetHeadContext{chapter}}{}%
+  \IfSubStr{#1}{type={section}}{\lateiSetHeadContext{section}}{}%
+  \IfSubStr{#1}{type={section1}}{\lateiSetHeadContext{section}}{}%
+  \IfSubStr{#1}{type={section2}}{\lateiSetHeadContext{subsection}}{}%
+  \IfSubStr{#1}{type={subsection}}{\lateiSetHeadContext{subsection}}{}%
+  \IfSubStr{#1}{type={section3}}{\lateiSetHeadContext{subsubsection}}{}%
+  #2%
+  \endgroup
+}{}
 \NewDocumentEnvironment{teiList}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{list}%
   \IfSubStr{#1}{type={ordered}}{\begin{enumerate}}{\begin{itemize}}%
   #2%
   \IfSubStr{#1}{type={ordered}}{\end{enumerate}}{\end{itemize}}%
+  \endgroup
 }{}
 \NewDocumentCommand{\teiItem}{O{} +m}{\item #2}
 \NewDocumentEnvironment{teiQuote}{O{} +b}{\begin{PurhBlockQuote}#2\end{PurhBlockQuote}}{}
-\NewDocumentEnvironment{teiFigure}{O{} +b}{\begin{center}#2\end{center}}{}
+\NewDocumentEnvironment{teiFigure}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{figure}%
+  \begin{center}#2\end{center}%
+  \endgroup
+}{}
 \NewDocumentEnvironment{teiCit}{O{} +b}{#2}{}
 \NewDocumentEnvironment{teiBibl}{O{} +b}{\par\noindent #2\par}{}
-\NewDocumentEnvironment{teiTable}{O{} +b}{\par\begin{center}#2\end{center}\par}{}
+\NewDocumentEnvironment{teiTable}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{table}%
+  \par\begin{center}#2\end{center}\par
+  \endgroup
+}{}
 \NewDocumentEnvironment{teiRow}{O{} +b}{#2\par}{}
 \NewDocumentEnvironment{teiCell}{O{} +b}{#2\quad}{}
+% teiHeader is metadata, not running text. Document wrappers pass through;
+% unknown non-header elements keep their content visible rather than vanish.
 \NewDocumentEnvironment{teiElement}{O{} +b}{%
   \IfSubStr{#1}{name={teiHeader}}{}{#2}%
 }{}

@@ -35,6 +35,7 @@ from .semantic_model import (
     Book,
     BookMetadata,
     Bold,
+    Contributor,
     Division,
     DivisionType,
     FigureBlock,
@@ -1283,7 +1284,15 @@ def render_purh_preamble_for_latei(
     *,
     title: str | None = None,
     subtitle: str | None = None,
+    contributors: list[str] | None = None,
     publisher: str | None = None,
+    publication_year: str | None = None,
+    doi: str | None = None,
+    isbn_print: str | None = None,
+    isbn_pdf: str | None = None,
+    collection_title: str | None = None,
+    collection_number: str | None = None,
+    issn: str | None = None,
 ) -> str:
     """Return the stable PURH preamble for the experimental LaTEI driver.
 
@@ -1294,8 +1303,20 @@ def render_purh_preamble_for_latei(
     metadata = BookMetadata(
         title=title or "LaTEI PURH",
         subtitle=subtitle,
+        contributors=[
+            Contributor(full_name=value)
+            for value in (contributors or [])
+            if value.strip()
+        ],
         publication=PublicationInfo(
             publisher=publisher or "Presses universitaires de Rouen et du Havre",
+            publication_year=publication_year or None,
+            doi=doi or None,
+            isbn_print=isbn_print or None,
+            isbn_pdf=isbn_pdf or None,
+            collection_name=collection_title or None,
+            collection_number=collection_number or None,
+            issn=issn or None,
         ),
     )
     book = Book(metadata=metadata)
