@@ -91,6 +91,12 @@ def extract_latei_metadata(root: etree._Element) -> LateiMetadata:
             subtype="PDF",
             idno_types=("ISBN", "ISBN-13"),
         ),
+        isbn_epub=_identifier_in_ab(
+            publication_stmt,
+            ab_type="digital_download",
+            subtype="EPUB",
+            idno_types=("ISBN", "ISBN-13"),
+        ),
         doi=_publication_doi(publication_stmt),
         issn=_identifier_in_ab(
             publication_stmt,

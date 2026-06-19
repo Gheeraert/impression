@@ -21,6 +21,13 @@ servent seulement au driver PDF LaTEI.
 - `tests/test_reversible_real_metopes_fragments.py` : fallback reversible sur
   elements Metopes non specialises comme `forename`, `surname`, `availability`,
   `licence`.
+- `tests/fixtures/metopes/heraldique_ii.book.normalized.xml` : fixture Metopes
+  normalisee reelle produite par Impressions/PURH pour `Heraldique et papaute`.
+  Elle atteste notamment `publicationStmt/ab[@type='book']`,
+  `ab[@type='digital_download'][@subtype='PDF']`,
+  `ab[@type='digital_download'][@subtype='EPUB']`, `graphic @url`,
+  `div type='section1'`, `section2`, `section3`, `figure/head`, contenus
+  mixtes et nombreux `xml:id`.
 - `purh_site/reversible/TEI_COVERAGE.md` et
   `purh_site/reversible/LATEX_GRAMMAR.md` : contrat reversible LaTEI.
 - `AUDIT_LATEI_PURH_CONVERGENCE.md` : audit de convergence stable PDF / LaTEI.
@@ -42,7 +49,7 @@ et `Coeur_seul.xml`.
 | annee/date de publication | priorite `publicationStmt//date[@type='publishing']/@when`, puis texte de la date, puis autre `date` | `date type="publishing" when="2026"` | `\PURHYear`, page de titre | conserve | couvert |
 | ISBN papier | `publicationStmt/ab[@type='book']//idno[@type='ISBN-13' ou 'ISBN']` | `978-2-87775-000-0` | page de titre; fallback pour `\PURHISBN` si pas d'ISBN PDF | conserve | couvert |
 | ISBN PDF | `publicationStmt/ab[@type='digital_download'][@subtype='PDF']//idno[@type='ISBN' ou 'ISBN-13']` | `978-2-87775-001-7` | `\PURHISBN`, page de titre | conserve | couvert |
-| ISBN numerique/ePub | non determine dans les sources consultees; champ reserve vide | non determine | aucun usage | conserve si present par round-trip generique | non determine |
+| ISBN numerique/ePub | `publicationStmt/ab[@type='digital_download'][@subtype='EPUB']//idno[@type='ISBN-13' ou 'ISBN']` | bloc EPUB atteste dans `heraldique_ii.book.normalized.xml`, valeur vide dans cette fixture | aucun usage PDF dans cette passe | conserve | couvert si valeur presente |
 | DOI | priorite `ab[@type='digital_download'][@subtype='PDF']//idno[@type='DOI']`, puis `ref[@type='DOI']`, puis DOI direct sous `publicationStmt` | `10.4000/purh.test-realiste` | `\PURHDOI`, page de titre | conserve | couvert |
 | collection | `/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt/title[@level='s']`, puis premier `title` | `Collection essais` dans `tests/test_zotero_metadata.py` | preambule PURH stable | conserve | couvert |
 | numero de collection | `seriesStmt/biblScope[@unit='volume' ou 'number' ou 'issue']` | `42` | preambule PURH stable | conserve | couvert |

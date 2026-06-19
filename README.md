@@ -207,3 +207,15 @@ Impressions est développé par Tony Gheeraert dans le cadre des :
 ## Licence
 
 MIT
+
+## Fixtures Métopes
+
+Ce dossier contient des XML Commons-Publishing / Métopes utilisés comme épreuves de vérité pour la chaîne LaTEI réversible.
+
+`heraldique_ii.book.normalized.xml` est un XML normalisé par la chaîne Impressions/PURH. Il sert à vérifier que le passage :
+
+XML Métopes → LaTEI → XML Métopes
+
+reste conservateur sur un document réel complexe, avec métadonnées, structures de livre, illustrations, `graphic @url`, divisions `section1/section2/section3`, notes et contenus mixtes.
+
+Ces fichiers ne sont pas des sorties temporaires : ils sont des fixtures de test.
