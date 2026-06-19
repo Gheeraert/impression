@@ -176,12 +176,18 @@ class App(ttk.Frame):
 
         self._log(result.message)
         self._log(f"LaTeX réversible : {result.latex_path}")
+        self._log(f"Corps LaTEI : {result.latei_body_path}")
+        self._log(f"Driver LaTEI : {result.latei_main_path}")
+        self._log(f"PDF LaTEI : {result.latei_pdf_path if result.latei_pdf_success else result.latei_pdf_message}")
         self._log(f"XML round-trip : {result.roundtrip_xml_path}")
         self._log(f"Diagnostics : {result.diagnostics_path}")
 
         details = (
             f"{result.message}\n\n"
             f"LaTeX : {result.latex_path}\n"
+            f"Corps LaTEI : {result.latei_body_path}\n"
+            f"Driver LaTEI : {result.latei_main_path}\n"
+            f"PDF LaTEI : {result.latei_pdf_path if result.latei_pdf_success else result.latei_pdf_message}\n"
             f"XML round-trip : {result.roundtrip_xml_path}\n"
             f"Diagnostics : {result.diagnostics_path}"
         )

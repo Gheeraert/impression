@@ -1,0 +1,66 @@
+% Experimental LaTEI macros for the reversible TEI/PURH convergence path.
+% These definitions are typographic only; the reversible source remains the
+% controlled LaTEI body produced by purh_site.reversible.latex_writer.
+
+\usepackage{xparse}
+\usepackage{xstring}
+
+\NewDocumentCommand{\teiP}{O{} +m}{\par #2\par}
+\NewDocumentCommand{\teiHead}{O{} +m}{\section*{#2}}
+\NewDocumentCommand{\teiHi}{O{} +m}{%
+  \IfSubStr{#1}{rend={italic}}{\textit{#2}}{%
+    \IfSubStr{#1}{rend={small-caps}}{\textsc{#2}}{%
+      \IfSubStr{#1}{rend={sup}}{\textsuperscript{#2}}{#2}%
+    }%
+  }%
+}
+\NewDocumentCommand{\teiNote}{O{} +m}{\footnote{#2}}
+\NewDocumentCommand{\teiRef}{O{} +m}{#2}
+\NewDocumentCommand{\teiTitle}{O{} +m}{%
+  \IfSubStr{#1}{level={m}}{\textit{#2}}{%
+    \IfSubStr{#1}{level={j}}{\textit{#2}}{%
+      \IfSubStr{#1}{level={a}}{\enquote{#2}}{#2}%
+    }%
+  }%
+}
+\NewDocumentCommand{\teiForeign}{O{} +m}{\textit{#2}}
+\NewDocumentCommand{\teiTerm}{O{} +m}{#2}
+\NewDocumentCommand{\teiName}{O{} +m}{#2}
+\NewDocumentCommand{\teiPersName}{O{} +m}{#2}
+\NewDocumentCommand{\teiPlaceName}{O{} +m}{#2}
+\NewDocumentCommand{\teiOrgName}{O{} +m}{#2}
+\NewDocumentCommand{\teiDate}{O{} +m}{#2}
+\NewDocumentCommand{\teiNum}{O{} +m}{#2}
+\NewDocumentCommand{\teiLabel}{O{} +m}{#2}
+\NewDocumentCommand{\teiQ}{O{} +m}{\enquote{#2}}
+\NewDocumentCommand{\teiSaid}{O{} +m}{\enquote{#2}}
+\NewDocumentCommand{\teiAuthor}{O{} +m}{#2}
+\NewDocumentCommand{\teiEditor}{O{} +m}{#2}
+\NewDocumentCommand{\teiPublisher}{O{} +m}{#2}
+\NewDocumentCommand{\teiBiblScope}{O{} +m}{#2}
+\NewDocumentCommand{\teiIdno}{O{} +m}{#2}
+
+\NewDocumentCommand{\teiGraphic}{O{}}{%
+  \par\smallskip\noindent\fbox{\footnotesize Graphic #1}\par\smallskip
+}
+\NewDocumentCommand{\teiPtr}{O{}}{}
+\NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
+\NewDocumentCommand{\teiPb}{O{}}{}
+
+\NewDocumentEnvironment{teiDiv}{O{} +b}{#2}{}
+\NewDocumentEnvironment{teiList}{O{} +b}{%
+  \IfSubStr{#1}{type={ordered}}{\begin{enumerate}}{\begin{itemize}}%
+  #2%
+  \IfSubStr{#1}{type={ordered}}{\end{enumerate}}{\end{itemize}}%
+}{}
+\NewDocumentCommand{\teiItem}{O{} +m}{\item #2}
+\NewDocumentEnvironment{teiQuote}{O{} +b}{\begin{PurhBlockQuote}#2\end{PurhBlockQuote}}{}
+\NewDocumentEnvironment{teiFigure}{O{} +b}{\begin{center}#2\end{center}}{}
+\NewDocumentEnvironment{teiCit}{O{} +b}{#2}{}
+\NewDocumentEnvironment{teiBibl}{O{} +b}{\par\noindent #2\par}{}
+\NewDocumentEnvironment{teiTable}{O{} +b}{\par\begin{center}#2\end{center}\par}{}
+\NewDocumentEnvironment{teiRow}{O{} +b}{#2\par}{}
+\NewDocumentEnvironment{teiCell}{O{} +b}{#2\quad}{}
+\NewDocumentEnvironment{teiElement}{O{} +b}{%
+  \IfSubStr{#1}{name={teiHeader}}{}{#2}%
+}{}

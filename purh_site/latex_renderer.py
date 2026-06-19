@@ -33,6 +33,7 @@ from .semantic_model import (
     BibliographyItem,
     BlockNode,
     Book,
+    BookMetadata,
     Bold,
     Division,
     DivisionType,
@@ -47,6 +48,7 @@ from .semantic_model import (
     ListKind,
     NoteRef,
     Paragraph,
+    PublicationInfo,
     QuoteBlock,
     Section,
     SmallCaps,
@@ -1275,3 +1277,27 @@ def render_book_to_latex(book: Book, options: LatexRenderOptions | None = None) 
 
     renderer = LatexRenderer(options=options)
     return renderer.render_book(book)
+
+
+def render_purh_preamble_for_latei(
+    *,
+    title: str | None = None,
+    subtitle: str | None = None,
+    publisher: str | None = None,
+) -> str:
+    """Return the stable PURH preamble for the experimental LaTEI driver.
+
+    This helper intentionally delegates to the existing PURH preamble renderer
+    so the experimental LaTEI route does not fork page geometry, fonts, running
+    heads, footnote settings, or package choices.
+    """
+    metadata = BookMetadata(
+        title=title or "LaTEI PURH",
+        subtitle=subtitle,
+        publication=PublicationInfo(
+            publisher=publisher or "Presses universitaires de Rouen et du Havre",
+        ),
+    )
+    book = Book(metadata=metadata)
+    renderer = LatexRenderer(options=LatexRenderOptions(style="purh"))
+    return renderer._render_purh_preamble(book)
