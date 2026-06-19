@@ -7,14 +7,37 @@
 
 \NewDocumentCommand{\teiP}{O{} +m}{\par #2\par}
 \NewDocumentCommand{\teiHead}{O{} +m}{\section*{#2}}
+
+% Apply rend values predictably, including combined values in any order.
+\NewDocumentCommand{\lateiHiBold}{m +m}{%
+  \IfSubStr{#1}{bold}{\textbf{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiSmallCaps}{m +m}{%
+  \IfSubStr{#1}{small-caps}{\textsc{\lateiHiBold{#1}{#2}}}{\lateiHiBold{#1}{#2}}%
+}
+\NewDocumentCommand{\lateiHiInline}{m +m}{%
+  \IfSubStr{#1}{italic}{\textit{\lateiHiSmallCaps{#1}{#2}}}{\lateiHiSmallCaps{#1}{#2}}%
+}
 \NewDocumentCommand{\teiHi}{O{} +m}{%
-  \IfSubStr{#1}{rend={italic}}{\textit{#2}}{%
-    \IfSubStr{#1}{rend={small-caps}}{\textsc{#2}}{%
-      \IfSubStr{#1}{rend={sup}}{\textsuperscript{#2}}{#2}%
-    }%
+  \IfSubStr{#1}{sup}{\textsuperscript{\lateiHiInline{#1}{#2}}}{%
+    \IfSubStr{#1}{sub}{$_{\lateiHiInline{#1}{#2}}$}{\lateiHiInline{#1}{#2}}%
   }%
 }
-\NewDocumentCommand{\teiNote}{O{} +m}{\footnote{#2}}
+
+% Nested footnotes are not valid LaTeX. If a teiNote appears inside another
+% note, render a visible symbolic marker and inline parenthesized content.
+\newif\iflateiinfootnote
+\lateiinfootnotefalse
+\NewDocumentCommand{\teiNote}{O{} +m}{%
+  \iflateiinfootnote
+    \textsuperscript{*}\,(#2)%
+  \else
+    \begingroup
+      \lateiinfootnotetrue
+      \footnote{#2}%
+    \endgroup
+  \fi
+}
 \NewDocumentCommand{\teiRef}{O{} +m}{#2}
 \NewDocumentCommand{\teiTitle}{O{} +m}{%
   \IfSubStr{#1}{level={m}}{\textit{#2}}{%
@@ -41,11 +64,11 @@
 \NewDocumentCommand{\teiIdno}{O{} +m}{#2}
 
 \NewDocumentCommand{\teiGraphic}{O{}}{%
-  \par\smallskip\noindent\fbox{\footnotesize Graphic #1}\par\smallskip
+  \par\smallskip\noindent{\footnotesize\itshape [graphic #1]}\par\smallskip
 }
 \NewDocumentCommand{\teiPtr}{O{}}{}
 \NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
-\NewDocumentCommand{\teiPb}{O{}}{}
+\NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}
 
 \NewDocumentEnvironment{teiDiv}{O{} +b}{#2}{}
 \NewDocumentEnvironment{teiList}{O{} +b}{%

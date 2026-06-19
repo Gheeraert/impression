@@ -178,7 +178,10 @@ class App(ttk.Frame):
         self._log(f"LaTeX réversible : {result.latex_path}")
         self._log(f"Corps LaTEI : {result.latei_body_path}")
         self._log(f"Driver LaTEI : {result.latei_main_path}")
+        self._log(f"Macros LaTEI : {result.latei_macros_path}")
         self._log(f"PDF LaTEI : {result.latei_pdf_path if result.latei_pdf_success else result.latei_pdf_message}")
+        if result.latei_log_path is not None:
+            self._log(f"Log LaTEI : {result.latei_log_path}")
         self._log(f"XML round-trip : {result.roundtrip_xml_path}")
         self._log(f"Diagnostics : {result.diagnostics_path}")
 
@@ -187,7 +190,9 @@ class App(ttk.Frame):
             f"LaTeX : {result.latex_path}\n"
             f"Corps LaTEI : {result.latei_body_path}\n"
             f"Driver LaTEI : {result.latei_main_path}\n"
+            f"Macros LaTEI : {result.latei_macros_path}\n"
             f"PDF LaTEI : {result.latei_pdf_path if result.latei_pdf_success else result.latei_pdf_message}\n"
+            f"Log LaTEI : {result.latei_log_path}\n"
             f"XML round-trip : {result.roundtrip_xml_path}\n"
             f"Diagnostics : {result.diagnostics_path}"
         )

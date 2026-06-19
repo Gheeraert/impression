@@ -21,6 +21,7 @@ LATEI_MACROS_PATH = Path(__file__).resolve().parent / "resources" / "latei_macro
 @dataclass(slots=True)
 class LateiPdfResult:
     pdf_path: Path
+    log_path: Path
     success: bool
     message: str
 
@@ -29,15 +30,19 @@ def build_latei_driver(
     body_tex_path: Path,
     main_tex_path: Path,
     *,
+    macros_tex_path: Path | None = None,
     title: str | None = None,
 ) -> Path:
     """Write a PURH LaTEI main file that inputs the reversible body file."""
     body_tex_path = Path(body_tex_path)
     main_tex_path = Path(main_tex_path)
     main_tex_path.parent.mkdir(parents=True, exist_ok=True)
+    local_macros_path = Path(macros_tex_path) if macros_tex_path is not None else main_tex_path.with_name("latei_macros.tex")
+    local_macros_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(LATEI_MACROS_PATH, local_macros_path)
 
     body_input = _latex_input_path(body_tex_path, relative_to=main_tex_path.parent)
-    macros_input = _latex_input_path(LATEI_MACROS_PATH, relative_to=main_tex_path.parent)
+    macros_input = _latex_input_path(local_macros_path, relative_to=main_tex_path.parent)
     document_title = _latex_text(title or "LaTEI PURH")
 
     content = "\n\n".join(
@@ -59,18 +64,31 @@ def compile_latei_pdf(
     main_tex_path: Path,
     pdf_path: Path,
     *,
+    log_path: Path | None = None,
     latex_engine: str = "lualatex",
     timeout_seconds: int = 120,
 ) -> LateiPdfResult:
     """Compile an experimental LaTEI driver if the configured engine exists."""
     main_tex_path = Path(main_tex_path)
     pdf_path = Path(pdf_path)
+    log_path = Path(log_path) if log_path is not None else pdf_path.with_name(f"{pdf_path.stem}_build.log")
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     engine_path = shutil.which(latex_engine)
     if engine_path is None:
+        message = f"LaTEI PDF not produced: LaTeX engine not found: {latex_engine}."
+        _write_latei_log(
+            log_path,
+            command=[latex_engine],
+            stdout="",
+            stderr="",
+            returncode=None,
+            message=message,
+        )
         return LateiPdfResult(
             pdf_path=pdf_path,
+            log_path=log_path,
             success=False,
-            message=f"LaTEI PDF not produced: LaTeX engine not found: {latex_engine}.",
+            message=message,
         )
 
     command = [
@@ -82,30 +100,59 @@ def compile_latei_pdf(
         f"-output-directory={pdf_path.parent.as_posix()}",
         main_tex_path.as_posix(),
     ]
-    process = subprocess.run(
-        command,
-        cwd=pdf_path.parent,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=timeout_seconds,
-        check=False,
+    try:
+        process = subprocess.run(
+            command,
+            cwd=pdf_path.parent,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        message = f"LaTEI PDF compilation timed out after {timeout_seconds} seconds."
+        _write_latei_log(
+            log_path,
+            command=command,
+            stdout=exc.stdout or "",
+            stderr=exc.stderr or "",
+            returncode=None,
+            message=message,
+        )
+        return LateiPdfResult(
+            pdf_path=pdf_path,
+            log_path=log_path,
+            success=False,
+            message=message,
+        )
+
+    _write_latei_log(
+        log_path,
+        command=command,
+        stdout=process.stdout,
+        stderr=process.stderr,
+        returncode=process.returncode,
+        message="LaTEI PDF compilation finished.",
     )
     if process.returncode != 0:
         return LateiPdfResult(
             pdf_path=pdf_path,
+            log_path=log_path,
             success=False,
-            message="LaTEI PDF compilation failed; see the LaTeX console output.",
+            message=f"LaTEI PDF compilation failed; see log: {log_path}.",
         )
     if not pdf_path.exists():
         return LateiPdfResult(
             pdf_path=pdf_path,
+            log_path=log_path,
             success=False,
-            message="LaTEI PDF compilation finished but the expected PDF was not created.",
+            message=f"LaTEI PDF compilation finished but the expected PDF was not created; see log: {log_path}.",
         )
     return LateiPdfResult(
         pdf_path=pdf_path,
+        log_path=log_path,
         success=True,
         message="LaTEI PDF produced successfully.",
     )
@@ -134,7 +181,42 @@ def _latex_input_path(path: Path, *, relative_to: Path) -> str:
         value = resolved.relative_to(base).as_posix()
     except ValueError:
         value = resolved.as_posix()
-    return value.replace("}", r"\}")
+    return f'"{value.replace(chr(34), "").replace("}", r"\}")}"'
+
+
+def _write_latei_log(
+    path: Path,
+    *,
+    command: list[str],
+    stdout: str | bytes | None,
+    stderr: str | bytes | None,
+    returncode: int | None,
+    message: str,
+) -> None:
+    def as_text(value: str | bytes | None) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, bytes):
+            return value.decode("utf-8", errors="replace")
+        return value
+
+    lines = [
+        "LaTEI build log",
+        "=" * 15,
+        "",
+        f"Message: {message}",
+        f"Return code: {returncode if returncode is not None else 'not available'}",
+        "Command:",
+        " ".join(command),
+        "",
+        "STDOUT:",
+        as_text(stdout),
+        "",
+        "STDERR:",
+        as_text(stderr),
+        "",
+    ]
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def _latex_text(value: str) -> str:

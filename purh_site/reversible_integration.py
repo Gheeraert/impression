@@ -26,7 +26,9 @@ class ReversibleExportResult:
     latex_path: Path
     latei_body_path: Path
     latei_main_path: Path
+    latei_macros_path: Path
     latei_pdf_path: Path
+    latei_log_path: Path | None
     latei_pdf_success: bool
     latei_pdf_message: str
     roundtrip_xml_path: Path
@@ -51,7 +53,9 @@ def run_reversible_export_for_file(
         latex_path,
         latei_body_path,
         latei_main_path,
+        latei_macros_path,
         latei_pdf_path,
+        latei_log_path,
         roundtrip_xml_path,
         diagnostics_path,
     ) = _output_paths(source_path, resolved_output_dir)
@@ -65,7 +69,9 @@ def run_reversible_export_for_file(
             latex_path=latex_path,
             latei_body_path=latei_body_path,
             latei_main_path=latei_main_path,
+            latei_macros_path=latei_macros_path,
             latei_pdf_path=latei_pdf_path,
+            latei_log_path=None,
             latei_pdf_success=False,
             latei_pdf_message="LaTEI PDF not produced because the source XML was not read.",
             roundtrip_xml_path=roundtrip_xml_path,
@@ -83,7 +89,9 @@ def run_reversible_export_for_file(
             latex_path=latex_path,
             latei_body_path=latei_body_path,
             latei_main_path=latei_main_path,
+            latei_macros_path=latei_macros_path,
             latei_pdf_path=latei_pdf_path,
+            latei_log_path=None,
             latei_pdf_success=False,
             latei_pdf_message="LaTEI PDF not produced because the source XML was not a file.",
             roundtrip_xml_path=roundtrip_xml_path,
@@ -104,7 +112,9 @@ def run_reversible_export_for_file(
             latex_path=latex_path,
             latei_body_path=latei_body_path,
             latei_main_path=latei_main_path,
+            latei_macros_path=latei_macros_path,
             latei_pdf_path=latei_pdf_path,
+            latei_log_path=None,
             latei_pdf_success=False,
             latei_pdf_message="LaTEI PDF not produced because the source XML was malformed.",
             roundtrip_xml_path=roundtrip_xml_path,
@@ -122,9 +132,14 @@ def run_reversible_export_for_file(
     build_latei_driver(
         latei_body_path,
         latei_main_path,
+        macros_tex_path=latei_macros_path,
         title=_document_title(element),
     )
-    pdf_result = compile_latei_pdf(latei_main_path, latei_pdf_path)
+    pdf_result = compile_latei_pdf(
+        latei_main_path,
+        latei_pdf_path,
+        log_path=latei_log_path,
+    )
     etree.ElementTree(result.emitted).write(
         str(roundtrip_xml_path),
         encoding="utf-8",
@@ -146,7 +161,9 @@ def run_reversible_export_for_file(
         latex_path=latex_path,
         latei_body_path=latei_body_path,
         latei_main_path=latei_main_path,
+        latei_macros_path=latei_macros_path,
         latei_pdf_path=latei_pdf_path,
+        latei_log_path=pdf_result.log_path,
         latei_pdf_success=pdf_result.success,
         latei_pdf_message=pdf_result.message,
         roundtrip_xml_path=roundtrip_xml_path,
@@ -166,13 +183,15 @@ def _resolve_output_dir(source_path: Path, output_dir: Path | None) -> Path:
     return resolved
 
 
-def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
+def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path]:
     stem = source_path.stem
     return (
         output_dir / f"{stem}.reversible.tex",
         output_dir / f"{stem}.latei_body.tex",
         output_dir / f"{stem}.latei_main.tex",
+        output_dir / f"{stem}.latei_macros.tex",
         output_dir / f"{stem}.latei.pdf",
+        output_dir / f"{stem}.latei_build.log",
         output_dir / f"{stem}.roundtrip.xml",
         output_dir / f"{stem}.roundtrip_diagnostics.txt",
     )
@@ -231,10 +250,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"LaTeX: {result.latex_path}")
     print(f"LaTEI body: {result.latei_body_path}")
     print(f"LaTEI main: {result.latei_main_path}")
+    print(f"LaTEI macros: {result.latei_macros_path}")
     if result.latei_pdf_success:
         print(f"LaTEI PDF: {result.latei_pdf_path}")
     else:
         print(f"LaTEI PDF: not produced ({result.latei_pdf_message})")
+    if result.latei_log_path is not None:
+        print(f"LaTEI log: {result.latei_log_path}")
     print(f"Round-trip XML: {result.roundtrip_xml_path}")
     print(f"Diagnostics: {result.diagnostics_path}")
     return 0 if result.success else 1
