@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 
 from lxml import etree
+import pytest
 
+import purh_site.latei_driver as latei_driver
 from purh_site.latei_driver import compile_latei_pdf
 from purh_site.reversible import compare_tei_elements, read_latex_document, write_tei_element
 from purh_site.reversible_integration import run_reversible_export_for_file
@@ -321,3 +324,36 @@ def test_latei_compile_missing_engine_writes_non_blocking_log(tmp_path: Path) ->
     log = log_path.read_text(encoding="utf-8")
     assert "moteur-latei-introuvable" in log
     assert "Return code: not available" in log
+
+
+def test_latei_compile_forces_local_tex_cache_for_subprocess(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main_path = tmp_path / "book.latei_main.tex"
+    pdf_path = tmp_path / "book.latei.pdf"
+    log_path = tmp_path / "book.latei_build.log"
+    main_path.write_text(r"\documentclass{article}\begin{document}Texte\end{document}", encoding="utf-8")
+    captured_env: dict[str, str] = {}
+
+    monkeypatch.setenv("TEXMFVAR", "C:/unwritable/texmfvar")
+    monkeypatch.setenv("TEXMFCACHE", "C:/unwritable/texmfcache")
+    monkeypatch.setattr(latei_driver.shutil, "which", lambda engine: "C:/texlive/bin/lualatex.exe")
+
+    def fake_run(*args, **kwargs):
+        captured_env.update(kwargs["env"])
+        pdf_path.write_bytes(b"%PDF fake")
+        return subprocess.CompletedProcess(args=args[0], returncode=0, stdout="ok", stderr="")
+
+    monkeypatch.setattr(latei_driver.subprocess, "run", fake_run)
+
+    result = compile_latei_pdf(main_path, pdf_path, log_path=log_path)
+
+    expected_cache = str((tmp_path / "latei_tex_cache").resolve())
+    assert result.success is True
+    assert captured_env["TEXMFVAR"] == expected_cache
+    assert captured_env["TEXMFCACHE"] == expected_cache
+    assert captured_env["TEXMFVAR"] != "C:/unwritable/texmfvar"
+    assert captured_env["TEXMFCACHE"] != "C:/unwritable/texmfcache"
+    assert result.log_path == log_path
+    assert log_path.exists()

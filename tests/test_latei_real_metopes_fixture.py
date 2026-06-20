@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
 
 import pytest
 from lxml import etree
 
 from purh_site.latei_metadata import extract_latei_metadata
 from purh_site.reversible import run_tei_latex_tei_roundtrip
+from purh_site.reversible_integration import ReversibleExportResult, run_reversible_export_for_file
 from purh_site.utils import TEI_NS, XML_NS
 
 
@@ -22,6 +24,12 @@ def source_root() -> etree._Element:
 @pytest.fixture(scope="module")
 def roundtrip_result(source_root: etree._Element):
     return run_tei_latex_tei_roundtrip(source_root)
+
+
+@pytest.fixture(scope="module")
+def export_result(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
+    output_dir = tmp_path_factory.mktemp("heraldique_latei_export")
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir)
 
 
 def test_real_metopes_fixture_exists() -> None:
@@ -102,3 +110,72 @@ def test_real_metopes_fixture_preserves_key_counts_and_attributes(source_root: e
     assert emitted.xpath("boolean(.//tei:hi[@rend='italic'])", namespaces=NS)
     assert emitted.xpath("boolean(.//tei:hi[@rend='small-caps'])", namespaces=NS)
     assert emitted.xpath("boolean(.//tei:hi[@rend='sup'])", namespaces=NS)
+
+
+def test_real_metopes_fixture_full_latei_export_package(export_result: ReversibleExportResult) -> None:
+    result = export_result
+
+    assert result.success is True
+    assert result.diagnostics_count == 0
+    assert result.latei_body_path.exists()
+    assert result.latei_main_path.exists()
+    assert result.latei_macros_path.exists()
+    assert result.latei_log_path is not None
+    assert result.latei_log_path.exists()
+    assert result.roundtrip_xml_path.exists()
+    assert result.diagnostics_path.exists()
+
+    body = result.latei_body_path.read_text(encoding="utf-8")
+    main = result.latei_main_path.read_text(encoding="utf-8")
+
+    assert r"\documentclass" not in body
+    assert r"\documentclass[12pt,twoside,openany]{book}" in main
+    assert rf'\input{{"{result.latei_macros_path.name}"}}' in main
+    assert rf'\input{{"{result.latei_body_path.name}"}}' in main
+    assert "purh_site/resources/latei_macros.tex" not in main.replace("\\", "/")
+    assert r"\begin{teiElement}[name={teiHeader}]" in body
+    assert r"\begin{teiDiv}[type={section1},xmlid={div01}]" in body
+    assert r"\teiHead[xmlid={le-pontifical-de-1520-001}]{Le pontifical de 1520}" in body
+    assert r"\begin{teiFigure}[xmlid={figure01}]" in body
+    assert r"\teiGraphic[url={../icono/br/Ch02\_Doulkaridou/fig1.jpg}]" in body
+
+
+def test_real_metopes_fixture_full_export_uses_real_metadata(export_result: ReversibleExportResult) -> None:
+    main = export_result.latei_main_path.read_text(encoding="utf-8")
+
+    assert r"\newcommand{\PURHBookTitle}{Héraldique et papauté. Moyen Âge-Temps modernes. II}" in main
+    assert r"\newcommand{\PURHPublisher}{PURH}" in main
+    assert r"\newcommand{\PURHYear}{2025}" in main
+    assert r"\newcommand{\PURHISBN}{979-10-240-1855-3}" in main
+    assert r"\newcommand{\PURHDOI}{}" in main
+    assert r"\newcommand{\PURHBookSubtitle}{}" in main
+    assert r"\PurhTitleExtra{ISBN imprime 979-10-240-1855-3}" in main
+
+    metadata = extract_latei_metadata(etree.parse(str(FIXTURE_PATH)).getroot())
+    assert metadata.language == "fr-FR"
+    assert metadata.isbn_pdf == ""
+    assert metadata.isbn_epub == ""
+    assert metadata.doi == ""
+
+
+def test_real_metopes_fixture_latei_compilation_status_is_explicit(export_result: ReversibleExportResult) -> None:
+    log_path = export_result.latei_log_path
+
+    assert log_path is not None
+    assert log_path.exists()
+    log = log_path.read_text(encoding="utf-8", errors="replace")
+    assert "LaTEI build log" in log
+    assert "Command:" in log
+
+    if shutil.which("lualatex") is None:
+        assert export_result.latei_pdf_success is False
+        assert "engine not found" in export_result.latei_pdf_message
+        assert "LaTeX engine not found: lualatex" in log
+        return
+
+    if not export_result.latei_pdf_success:
+        excerpt = "\n".join(log.splitlines()[:120])
+        pytest.fail(f"LaTEI PDF compilation failed on the real Metopes fixture.\n{excerpt}")
+
+    assert export_result.latei_pdf_path.exists()
+    assert export_result.latei_pdf_path.stat().st_size > 0

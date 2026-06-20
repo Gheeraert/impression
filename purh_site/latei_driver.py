@@ -8,6 +8,7 @@ compilable wrapper and must not be used as a reversible source.
 """
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -111,9 +112,15 @@ def compile_latei_pdf(
         "-halt-on-error",
         "-file-line-error",
         f"-jobname={pdf_path.stem}",
-        f"-output-directory={pdf_path.parent.as_posix()}",
-        main_tex_path.as_posix(),
+        f"-output-directory={pdf_path.parent.resolve().as_posix()}",
+        main_tex_path.resolve().as_posix(),
     ]
+    tex_cache_dir = pdf_path.parent / "latei_tex_cache"
+    tex_cache_dir.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    tex_cache_path = str(tex_cache_dir.resolve())
+    env["TEXMFVAR"] = tex_cache_path
+    env["TEXMFCACHE"] = tex_cache_path
     try:
         process = subprocess.run(
             command,
@@ -124,6 +131,7 @@ def compile_latei_pdf(
             errors="replace",
             timeout=timeout_seconds,
             check=False,
+            env=env,
         )
     except subprocess.TimeoutExpired as exc:
         message = f"LaTEI PDF compilation timed out after {timeout_seconds} seconds."
