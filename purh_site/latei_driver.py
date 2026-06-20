@@ -222,7 +222,6 @@ def _title_page(metadata: LateiMetadata) -> str:
         lines.append(rf"\PurhTitleExtra{{DOI {_latex_text(metadata.doi)}}}")
     lines.extend(
         [
-            r"{\small Document LaTEI PURH experimental\par}",
             r"\end{titlepage}",
             r"\clearpage",
         ]

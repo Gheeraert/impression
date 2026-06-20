@@ -18,6 +18,29 @@ LATEI_PACKAGE_HELP = (
     "le XML restauré et les diagnostics."
 )
 
+LATEI_USAGE_HELP = """Le paquet LaTEI contient plusieurs fichiers.
+
+À corriger :
+*.latei_body.tex
+
+C’est le corps LaTEI réversible. C’est ce fichier que l’éditrice peut corriger.
+
+À compiler :
+*.latei_main.tex
+
+C’est le driver compilable avec LuaLaTeX. Il charge le corps, les macros et le mapping d’images. Le fichier *.latei_body.tex ne compile pas seul.
+
+À restaurer en XML :
+*.latei_body.tex
+
+Pour récupérer un XML Métopes après corrections, utilisez :
+Outils → Restaurer un XML Métopes depuis un corps LaTEI…
+
+Fichiers techniques à ne pas corriger directement :
+*.latei_macros.tex
+*.latei_graphics_map.tex
+latei_assets/"""
+
 
 class App(ttk.Frame):
     """Interface graphique pour lancer les builds TEI -> site multi-pages."""
@@ -133,6 +156,12 @@ class App(ttk.Frame):
             command=self._restore_xml_from_latei_body,
         )
         menubar.add_cascade(label="Outils", menu=tools_menu)
+        help_menu = tk.Menu(menubar, tearoff=False)
+        help_menu.add_command(
+            label="Mode d’emploi LaTEI…",
+            command=self._show_latei_usage_help,
+        )
+        menubar.add_cascade(label="Aide", menu=help_menu)
         self.master.config(menu=menubar)
 
     def _add_path_selector(self, row: int, label: str, variable: tk.StringVar, browse_command, button_text: str) -> None:
@@ -236,6 +265,9 @@ class App(ttk.Frame):
         for line in details.splitlines():
             self._log(line)
         messagebox.showinfo("Restauration XML depuis LaTEI", details)
+
+    def _show_latei_usage_help(self) -> None:
+        messagebox.showinfo("Mode d’emploi LaTEI", LATEI_USAGE_HELP)
 
     def _choose_xml_files(self) -> None:
         paths = filedialog.askopenfilenames(title="Choisir un ou plusieurs fichiers XML", filetypes=[("Fichiers XML", "*.xml")])
@@ -605,8 +637,11 @@ def format_latei_export_summary(result, *, missing_artifacts: list[Path] | None 
     pdf_status = str(result.latei_pdf_path) if result.latei_pdf_success else f"non produit ({result.latei_pdf_message})"
     lines = [
         "Export LaTEI terminé.",
-        f"Corps réversible : {result.latei_body_path}",
-        f"Driver : {result.latei_main_path}",
+        f"À corriger : {result.latei_body_path}",
+        f"À compiler : {result.latei_main_path}",
+        f"À restaurer en XML : {result.latei_body_path}",
+        f"Corps réversible à corriger : {result.latei_body_path}",
+        f"Driver compilable : {result.latei_main_path}",
         f"Macros locales : {result.latei_macros_path}",
         f"Mapping images : {result.latei_graphics_map_path}",
         f"Assets LaTEI : {result.latei_assets_dir}",

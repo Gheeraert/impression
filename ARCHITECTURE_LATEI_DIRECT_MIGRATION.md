@@ -138,6 +138,28 @@ grammar.
 - Complex list policies and verse.
 - Full visual parity with the stable PDF.
 
+## Passe 17N: PDF Convergence Audit
+
+The direct LaTEI PDF is intended to converge toward the stable PURH PDF and to
+become the reference paper-production path once the documented gaps are closed.
+Until then, the existing stable PDF remains the typographic and editorial
+reference.
+
+The differential report is written in `AUDIT_PDF_STABLE_VS_LATEI.md`. It
+compares the stable `book.tex`, the direct LaTEI package, the stable PDF, and
+the direct LaTEI PDF without binary PDF comparison. The audit currently records
+that both paths compile on the real Heraldiques fixture and share the same page
+format, while page count and extracted title-page text still differ.
+
+Trivial divergence fixed in this passe:
+
+- The printed `Document LaTEI PURH experimental` title-page marker was removed
+  from the direct LaTEI driver.
+
+The remaining divergences listed in the audit should be resolved by small
+migration passes, always against the stable PDF behavior rather than by inventing
+an independent typographic policy.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not

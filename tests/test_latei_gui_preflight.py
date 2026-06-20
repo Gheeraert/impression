@@ -19,6 +19,16 @@ def test_gui_labels_use_latei_vocabulary() -> None:
     assert "Exporter un paquet LaTEI depuis un XML" in source
     assert "Restaurer un XML Métopes depuis un corps LaTEI" in source
     assert "Le paquet LaTEI contient le corps réversible" in source
+    assert "Mode d’emploi LaTEI" in source
+    assert "À corriger" in source
+    assert "À compiler" in source
+    assert "À restaurer en XML" in source
+    assert "*.latei_body.tex" in source
+    assert "*.latei_main.tex" in source
+    assert "*.latei_body.tex ne compile pas seul" in source
+    assert "*.latei_macros.tex" in source
+    assert "*.latei_graphics_map.tex" in source
+    assert "latei_assets/" in source
 
     assert "Sorties PDF / LaTeX" not in source
     assert "Générer le LaTeX seul" not in source
@@ -63,8 +73,11 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
 
     summary = format_latei_export_summary(result)
     assert "Export LaTEI terminé." in summary
-    assert f"Corps réversible : {result.latei_body_path}" in summary
-    assert f"Driver : {result.latei_main_path}" in summary
+    assert f"À corriger : {result.latei_body_path}" in summary
+    assert f"À compiler : {result.latei_main_path}" in summary
+    assert f"À restaurer en XML : {result.latei_body_path}" in summary
+    assert f"Corps réversible à corriger : {result.latei_body_path}" in summary
+    assert f"Driver compilable : {result.latei_main_path}" in summary
     assert f"Macros locales : {result.latei_macros_path}" in summary
     assert f"Mapping images : {result.latei_graphics_map_path}" in summary
     assert "Images copiées : 2" in summary
