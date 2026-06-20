@@ -12,6 +12,13 @@ from .reversible_integration import run_reversible_export_for_file
 from .site_builder import SiteBuilder, has_editor_pdf
 
 
+LATEI_PACKAGE_HELP = (
+    "Le paquet LaTEI contient le corps réversible, le driver compilable, "
+    "les macros locales, le mapping d’images, les assets copiés, le PDF éventuel, "
+    "le XML restauré et les diagnostics."
+)
+
+
 class App(ttk.Frame):
     """Interface graphique pour lancer les builds TEI -> site multi-pages."""
 
@@ -82,7 +89,8 @@ class App(ttk.Frame):
             text=(
                 "Le dossier choisi sera copié tel quel dans la sortie sous assets/. "
                 "La collection est lue d’abord dans le TEI ; les champs ci-dessus ne servent que de repli. "
-                "Même logique pour la quatrième : XML d’abord, puis fichier externe si nécessaire."
+                "Même logique pour la quatrième : XML d’abord, puis fichier externe si nécessaire. "
+                f"{LATEI_PACKAGE_HELP}"
             ),
             wraplength=920,
         )
@@ -117,7 +125,7 @@ class App(ttk.Frame):
         menubar = tk.Menu(self.master)
         tools_menu = tk.Menu(menubar, tearoff=False)
         tools_menu.add_command(
-            label="Tester la réversibilité TEI ↔ LaTeX…",
+            label="Exporter un paquet LaTEI réversible…",
             command=self._run_reversible_export,
         )
         menubar.add_cascade(label="Outils", menu=tools_menu)
@@ -133,13 +141,13 @@ class App(ttk.Frame):
         ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
 
     def _add_pdf_export_controls(self, row: int) -> None:
-        ttk.Label(self, text="Sorties PDF / LaTeX").grid(row=row, column=0, sticky="w", pady=(0, 6))
+        ttk.Label(self, text="Export LaTEI / PDF PURH").grid(row=row, column=0, sticky="w", pady=(0, 6))
         frame = ttk.Frame(self)
         frame.grid(row=row, column=1, columnspan=2, sticky="w", pady=(0, 6))
         options = [
-            ("Ne rien générer", "none"),
-            ("Générer le LaTeX seul", "latex"),
-            ("Générer le LaTeX + PDF", "latex_pdf"),
+            ("Ne pas générer de paquet LaTEI", "none"),
+            ("Exporter le paquet LaTEI seul", "latex"),
+            ("Exporter le paquet LaTEI + compiler le PDF", "latex_pdf"),
         ]
         for index, (label, value) in enumerate(options):
             radio = ttk.Radiobutton(frame, text=label, variable=self.pdf_export_mode_var, value=value)
@@ -155,7 +163,7 @@ class App(ttk.Frame):
 
     def _run_reversible_export(self) -> None:
         path = filedialog.askopenfilename(
-            title="Choisir un fichier XML TEI à tester",
+            title="Choisir un fichier XML TEI à exporter en LaTEI",
             filetypes=[("Fichiers XML", "*.xml"), ("Tous les fichiers", "*.*")],
         )
         if not path:
@@ -169,37 +177,20 @@ class App(ttk.Frame):
         try:
             result = run_reversible_export_for_file(Path(path), output_dir)
         except Exception as exc:
-            self._log(f"Erreur export réversible : {exc}")
+            self._log(f"Erreur export LaTEI réversible : {exc}")
             self._log(traceback.format_exc())
-            messagebox.showerror("Réversibilité TEI / LaTeX", str(exc))
+            messagebox.showerror("Export LaTEI réversible", str(exc))
             return
 
-        self._log(result.message)
-        self._log(f"LaTeX réversible : {result.latex_path}")
-        self._log(f"Corps LaTEI : {result.latei_body_path}")
-        self._log(f"Driver LaTEI : {result.latei_main_path}")
-        self._log(f"Macros LaTEI : {result.latei_macros_path}")
-        self._log(f"PDF LaTEI : {result.latei_pdf_path if result.latei_pdf_success else result.latei_pdf_message}")
-        if result.latei_log_path is not None:
-            self._log(f"Log LaTEI : {result.latei_log_path}")
-        self._log(f"XML round-trip : {result.roundtrip_xml_path}")
-        self._log(f"Diagnostics : {result.diagnostics_path}")
+        missing_artifacts = missing_latei_package_artifacts(result)
+        details = format_latei_export_summary(result, missing_artifacts=missing_artifacts)
+        for line in details.splitlines():
+            self._log(line)
 
-        details = (
-            f"{result.message}\n\n"
-            f"LaTeX : {result.latex_path}\n"
-            f"Corps LaTEI : {result.latei_body_path}\n"
-            f"Driver LaTEI : {result.latei_main_path}\n"
-            f"Macros LaTEI : {result.latei_macros_path}\n"
-            f"PDF LaTEI : {result.latei_pdf_path if result.latei_pdf_success else result.latei_pdf_message}\n"
-            f"Log LaTEI : {result.latei_log_path}\n"
-            f"XML round-trip : {result.roundtrip_xml_path}\n"
-            f"Diagnostics : {result.diagnostics_path}"
-        )
-        if result.success:
-            messagebox.showinfo("Réversibilité TEI / LaTeX", details)
+        if result.success and not missing_artifacts:
+            messagebox.showinfo("Export LaTEI réversible", details)
         else:
-            messagebox.showwarning("Réversibilité TEI / LaTeX", details)
+            messagebox.showwarning("Export LaTEI réversible", details)
 
     def _choose_xml_files(self) -> None:
         paths = filedialog.askopenfilenames(title="Choisir un ou plusieurs fichiers XML", filetypes=[("Fichiers XML", "*.xml")])
@@ -366,7 +357,7 @@ class App(ttk.Frame):
         state = "disabled" if editor_pdf_found else "normal"
         if editor_pdf_found:
             self.pdf_export_mode_var.set("none")
-            self.pdf_export_status_var.set("PDF éditeur détecté : la génération LaTeX/PDF est désactivée.")
+            self.pdf_export_status_var.set("PDF éditeur détecté : l’export LaTEI/PDF est désactivé.")
         else:
             self.pdf_export_status_var.set("")
         for widget in self.pdf_export_widgets:
@@ -538,6 +529,62 @@ class App(ttk.Frame):
         self.log.insert("end", text + "\n")
         self.log.see("end")
         self.log.configure(state="disabled")
+
+
+def expected_latei_package_artifacts(result) -> list[Path]:
+    """Return the expected compilation/documentation artifacts for a LaTEI export."""
+    artifacts = [
+        result.latei_body_path,
+        result.latei_main_path,
+        result.latei_macros_path,
+        result.latei_graphics_map_path,
+        result.latei_assets_dir,
+        result.roundtrip_xml_path,
+        result.diagnostics_path,
+    ]
+    if result.latei_log_path is not None:
+        artifacts.append(result.latei_log_path)
+    if result.latei_pdf_success:
+        artifacts.append(result.latei_pdf_path)
+    return artifacts
+
+
+def missing_latei_package_artifacts(result) -> list[Path]:
+    """Return expected LaTEI package paths that are not present on disk."""
+    return [path for path in expected_latei_package_artifacts(result) if not Path(path).exists()]
+
+
+def format_latei_export_summary(result, *, missing_artifacts: list[Path] | None = None) -> str:
+    """Build the concise GUI/CLI-facing summary for a LaTEI export."""
+    missing = missing_latei_package_artifacts(result) if missing_artifacts is None else missing_artifacts
+    pdf_status = str(result.latei_pdf_path) if result.latei_pdf_success else f"non produit ({result.latei_pdf_message})"
+    lines = [
+        "Export LaTEI terminé.",
+        f"Corps réversible : {result.latei_body_path}",
+        f"Driver : {result.latei_main_path}",
+        f"Macros locales : {result.latei_macros_path}",
+        f"Mapping images : {result.latei_graphics_map_path}",
+        f"Assets LaTEI : {result.latei_assets_dir}",
+        f"Images copiées : {result.latei_copied_images_count}",
+        f"Warnings images : {len(result.latei_asset_warnings)}",
+    ]
+    for warning in result.latei_asset_warnings:
+        lines.append(f"Warning image : {warning}")
+    lines.extend(
+        [
+            f"PDF LaTEI : {pdf_status}",
+            f"Log LaTEI : {result.latei_log_path}",
+            f"XML restauré : {result.roundtrip_xml_path}",
+            f"Diagnostics round-trip : {result.diagnostics_count}",
+            f"Rapport diagnostics : {result.diagnostics_path}",
+        ]
+    )
+    if missing:
+        lines.append("Artefacts manquants :")
+        lines.extend(f"- {path}" for path in missing)
+    else:
+        lines.append("Prévol paquet LaTEI : tous les artefacts attendus sont présents.")
+    return "\n".join(lines)
 
 
 def run_gui() -> None:
