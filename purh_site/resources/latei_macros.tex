@@ -7,12 +7,104 @@
 
 \NewDocumentCommand{\teiP}{O{} +m}{\par #2\par}
 
+% Matter switches and group titles mirror the stable PURH book skeleton while
+% leaving the reversible LaTEI body unchanged.
+\newif\iflateifrontmatterstarted
+\newif\iflateimainmatterstarted
+\newif\iflateibackmatterstarted
+\lateifrontmatterstartedfalse
+\lateimainmatterstartedfalse
+\lateibackmatterstartedfalse
+\NewDocumentCommand{\lateiEnsureFrontMatter}{}{%
+  \iflateifrontmatterstarted\else
+    \frontmatter
+    \lateifrontmatterstartedtrue
+  \fi
+}
+\NewDocumentCommand{\lateiEnsureMainMatter}{}{%
+  \iflateimainmatterstarted\else
+    \mainmatter
+    \lateimainmatterstartedtrue
+  \fi
+}
+\NewDocumentCommand{\lateiEnsureBackMatter}{}{%
+  \iflateibackmatterstarted\else
+    \backmatter
+    \lateibackmatterstartedtrue
+  \fi
+}
+
+\ExplSyntaxOn
+\tl_new:N \l_latei_option_type_tl
+\tl_new:N \l_latei_option_page_title_tl
+\keys_define:nn { latei / options }
+  {
+    type .tl_set:N = \l_latei_option_type_tl,
+    data-page-title .tl_set:N = \l_latei_option_page_title_tl,
+    unknown .code:n = {},
+  }
+\cs_new_protected:Npn \latei_extract_options:n #1
+  {
+    \tl_clear:N \l_latei_option_type_tl
+    \tl_clear:N \l_latei_option_page_title_tl
+    \keys_set:nn { latei / options } { #1 }
+  }
+\cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
+  {
+    \tl_if_empty:NF \l_latei_option_page_title_tl
+      {
+        \chapter*{\tl_use:N \l_latei_option_page_title_tl}
+        \markboth{\tl_use:N \l_latei_option_page_title_tl}{\tl_use:N \l_latei_option_page_title_tl}
+        \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
+      }
+  }
+\cs_new_protected:Npn \latei_add_numbered_chapter_from_title:
+  {
+    \tl_if_empty:NF \l_latei_option_page_title_tl
+      {
+        \chapter{\tl_use:N \l_latei_option_page_title_tl}
+        \markboth{\tl_use:N \l_latei_option_page_title_tl}{\tl_use:N \l_latei_option_page_title_tl}
+      }
+  }
+\NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
+  {
+    \lateiEnsureFrontMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_unnumbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderChapterGroup}{O{} +m}
+  {
+    \lateiEnsureMainMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_numbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderPartGroup}{O{} +m}
+  {
+    \lateiEnsureMainMatter
+    \begingroup
+      \lateiSetHeadContext{part}
+      #2
+    \endgroup
+  }
+\NewDocumentCommand{\lateiRenderBackGroup}{O{} +m}
+  {
+    \lateiEnsureBackMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_unnumbered_chapter_from_title:
+    #2
+  }
+\ExplSyntaxOff
+
 % Heads are contextual in TEI: the same <head> can name a chapter, section,
 % figure, table, or list. The surrounding LaTEI environment sets this context.
 \newcommand{\lateiHeadContext}{fallback}
 \newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
 \NewDocumentCommand{\lateiRenderHead}{m}{%
-  \IfStrEq{\lateiHeadContext}{chapter}{\chapter{#1}}{%
+  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\markboth{#1}{#1}\addcontentsline{toc}{part}{#1}}{%
+  \IfStrEq{\lateiHeadContext}{chapter}{\chapter{#1}\markboth{#1}{#1}}{%
+    \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\markboth{#1}{#1}\addcontentsline{toc}{chapter}{#1}}{%
     \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
       \IfStrEq{\lateiHeadContext}{subsection}{\subsection{#1}}{%
         \IfStrEq{\lateiHeadContext}{subsubsection}{\subsubsection{#1}}{%
@@ -26,6 +118,8 @@
         }%
       }%
     }%
+  }%
+  }%
   }%
 }
 \NewDocumentCommand{\teiHead}{O{} +m}{\lateiRenderHead{#2}}
@@ -93,16 +187,18 @@
 \NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}
 
 \NewDocumentEnvironment{teiDiv}{O{} +b}{%
-  \begingroup
-  \lateiSetHeadContext{fallback}%
-  \IfSubStr{#1}{type={chapter}}{\lateiSetHeadContext{chapter}}{}%
-  \IfSubStr{#1}{type={section}}{\lateiSetHeadContext{section}}{}%
-  \IfSubStr{#1}{type={section1}}{\lateiSetHeadContext{section}}{}%
-  \IfSubStr{#1}{type={section2}}{\lateiSetHeadContext{subsection}}{}%
-  \IfSubStr{#1}{type={subsection}}{\lateiSetHeadContext{subsection}}{}%
-  \IfSubStr{#1}{type={section3}}{\lateiSetHeadContext{subsubsection}}{}%
-  #2%
-  \endgroup
+  \IfSubStr{#1}{type={titlePage}}{}{%
+    \begingroup
+    \lateiSetHeadContext{fallback}%
+    \IfSubStr{#1}{type={chapter}}{\lateiSetHeadContext{chapter}}{}%
+    \IfSubStr{#1}{type={section}}{\lateiSetHeadContext{section}}{}%
+    \IfSubStr{#1}{type={section1}}{\lateiSetHeadContext{section}}{}%
+    \IfSubStr{#1}{type={section2}}{\lateiSetHeadContext{subsection}}{}%
+    \IfSubStr{#1}{type={subsection}}{\lateiSetHeadContext{subsection}}{}%
+    \IfSubStr{#1}{type={section3}}{\lateiSetHeadContext{subsubsection}}{}%
+    #2%
+    \endgroup
+  }%
 }{}
 \NewDocumentEnvironment{teiList}{O{} +b}{%
   \begingroup
@@ -133,5 +229,22 @@
 % teiHeader is metadata, not running text. Document wrappers pass through;
 % unknown non-header elements keep their content visible rather than vanish.
 \NewDocumentEnvironment{teiElement}{O{} +b}{%
-  \IfSubStr{#1}{name={teiHeader}}{}{#2}%
+  \IfSubStr{#1}{name={teiHeader}}{}{%
+    \IfSubStr{#1}{name={group}}{%
+      \IfSubStr{#1}{type={section1}}{\lateiRenderPartGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={article}}{\lateiRenderChapterGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={chapter}}{\lateiRenderChapterGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={acknowledgments}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={abbreviations}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={introduction}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={foreword}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={preface}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={dedication}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={conclusion}}{\lateiRenderBackGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={bibliography}}{\lateiRenderBackGroup[#1]{#2}}{#2}%
+      }}}}}}}}}}%
+    }{%
+      \IfSubStr{#1}{name={back}}{\lateiEnsureBackMatter #2}{#2}%
+    }%
+  }%
 }{}

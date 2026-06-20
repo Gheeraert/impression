@@ -66,8 +66,9 @@ def build_latei_driver(
             rf"\input{{{macros_input}}}",
             r"\begin{document}",
             _title_page(metadata),
-            r"\mainmatter",
             rf"\input{{{body_input}}}",
+            r"\cleardoublepage",
+            r"\tableofcontents",
             r"\end{document}",
         ]
     )
