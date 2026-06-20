@@ -17,7 +17,7 @@ from lxml import etree
 from .latei_assets import package_latei_graphics
 from .latei_driver import build_latei_driver, compile_latei_pdf
 from .latei_metadata import extract_latei_metadata
-from .reversible import Diagnostic, run_tei_latex_tei_roundtrip
+from .reversible import Diagnostic, read_latex_document, run_tei_latex_tei_roundtrip, write_tei_element
 
 
 @dataclass(slots=True)
@@ -203,6 +203,27 @@ def run_reversible_export_for_file(
         success=success,
         message=message,
     )
+
+
+def restore_xml_from_latei_body(latei_body_path: Path, output_xml_path: Path) -> Path:
+    """Restore TEI XML from a controlled reversible LaTEI body file."""
+    body_path = Path(latei_body_path).expanduser()
+    if not body_path.exists():
+        raise FileNotFoundError(f"LaTEI body file does not exist: {body_path}")
+    if not body_path.is_file():
+        raise ValueError(f"LaTEI body path is not a file: {body_path}")
+
+    output_path = Path(output_xml_path).expanduser()
+    latex = body_path.read_text(encoding="utf-8")
+    element = write_tei_element(read_latex_document(latex))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    etree.ElementTree(element).write(
+        str(output_path),
+        encoding="utf-8",
+        xml_declaration=True,
+        pretty_print=True,
+    )
+    return output_path
 
 
 def _resolve_output_dir(source_path: Path, output_dir: Path | None) -> Path:

@@ -16,15 +16,18 @@ def test_gui_labels_use_latei_vocabulary() -> None:
     assert "Ne pas générer de paquet LaTEI" in source
     assert "Exporter le paquet LaTEI seul" in source
     assert "Exporter le paquet LaTEI + compiler le PDF" in source
-    assert "Exporter un paquet LaTEI réversible" in source
+    assert "Exporter un paquet LaTEI depuis un XML" in source
+    assert "Restaurer un XML Métopes depuis un corps LaTEI" in source
     assert "Le paquet LaTEI contient le corps réversible" in source
 
     assert "Sorties PDF / LaTeX" not in source
     assert "Générer le LaTeX seul" not in source
     assert "Générer le LaTeX + PDF" not in source
     assert "Tester la réversibilité TEI ↔ LaTeX" not in source
+    assert "Exporter un paquet LaTEI réversible" not in source
     assert 'add_cascade(label="Outils"' in source
-    assert source.index("Exporter un paquet LaTEI réversible") < source.index('add_cascade(label="Outils"')
+    assert source.index("Exporter un paquet LaTEI depuis un XML") < source.index('add_cascade(label="Outils"')
+    assert source.index("Restaurer un XML Métopes depuis un corps LaTEI") < source.index('add_cascade(label="Outils"')
 
 
 def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path: Path) -> None:

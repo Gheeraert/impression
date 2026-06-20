@@ -8,7 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from .config import BuildConfig
 from .local_server import PreviewServer
-from .reversible_integration import run_reversible_export_for_file
+from .reversible_integration import restore_xml_from_latei_body, run_reversible_export_for_file
 from .site_builder import SiteBuilder, has_editor_pdf
 
 
@@ -125,8 +125,12 @@ class App(ttk.Frame):
         menubar = tk.Menu(self.master)
         tools_menu = tk.Menu(menubar, tearoff=False)
         tools_menu.add_command(
-            label="Exporter un paquet LaTEI réversible…",
+            label="Exporter un paquet LaTEI depuis un XML…",
             command=self._run_reversible_export,
+        )
+        tools_menu.add_command(
+            label="Restaurer un XML Métopes depuis un corps LaTEI…",
+            command=self._restore_xml_from_latei_body,
         )
         menubar.add_cascade(label="Outils", menu=tools_menu)
         self.master.config(menu=menubar)
@@ -191,6 +195,47 @@ class App(ttk.Frame):
             messagebox.showinfo("Export LaTEI réversible", details)
         else:
             messagebox.showwarning("Export LaTEI réversible", details)
+
+    def _restore_xml_from_latei_body(self) -> None:
+        path = filedialog.askopenfilename(
+            title="Choisir un corps LaTEI réversible",
+            filetypes=[
+                ("Corps LaTEI", "*.latei_body.tex"),
+                ("Fichiers TeX", "*.tex"),
+                ("Tous les fichiers", "*.*"),
+            ],
+        )
+        if not path:
+            return
+
+        body_path = Path(path)
+        default_output = body_path.with_name(f"{latei_body_restored_stem(body_path)}.restored.xml")
+        output = filedialog.asksaveasfilename(
+            title="Écrire l’XML Métopes restauré",
+            defaultextension=".xml",
+            filetypes=[("Fichiers XML", "*.xml"), ("Tous les fichiers", "*.*")],
+            initialdir=str(default_output.parent),
+            initialfile=default_output.name,
+        )
+        if not output:
+            return
+
+        try:
+            restored_path = restore_xml_from_latei_body(body_path, Path(output))
+        except Exception as exc:
+            self._log(f"Erreur restauration XML depuis LaTEI : {exc}")
+            self._log(traceback.format_exc())
+            messagebox.showerror("Restauration XML depuis LaTEI", str(exc))
+            return
+
+        details = (
+            "Restauration XML depuis LaTEI terminée.\n"
+            f"Corps LaTEI : {body_path}\n"
+            f"XML restauré : {restored_path}"
+        )
+        for line in details.splitlines():
+            self._log(line)
+        messagebox.showinfo("Restauration XML depuis LaTEI", details)
 
     def _choose_xml_files(self) -> None:
         paths = filedialog.askopenfilenames(title="Choisir un ou plusieurs fichiers XML", filetypes=[("Fichiers XML", "*.xml")])
@@ -585,6 +630,15 @@ def format_latei_export_summary(result, *, missing_artifacts: list[Path] | None 
     else:
         lines.append("Prévol paquet LaTEI : tous les artefacts attendus sont présents.")
     return "\n".join(lines)
+
+
+def latei_body_restored_stem(path: Path) -> str:
+    """Return the source stem used for a restored XML file from a LaTEI body."""
+    stem = Path(path).stem
+    suffix = ".latei_body"
+    if stem.endswith(suffix):
+        return stem[: -len(suffix)]
+    return stem
 
 
 def run_gui() -> None:
