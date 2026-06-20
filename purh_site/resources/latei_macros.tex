@@ -37,16 +37,19 @@
 \ExplSyntaxOn
 \tl_new:N \l_latei_option_type_tl
 \tl_new:N \l_latei_option_page_title_tl
+\tl_new:N \l_latei_option_target_tl
 \keys_define:nn { latei / options }
   {
     type .tl_set:N = \l_latei_option_type_tl,
     data-page-title .tl_set:N = \l_latei_option_page_title_tl,
+    target .tl_set:N = \l_latei_option_target_tl,
     unknown .code:n = {},
   }
 \cs_new_protected:Npn \latei_extract_options:n #1
   {
     \tl_clear:N \l_latei_option_type_tl
     \tl_clear:N \l_latei_option_page_title_tl
+    \tl_clear:N \l_latei_option_target_tl
     \keys_set:nn { latei / options } { #1 }
   }
 \cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
@@ -95,6 +98,13 @@
     \latei_add_unnumbered_chapter_from_title:
     #2
   }
+\NewDocumentCommand{\lateiRenderRef}{O{} +m}
+  {
+    \latei_extract_options:n { #1 }
+    \tl_if_empty:NTF \l_latei_option_target_tl
+      { #2 }
+      { \href{\tl_use:N \l_latei_option_target_tl}{#2} }
+  }
 \ExplSyntaxOff
 
 % Heads are contextual in TEI: the same <head> can name a chapter, section,
@@ -124,20 +134,40 @@
 }
 \NewDocumentCommand{\teiHead}{O{} +m}{\lateiRenderHead{#2}}
 
-% Apply rend values predictably, including combined values in any order.
-\NewDocumentCommand{\lateiHiBold}{m +m}{%
-  \IfSubStr{#1}{bold}{\textbf{#2}}{#2}%
+% Apply rend values predictably, including combined values in any order. This
+% mirrors the stable renderer order: small caps / position / weight / italic.
+\NewDocumentCommand{\lateiIfRendSmallCaps}{m m m}{%
+  \IfSubStr{#1}{small-caps}{#2}{%
+    \IfSubStr{#1}{small_caps}{#2}{%
+      \IfSubStr{#1}{small caps}{#2}{#3}%
+    }%
+  }%
+}
+\NewDocumentCommand{\lateiIfRendBold}{m m m}{%
+  \IfSubStr{#1}{bold}{#2}{\IfSubStr{#1}{gras}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendSup}{m m m}{%
+  \IfSubStr{#1}{sup}{#2}{\IfSubStr{#1}{exposant}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendSub}{m m m}{%
+  \IfSubStr{#1}{sub}{#2}{\IfSubStr{#1}{indice}{#2}{#3}}%
 }
 \NewDocumentCommand{\lateiHiSmallCaps}{m +m}{%
-  \IfSubStr{#1}{small-caps}{\textsc{\lateiHiBold{#1}{#2}}}{\lateiHiBold{#1}{#2}}%
+  \lateiIfRendSmallCaps{#1}{\textsc{#2}}{#2}%
 }
-\NewDocumentCommand{\lateiHiInline}{m +m}{%
-  \IfSubStr{#1}{italic}{\textit{\lateiHiSmallCaps{#1}{#2}}}{\lateiHiSmallCaps{#1}{#2}}%
+\NewDocumentCommand{\lateiHiPosition}{m +m}{%
+  \lateiIfRendSup{#1}{\textsuperscript{#2}}{%
+    \lateiIfRendSub{#1}{$_{#2}$}{#2}%
+  }%
+}
+\NewDocumentCommand{\lateiHiBold}{m +m}{%
+  \lateiIfRendBold{#1}{\textbf{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiItalic}{m +m}{%
+  \IfSubStr{#1}{italic}{\textit{#2}}{#2}%
 }
 \NewDocumentCommand{\teiHi}{O{} +m}{%
-  \IfSubStr{#1}{sup}{\textsuperscript{\lateiHiInline{#1}{#2}}}{%
-    \IfSubStr{#1}{sub}{$_{\lateiHiInline{#1}{#2}}$}{\lateiHiInline{#1}{#2}}%
-  }%
+  \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{#2}}}}%
 }
 
 % Nested footnotes are not valid LaTeX. If a teiNote appears inside another
@@ -146,7 +176,7 @@
 \lateiinfootnotefalse
 \NewDocumentCommand{\teiNote}{O{} +m}{%
   \iflateiinfootnote
-    \textsuperscript{*}\,(#2)%
+    \textsuperscript{*}%
   \else
     \begingroup
       \lateiinfootnotetrue
@@ -154,7 +184,7 @@
     \endgroup
   \fi
 }
-\NewDocumentCommand{\teiRef}{O{} +m}{#2}
+\NewDocumentCommand{\teiRef}{O{} +m}{\lateiRenderRef[#1]{#2}}
 \NewDocumentCommand{\teiTitle}{O{} +m}{%
   \IfSubStr{#1}{level={m}}{\textit{#2}}{%
     \IfSubStr{#1}{level={j}}{\textit{#2}}{%

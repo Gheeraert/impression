@@ -34,6 +34,34 @@ The direct LaTEI driver/macros now begin to reproduce the stable book skeleton:
 - Appendix-specific behavior.
 - Visual parity with the stable PDF.
 
+## Passe 17J: Notes And Inline Typography
+
+This passe migrates the stable inline decisions that can safely live in the
+typographic LaTEI macro layer. The controlled LaTEI body remains unchanged and
+continues to serialize semantic commands such as `\teiNote`, `\teiHi`,
+`\teiRef`, `\teiQ`, and `\teiTitle`.
+
+| Stable decision migrated | LaTEI direct implementation | Notes |
+| --- | --- | --- |
+| Footnotes | `\teiNote` renders simple notes with `\footnote`. | The PURH preamble still supplies the stable footnote styling. |
+| Nested-note guard | `\teiNote` tracks whether it is already inside a footnote and emits a symbolic superscript marker for nested notes. | This follows the stable renderer's conservative anti-nesting policy. |
+| Italic | `\teiHi[rend={italic}]` renders with `\textit`. | Combined `rend` values are supported without changing the body grammar. |
+| Bold | `\teiHi[rend={bold}]` and `rend={gras}` render with `\textbf`. | The French token mirrors the stable parser tolerance. |
+| Small caps | `small-caps`, `small_caps`, and `small caps` render with `\textsc`. | This keeps the macro tolerant of common normalized forms. |
+| Superscript | `sup` and `exposant` render with `\textsuperscript`. | Same semantic policy as the stable inline renderer. |
+| Subscript | `sub` and `indice` render as math subscript. | This intentionally matches the existing stable renderer's simple form. |
+| External links | `\teiRef[target={...}]{...}` renders with `\href`. | Missing targets fall back to visible content. |
+| Inline quotations | `\teiQ` and `\teiSaid` render with `\enquote`. | The stable preamble already loads `csquotes`. |
+| Inline titles | `\teiTitle[level={m/j/a}]` keeps the existing controlled macro policy: italic for monograph/journal, quotation for article-level. | This remains a conservative inline rule, not a full bibliographic model. |
+
+## Still Not Migrated After 17J
+
+- Figure paths, captions, credits, and missing-image fallback.
+- Bibliography blocks and structured bibliography formatting.
+- Tables and tabular layout.
+- Complex list policies beyond the current simple macro behavior.
+- Full visual parity with the stable PDF.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not
