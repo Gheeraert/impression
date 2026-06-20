@@ -249,6 +249,88 @@ Technical shape of the reversible pipeline:
 
 ## Recommended Three-Pass Convergence Plan
 
+## Passe 17G Architecture Update: Stable PDF From Restored LaTEI TEI
+
+Passe 17F showed that the direct LaTEI driver can compile a real Metopes
+fixture, but that its typographic rendering is flatter than the stable PURH
+PDF. The architectural conclusion is explicit:
+
+```text
+The final PURH PDF renderer must not be reimplemented in latei_macros.tex.
+```
+
+This bridge is a transitional validation path, not the final
+paper-production architecture. It proves that a corrected LaTEI body can
+restore a Metopes TEI document that remains acceptable to the existing stable
+PURH PDF pipeline.
+
+The validation path is:
+
+```text
+LaTEI body corrected by humans
+-> controlled LaTEI reader
+-> reversible Python tree
+-> restored Metopes TEI
+-> existing stable PURH PDF pipeline
+```
+
+Final target architecture for paper production:
+
+```text
+XML Commons-Publishing / Metopes
+-> reversible Python tree
+-> LaTEI PURH carrying both semantics and typographic/layout instructions
+-> LuaLaTeX
+-> PURH PDF
+
+Corrected LaTEI PURH
+-> reversible Python tree
+-> XML Commons-Publishing / Metopes
+```
+
+Therefore the bridge is a proof bench and comparison tool. It is not a
+declaration that paper production should always pass back through a restored
+XML file before PDF generation.
+
+The direct LaTEI driver remains useful, but only as an experimental diagnostic
+tool:
+
+- it proves that the controlled LaTEI body is syntactically compilable;
+- it helps inspect macro coverage;
+- it must not become a second PURH composition engine.
+
+The stable PDF route remains:
+
+```text
+PdfBuilder.build_from_normalized_tei
+-> parse_normalized_tei
+-> semantic_model.Book
+-> LatexRenderer(LatexRenderOptions(style="purh"))
+-> optional LuaLaTeX compilation
+```
+
+The bridge introduced for this direction writes an intermediate XML file:
+
+```text
+<stem>.from_latei.xml
+```
+
+and then delegates to the existing `PdfBuilder`. This keeps all established
+PURH behavior available as a reference point: page format, title page,
+front/body/back structure, running heads, page numbers, notes, figures,
+bibliography, table of contents, spacing, page breaks, and microtypography.
+
+Guardrails for future work:
+
+- do not reimplement PURH typographic decisions blindly in
+  `latei_macros.tex`;
+- reuse and progressively migrate the proven decisions of the stable PDF
+  pipeline into the LaTEI generation path;
+- keep `latei_macros.tex` minimal and diagnostic;
+- keep the LaTEI body reversible and readable by `latex_reader.py`;
+- use restored TEI as a transitional validation handoff to stable PDF;
+- keep the HTML/static-site pipeline untouched.
+
 ### Passe 17B: LaTEI driver, no replacement
 
 Create an experimental writer that wraps existing controlled LaTEI in a
@@ -334,4 +416,3 @@ Success criterion:
   `book.tex` and reversible LaTEI diverge.
 - Best mitigation: keep the stable renderer untouched, introduce LaTEI as an
   explicit experimental route, and make each bridge layer testable.
-
