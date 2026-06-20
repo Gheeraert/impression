@@ -112,6 +112,32 @@ local image paths are compilation artifacts.
 - Complex list policies and verse.
 - Full visual parity with the stable PDF.
 
+## Passe 17L: Bibliography Blocks
+
+This passe migrates the stable bibliography block shape into the direct LaTEI
+macro layer without introducing BibLaTeX or flattening the reversible body. The
+body still carries semantic TEI-oriented commands and generic `teiElement`
+fallbacks for bibliography structures not yet specialized by the reversible
+grammar.
+
+| Stable decision migrated | LaTEI direct implementation | Notes |
+| --- | --- | --- |
+| Bibliography block | `teiElement[name={listBibl}]` renders as a `PurhBibliography` block. | `listBibl` remains generic and reversible in the body. |
+| Simple bibliography entry | `teiBibl` renders as a hanging entry. | Uses the stable hanging shape: `\noindent\hangindent=1.5em\hangafter=1`. |
+| Structured bibliography entry | `teiElement[name={biblStruct}]` renders as a hanging entry while preserving and printing its children. | This is conservative: structure is visible, but not yet normalized into a CSL-like sentence. |
+| Fine bibliography children | Existing inline macros render `author`, `editor`, `title`, `publisher`, `date`, `biblScope`, `idno`, and `ref`. | Unknown or not-yet-specialized children such as `analytic`, `monogr`, `imprint`, and `pubPlace` pass through visibly. |
+| Title styling | Existing `\teiTitle` handles `level={m}` and `level={j}` with italic and `level={a}` with `\enquote`. | This reuses the inline migration from 17J. |
+| DOI/URI links | Existing `\teiRef` and `\teiIdno` remain printable; links use `\href` where a `target` is present. | No external bibliography database is used. |
+
+## Still Not Migrated After 17L
+
+- Full stable bibliographic punctuation and sentence reconstruction.
+- Structured `biblStruct` interpretation equivalent to the stable Python model.
+- Bibliographic heading/TOC policy beyond simple `listBibl` block rendering.
+- Tables and tabular layout.
+- Complex list policies and verse.
+- Full visual parity with the stable PDF.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not
@@ -132,7 +158,7 @@ stable pipeline accepts. It is not the final architecture.
 
 Migrate the next stable decisions in small groups:
 
-1. Bibliography blocks and hanging layout.
+1. Structured bibliography interpretation where needed by real fixtures.
 2. Tables and tabular layout.
 3. Lists, verse, and remaining structured blocks.
 4. Remaining asset policy details only where comparison against the stable

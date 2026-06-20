@@ -19,9 +19,11 @@
 \newif\iflateifrontmatterstarted
 \newif\iflateimainmatterstarted
 \newif\iflateibackmatterstarted
+\newif\iflateiinbibliography
 \lateifrontmatterstartedfalse
 \lateimainmatterstartedfalse
 \lateibackmatterstartedfalse
+\lateiinbibliographyfalse
 \NewDocumentCommand{\lateiEnsureFrontMatter}{}{%
   \iflateifrontmatterstarted\else
     \frontmatter
@@ -165,6 +167,20 @@
   }
 \ExplSyntaxOff
 
+\NewDocumentCommand{\lateiBibliographyEntry}{+m}{%
+  \par\noindent\hangindent=1.5em\hangafter=1 #1\par
+}
+\NewDocumentCommand{\lateiBibliographyBlock}{+m}{%
+  \par
+  \begingroup
+    \lateiinbibliographytrue
+    \begin{PurhBibliography}
+    #1%
+    \end{PurhBibliography}
+  \endgroup
+  \par
+}
+
 % Heads are contextual in TEI: the same <head> can name a chapter, section,
 % figure, table, or list. The surrounding LaTEI environment sets this context.
 \newcommand{\lateiHeadContext}{fallback}
@@ -303,7 +319,7 @@
   \endgroup
 }{}
 \NewDocumentEnvironment{teiCit}{O{} +b}{#2}{}
-\NewDocumentEnvironment{teiBibl}{O{} +b}{\par\noindent #2\par}{}
+\NewDocumentEnvironment{teiBibl}{O{} +b}{\lateiBibliographyEntry{#2}}{}
 \NewDocumentEnvironment{teiTable}{O{} +b}{%
   \begingroup
   \lateiSetHeadContext{table}%
@@ -330,7 +346,10 @@
       \IfSubStr{#1}{type={bibliography}}{\lateiRenderBackGroup[#1]{#2}}{#2}%
       }}}}}}}}}}%
     }{%
-      \IfSubStr{#1}{name={back}}{\lateiEnsureBackMatter #2}{#2}%
+      \IfSubStr{#1}{name={back}}{\lateiEnsureBackMatter #2}{%
+      \IfSubStr{#1}{name={listBibl}}{\lateiBibliographyBlock{#2}}{%
+      \IfSubStr{#1}{name={biblStruct}}{\lateiBibliographyEntry{#2}}{#2}%
+      }}%
     }%
   }%
 }{}
