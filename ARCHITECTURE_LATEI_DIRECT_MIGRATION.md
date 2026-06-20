@@ -160,6 +160,25 @@ The remaining divergences listed in the audit should be resolved by small
 migration passes, always against the stable PDF behavior rather than by inventing
 an independent typographic policy.
 
+### Passe 17N-bis: TeX Convergence Audit
+
+The PDF audit identifies symptoms: page-count drift and extracted text
+differences. The TeX audit in `AUDIT_TEX_STABLE_VS_LATEI.md` looks for causes in
+the stable `book.tex` and in the direct LaTEI package.
+
+The stable `book.tex` and `*.latei_body.tex` are not equivalent layers:
+
+- `book.tex` is final typographic LaTeX emitted by the stable renderer.
+- `*.latei_body.tex` is the reversible semantic source.
+- `*.latei_main.tex` and `*.latei_macros.tex` are the direct LaTEI typographic
+  layer.
+
+The audit localizes the current footnote suspicion: the real fixture contains
+many `\teiNote{... \teiP{...} ...}` forms, while `\teiP` emits paragraph breaks
+through `\par`. This gives a concrete hypothesis for note text starting on a new
+line after the footnote number. Corrections should be made in a focused note
+pass, not mixed with title-page, figure, bibliography, table, or list work.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not

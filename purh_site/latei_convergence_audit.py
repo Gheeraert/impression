@@ -34,6 +34,15 @@ class LateiPdfConvergenceAudit:
     report_path: Path
 
 
+@dataclass(slots=True)
+class LateiTexConvergenceAudit:
+    fixture_path: Path
+    output_dir: Path
+    stable_result: PdfBuildResult
+    latei_result: ReversibleExportResult
+    report_path: Path
+
+
 def run_latei_pdf_convergence_audit(
     fixture_path: Path,
     output_dir: Path,
@@ -75,6 +84,44 @@ def run_latei_pdf_convergence_audit(
         latei_result=latei_result,
         stable_pdf=stable_pdf,
         latei_pdf=latei_pdf,
+        report_path=resolved_report_path,
+    )
+
+
+def run_latei_tex_convergence_audit(
+    fixture_path: Path,
+    output_dir: Path,
+    *,
+    report_path: Path | None = None,
+) -> LateiTexConvergenceAudit:
+    """Generate both TeX paths from one fixture and write a structural TeX audit."""
+    fixture_path = Path(fixture_path)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    stable_dir = output_dir / "stable_pdf"
+    latei_dir = output_dir / "latei_pdf"
+    stable_result = PdfBuilder(
+        latex_options=LatexRenderOptions(style="purh"),
+        compile_pdf=False,
+    ).build_from_normalized_tei(fixture_path, stable_dir)
+    latei_result = run_reversible_export_for_file(fixture_path, latei_dir)
+
+    resolved_report_path = Path(report_path) if report_path is not None else output_dir / "AUDIT_TEX_STABLE_VS_LATEI.md"
+    resolved_report_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_report_path.write_text(
+        build_latei_tex_convergence_report(
+            fixture_path=fixture_path,
+            stable_result=stable_result,
+            latei_result=latei_result,
+        ),
+        encoding="utf-8",
+    )
+    return LateiTexConvergenceAudit(
+        fixture_path=fixture_path,
+        output_dir=output_dir,
+        stable_result=stable_result,
+        latei_result=latei_result,
         report_path=resolved_report_path,
     )
 
@@ -220,8 +267,245 @@ def build_latei_pdf_convergence_report(
     return "\n".join(lines)
 
 
+def build_latei_tex_convergence_report(
+    *,
+    fixture_path: Path,
+    stable_result: PdfBuildResult,
+    latei_result: ReversibleExportResult,
+) -> str:
+    stable_tex = _read_text_if_exists(stable_result.tex_path)
+    latei_main = _read_text_if_exists(latei_result.latei_main_path)
+    latei_body = _read_text_if_exists(latei_result.latei_body_path)
+    latei_macros = _read_text_if_exists(latei_result.latei_macros_path)
+    stable_footnotes = _sample_latex_commands(stable_tex, r"\footnote", limit=3)
+    latei_notes = _sample_latei_notes(latei_body, limit=3)
+    notes_with_paragraphs = _sample_latei_notes_with_paragraphs(latei_body, limit=5)
+    tei_p_definition = _extract_definition_window(latei_macros, r"\NewDocumentCommand{\teiP}", before=4, after=8)
+    tei_note_definition = _extract_definition_window(latei_macros, r"\NewDocumentCommand{\teiNote}", before=4, after=14)
+    stable_figure = _extract_definition_window(stable_tex, r"\fbox{\parbox", before=4, after=6)
+    latei_figure = _extract_definition_window(latei_macros, r"\NewDocumentEnvironment{teiFigure}", before=6, after=8)
+    stable_bibliography = _extract_definition_window(stable_tex, r"\begin{PurhBibliography}", before=2, after=8)
+    latei_bibliography = _extract_definition_window(latei_macros, r"\NewDocumentCommand{\lateiBibliographyEntry}", before=2, after=12)
+    stable_par_count = _count_occurrences(stable_tex, "\\par")
+    latei_body_paragraph_count = _count_occurrences(latei_body, "\\teiP")
+    latei_macro_par_count = _count_occurrences(latei_macros, "\\par")
+    latei_graphics_count = _count_occurrences(latei_body, "\\teiGraphic")
+    latei_include_width_present = _contains(latei_macros, "\\includegraphics[width=0.95\\linewidth")
+    stable_bibliography_present = _contains(stable_tex, "\\begin{PurhBibliography}")
+    stable_hanging_count = _count_occurrences(stable_tex, "\\hangindent=1.5em")
+    latei_hanging_present = _contains(latei_macros, "\\hangindent=1.5em")
+    stable_tabular_count = _count_occurrences(stable_tex, "\\begin{tabular")
+    latei_table_count = _count_occurrences(latei_body, "\\begin{teiTable}")
+    stable_itemize_count = _count_occurrences(stable_tex, "\\begin{itemize}")
+    latei_list_count = _count_occurrences(latei_body, "\\begin{teiList}")
+
+    lines = [
+        "# Audit TeX Stable Vs LaTEI Direct",
+        "",
+        "## Source",
+        "",
+        f"- Fixture: `{fixture_path}`",
+        f"- Stable `book.tex`: `{stable_result.tex_path}`",
+        f"- LaTEI main: `{latei_result.latei_main_path}`",
+        f"- LaTEI macros: `{latei_result.latei_macros_path}`",
+        f"- LaTEI body: `{latei_result.latei_body_path}`",
+        "",
+        "This report does not compare `book.tex` and `latei_body.tex` as equal text.",
+        "The stable `book.tex` is final typographic LaTeX, while `latei_body.tex` is the reversible semantic source.",
+        "The comparison below is structural and cause-oriented.",
+        "",
+        "## Title page audit",
+        "",
+        f"- Stable title extras: `{_count_occurrences(stable_tex, r'\\PurhTitleExtra')}`",
+        f"- LaTEI title extras: `{_count_occurrences(latei_main, r'\\PurhTitleExtra')}`",
+        f"- Stable contains `PURH - 2025`: `{_contains(stable_tex, 'PURH - 2025')}`",
+        f"- LaTEI contains `PURH - 2025`: `{_contains(latei_main, 'PURH - 2025')}`",
+        f"- Stable contains print ISBN on title page: `{_contains(stable_tex, 'ISBN imprime')}`",
+        f"- LaTEI contains print ISBN on title page: `{_contains(latei_main, 'ISBN imprime')}`",
+        f"- LaTEI visible experimental marker: `{_contains(latei_main, 'Document LaTEI PURH experimental')}`",
+        "",
+        "Potential divergence: LaTEI currently prints publication year and print ISBN on the title page, while the stable extracted PDF text reaches front matter immediately after `PURH`.",
+        "",
+        "## Footnote audit",
+        "",
+        "Stable sample:",
+        "",
+        _fenced("\n\n".join(stable_footnotes) or "No stable footnote sample found."),
+        "",
+        "LaTEI sample:",
+        "",
+        _fenced("\n\n".join(latei_notes) or "No LaTEI note sample found."),
+        "",
+        f"- LaTEI notes containing `\\teiP`: `{len(_latei_notes_with_paragraphs(latei_body))}`",
+        f"- LaTEI `\\teiP` definition emits `\\par`: `{_definition_emits_par(tei_p_definition)}`",
+        f"- LaTEI note macro has nested-note guard: `{_contains(latei_macros, 'Nested footnotes are not valid LaTeX')}`",
+        "",
+        "LaTEI notes containing `\\teiP` samples:",
+        "",
+        _fenced("\n\n".join(notes_with_paragraphs) or "No `\\teiP` inside `\\teiNote` found."),
+        "",
+        "Macro definitions involved:",
+        "",
+        _fenced(tei_p_definition + "\n\n" + tei_note_definition),
+        "",
+        "Potential divergence: `\\teiP` appears inside `\\teiNote`. If `\\teiP` emits paragraph breaks, this can force a line break after the footnote number and increase page count.",
+        "",
+        "## Paragraph audit",
+        "",
+        f"- Stable explicit paragraph breaks (`\\par`): `{stable_par_count}`",
+        f"- LaTEI body paragraph macros (`\\teiP`): `{latei_body_paragraph_count}`",
+        f"- LaTEI macro paragraph breaks (`\\par` in macros): `{latei_macro_par_count}`",
+        "- Contexts audited: normal, note, figure, bibliography.",
+        "",
+        "## Figure audit",
+        "",
+        f"- Stable missing-image fallback occurrences: `{_count_occurrences(stable_tex, 'Image absente ou non fournie')}`",
+        f"- LaTEI missing-image fallback defined: `{_contains(latei_macros, 'Image absente ou non fournie')}`",
+        f"- LaTEI graphics in body: `{latei_graphics_count}`",
+        f"- LaTEI image include width policy present: `{latei_include_width_present}`",
+        "",
+        "Stable figure/fallback sample:",
+        "",
+        _fenced(stable_figure or "No stable figure sample found."),
+        "",
+        "LaTEI figure macro sample:",
+        "",
+        _fenced(latei_figure or "No LaTEI figure macro sample found."),
+        "",
+        "## Bibliography audit",
+        "",
+        f"- Stable `PurhBibliography` block present: `{stable_bibliography_present}`",
+        f"- LaTEI `PurhBibliography` block present in macros: `{_contains(latei_macros, 'PurhBibliography')}`",
+        f"- Stable hanging entries: `{stable_hanging_count}`",
+        f"- LaTEI hanging-entry policy present: `{latei_hanging_present}`",
+        f"- LaTEI `biblStruct` fallback in body: `{_count_occurrences(latei_body, 'name={biblStruct}')}`",
+        "",
+        "Stable bibliography sample:",
+        "",
+        _fenced(stable_bibliography or "No stable bibliography sample found."),
+        "",
+        "LaTEI bibliography macro sample:",
+        "",
+        _fenced(latei_bibliography or "No LaTEI bibliography macro sample found."),
+        "",
+        "## Tables and lists audit",
+        "",
+        f"- Stable tabular environments: `{stable_tabular_count}`",
+        f"- LaTEI table environments in body: `{latei_table_count}`",
+        f"- Stable itemize environments: `{stable_itemize_count}`",
+        f"- LaTEI list environments in body: `{latei_list_count}`",
+        "",
+        "Probable impact: tables/lists are not yet proven visually equivalent and can contribute to page-count drift, but the footnote paragraph pattern is the clearest localized note-layout suspect.",
+        "",
+        "## Suspected causes to verify before correction",
+        "",
+        "1. `\\teiP` inside `\\teiNote` is likely responsible for note text starting on a new line when paragraph macros emit `\\par`.",
+        "2. LaTEI title-page extras currently print more metadata than the stable title-page extracted text.",
+        "3. Figures and bibliography are readable but still macro-level approximations of the stable renderer.",
+        "4. Tables/lists are not yet migrated to visual parity.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def _read_text_if_exists(path: Path) -> str:
     return Path(path).read_text(encoding="utf-8", errors="replace") if Path(path).exists() else ""
+
+
+def _count_occurrences(text: str, token: str) -> int:
+    return text.count(token)
+
+
+def _contains(text: str, token: str) -> bool:
+    return token in text
+
+
+def _fenced(text: str) -> str:
+    return f"```latex\n{text.strip()}\n```"
+
+
+def _sample_latex_commands(text: str, command: str, *, limit: int) -> list[str]:
+    samples: list[str] = []
+    start = 0
+    while len(samples) < limit:
+        index = text.find(command, start)
+        if index < 0:
+            break
+        sample, end = _balanced_command_sample(text, index)
+        samples.append(sample)
+        start = max(end, index + len(command))
+    return samples
+
+
+def _balanced_command_sample(text: str, start: int) -> tuple[str, int]:
+    cursor = _skip_command_and_options(text, start)
+    brace = text.find("{", cursor)
+    if brace < 0:
+        return text[start : start + 200], start + 200
+    depth = 0
+    index = brace
+    while index < len(text):
+        char = text[index]
+        previous = text[index - 1] if index > 0 else ""
+        if char == "{" and previous != "\\":
+            depth += 1
+        elif char == "}" and previous != "\\":
+            depth -= 1
+            if depth == 0:
+                end = index + 1
+                return text[start:end], end
+        index += 1
+    return text[start : start + 300], start + 300
+
+
+def _skip_command_and_options(text: str, start: int) -> int:
+    cursor = start
+    if cursor < len(text) and text[cursor] == "\\":
+        cursor += 1
+        while cursor < len(text) and (text[cursor].isalpha() or text[cursor] == "@"):
+            cursor += 1
+    while cursor < len(text) and text[cursor].isspace():
+        cursor += 1
+    while cursor < len(text) and text[cursor] == "[":
+        depth = 1
+        cursor += 1
+        while cursor < len(text) and depth:
+            char = text[cursor]
+            previous = text[cursor - 1] if cursor > 0 else ""
+            if char == "[" and previous != "\\":
+                depth += 1
+            elif char == "]" and previous != "\\":
+                depth -= 1
+            cursor += 1
+        while cursor < len(text) and text[cursor].isspace():
+            cursor += 1
+    return cursor
+
+
+def _sample_latei_notes(text: str, *, limit: int) -> list[str]:
+    return _sample_latex_commands(text, r"\teiNote", limit=limit)
+
+
+def _latei_notes_with_paragraphs(text: str) -> list[str]:
+    return [sample for sample in _sample_latex_commands(text, r"\teiNote", limit=10_000) if r"\teiP" in sample]
+
+
+def _sample_latei_notes_with_paragraphs(text: str, *, limit: int) -> list[str]:
+    return _latei_notes_with_paragraphs(text)[:limit]
+
+
+def _extract_definition_window(text: str, needle: str, *, before: int, after: int) -> str:
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if needle in line:
+            start = max(index - before, 0)
+            end = min(index + after + 1, len(lines))
+            return "\n".join(lines[start:end])
+    return ""
+
+
+def _definition_emits_par(definition: str) -> bool:
+    return r"\par" in definition
 
 
 def _file_size(path: Path) -> int:
