@@ -49,6 +49,13 @@
 \tl_new:N \l_latei_option_n_tl
 \tl_new:N \l_latei_option_rend_tl
 \tl_new:N \l_latei_graphic_path_tl
+\tl_new:N \l_latei_graphic_local_path_tl
+\prop_new:N \g_latei_graphics_map_prop
+\cs_generate_variant:Nn \prop_get:NnNTF { NVNTF }
+\NewDocumentCommand{\lateiDeclareGraphic}{m m}
+  {
+    \prop_gput:Nnn \g_latei_graphics_map_prop { #1 } { #2 }
+  }
 \keys_define:nn { latei / options }
   {
     type .tl_set:N = \l_latei_option_type_tl,
@@ -152,7 +159,9 @@
         \tl_if_empty:NF \l_latei_option_n_tl
           { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_n_tl }
       }
-    \exp_args:NV \latei_include_graphic:n \l_latei_graphic_path_tl
+    \prop_get:NVNTF \g_latei_graphics_map_prop \l_latei_graphic_path_tl \l_latei_graphic_local_path_tl
+      { \exp_args:NV \latei_include_graphic:n \l_latei_graphic_local_path_tl }
+      { \exp_args:NV \latei_include_graphic:n \l_latei_graphic_path_tl }
   }
 \ExplSyntaxOff
 

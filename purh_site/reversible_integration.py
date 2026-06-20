@@ -14,6 +14,7 @@ from typing import Sequence
 
 from lxml import etree
 
+from .latei_assets import package_latei_graphics
 from .latei_driver import build_latei_driver, compile_latei_pdf
 from .latei_metadata import extract_latei_metadata
 from .reversible import Diagnostic, run_tei_latex_tei_roundtrip
@@ -27,6 +28,10 @@ class ReversibleExportResult:
     latei_body_path: Path
     latei_main_path: Path
     latei_macros_path: Path
+    latei_graphics_map_path: Path
+    latei_assets_dir: Path
+    latei_copied_images_count: int
+    latei_asset_warnings: list[str]
     latei_pdf_path: Path
     latei_log_path: Path | None
     latei_pdf_success: bool
@@ -54,6 +59,8 @@ def run_reversible_export_for_file(
         latei_body_path,
         latei_main_path,
         latei_macros_path,
+        latei_graphics_map_path,
+        latei_assets_dir,
         latei_pdf_path,
         latei_log_path,
         roundtrip_xml_path,
@@ -70,6 +77,10 @@ def run_reversible_export_for_file(
             latei_body_path=latei_body_path,
             latei_main_path=latei_main_path,
             latei_macros_path=latei_macros_path,
+            latei_graphics_map_path=latei_graphics_map_path,
+            latei_assets_dir=latei_assets_dir,
+            latei_copied_images_count=0,
+            latei_asset_warnings=[],
             latei_pdf_path=latei_pdf_path,
             latei_log_path=None,
             latei_pdf_success=False,
@@ -90,6 +101,10 @@ def run_reversible_export_for_file(
             latei_body_path=latei_body_path,
             latei_main_path=latei_main_path,
             latei_macros_path=latei_macros_path,
+            latei_graphics_map_path=latei_graphics_map_path,
+            latei_assets_dir=latei_assets_dir,
+            latei_copied_images_count=0,
+            latei_asset_warnings=[],
             latei_pdf_path=latei_pdf_path,
             latei_log_path=None,
             latei_pdf_success=False,
@@ -113,6 +128,10 @@ def run_reversible_export_for_file(
             latei_body_path=latei_body_path,
             latei_main_path=latei_main_path,
             latei_macros_path=latei_macros_path,
+            latei_graphics_map_path=latei_graphics_map_path,
+            latei_assets_dir=latei_assets_dir,
+            latei_copied_images_count=0,
+            latei_asset_warnings=[],
             latei_pdf_path=latei_pdf_path,
             latei_log_path=None,
             latei_pdf_success=False,
@@ -130,10 +149,17 @@ def run_reversible_export_for_file(
     resolved_output_dir.mkdir(parents=True, exist_ok=True)
     latex_path.write_text(result.latex, encoding="utf-8")
     latei_body_path.write_text(result.latex, encoding="utf-8")
+    asset_package = package_latei_graphics(
+        element,
+        source_xml_path=source_path,
+        output_dir=resolved_output_dir,
+        graphics_map_path=latei_graphics_map_path,
+    )
     build_latei_driver(
         latei_body_path,
         latei_main_path,
         macros_tex_path=latei_macros_path,
+        graphics_map_tex_path=latei_graphics_map_path,
         metadata=metadata,
     )
     pdf_result = compile_latei_pdf(
@@ -163,6 +189,10 @@ def run_reversible_export_for_file(
         latei_body_path=latei_body_path,
         latei_main_path=latei_main_path,
         latei_macros_path=latei_macros_path,
+        latei_graphics_map_path=latei_graphics_map_path,
+        latei_assets_dir=asset_package.assets_dir,
+        latei_copied_images_count=asset_package.copied_count,
+        latei_asset_warnings=asset_package.warnings,
         latei_pdf_path=latei_pdf_path,
         latei_log_path=pdf_result.log_path,
         latei_pdf_success=pdf_result.success,
@@ -184,13 +214,15 @@ def _resolve_output_dir(source_path: Path, output_dir: Path | None) -> Path:
     return resolved
 
 
-def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path]:
+def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
     stem = source_path.stem
     return (
         output_dir / f"{stem}.reversible.tex",
         output_dir / f"{stem}.latei_body.tex",
         output_dir / f"{stem}.latei_main.tex",
         output_dir / f"{stem}.latei_macros.tex",
+        output_dir / f"{stem}.latei_graphics_map.tex",
+        output_dir / "latei_assets",
         output_dir / f"{stem}.latei.pdf",
         output_dir / f"{stem}.latei_build.log",
         output_dir / f"{stem}.roundtrip.xml",
@@ -238,6 +270,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"LaTEI body: {result.latei_body_path}")
     print(f"LaTEI main: {result.latei_main_path}")
     print(f"LaTEI macros: {result.latei_macros_path}")
+    print(f"LaTEI graphics map: {result.latei_graphics_map_path}")
+    print(f"LaTEI assets: {result.latei_assets_dir} ({result.latei_copied_images_count} copied image(s))")
+    for warning in result.latei_asset_warnings:
+        print(f"LaTEI asset warning: {warning}")
     if result.latei_pdf_success:
         print(f"LaTEI PDF: {result.latei_pdf_path}")
     else:

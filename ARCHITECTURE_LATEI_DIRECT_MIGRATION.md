@@ -88,6 +88,30 @@ paragraph macros with their TEI attributes.
 - Complex list policies and verse.
 - Full visual parity with the stable PDF.
 
+## Passe 17K-bis: Portable Image Assets
+
+This passe closes the main portability gap left by 17K without changing the
+reversible LaTEI body. Documentary graphic paths stay in `*.latei_body.tex`;
+local image paths are compilation artifacts.
+
+| Packaging decision | LaTEI direct implementation | Notes |
+| --- | --- | --- |
+| Preserve documentary path | The body still contains the original `\teiGraphic[url={...}]`, `target`, or `n` value. | The body remains the reversible source. |
+| Copy existing images | `purh_site.latei_assets.package_latei_graphics` resolves graphic paths relative to the XML source file and copies existing files into `latei_assets/images/`. | Copied file names are collision-resistant and preserve extensions. |
+| Mapping file | The export writes `<stem>.latei_graphics_map.tex` with `\lateiDeclareGraphic{documentary}{local}` entries. | This file is not reversible and is not a source document. |
+| Driver inclusion | The driver inputs the graphics map after LaTEI macros and before the body. | The driver remains the compilation wrapper only. |
+| Macro lookup | `\teiGraphic` first looks up the documentary path in the graphics map, then falls back to the original path, then to the missing-image box. | `url`, `target`, then `n` keep the stable priority order. |
+| Missing images | Missing files are reported as non-blocking export warnings and still compile with the 17K fallback. | The stable pipeline is unchanged. |
+
+## Still Not Migrated After 17K-bis
+
+- Alternative image source policies beyond independent `teiGraphic` mappings.
+- Full stable caption composition with title/caption punctuation parity.
+- Bibliography blocks and structured bibliography formatting.
+- Tables and tabular layout.
+- Complex list policies and verse.
+- Full visual parity with the stable PDF.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not
@@ -111,8 +135,8 @@ Migrate the next stable decisions in small groups:
 1. Bibliography blocks and hanging layout.
 2. Tables and tabular layout.
 3. Lists, verse, and remaining structured blocks.
-4. Asset-path parity, including Python-side absolutization for direct LaTEI if
-   the comparison against the stable pipeline shows it is needed.
+4. Remaining asset policy details only where comparison against the stable
+   pipeline shows they are needed.
 
 Each migration should keep the LaTEI body reversible and should compare against
 the stable pipeline rather than inventing a parallel typographic system.

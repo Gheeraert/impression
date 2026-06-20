@@ -33,6 +33,7 @@ def build_latei_driver(
     main_tex_path: Path,
     *,
     macros_tex_path: Path | None = None,
+    graphics_map_tex_path: Path | None = None,
     metadata: LateiMetadata | None = None,
     title: str | None = None,
 ) -> Path:
@@ -46,24 +47,33 @@ def build_latei_driver(
 
     body_input = _latex_input_path(body_tex_path, relative_to=main_tex_path.parent)
     macros_input = _latex_input_path(local_macros_path, relative_to=main_tex_path.parent)
+    graphics_map_input = (
+        _latex_input_path(graphics_map_tex_path, relative_to=main_tex_path.parent)
+        if graphics_map_tex_path is not None and Path(graphics_map_tex_path).exists()
+        else None
+    )
     metadata = metadata or LateiMetadata(title=title or "LaTEI PURH")
 
-    content = "\n\n".join(
+    parts = [
+        render_purh_preamble_for_latei(
+            title=metadata.title or title or "LaTEI PURH",
+            subtitle=metadata.subtitle or None,
+            contributors=metadata.contributors,
+            publisher=metadata.publisher or None,
+            publication_year=metadata.publication_year or None,
+            doi=metadata.doi or None,
+            isbn_print=metadata.isbn_print or None,
+            isbn_pdf=metadata.isbn_pdf or None,
+            collection_title=metadata.collection_title or None,
+            collection_number=metadata.collection_number or None,
+            issn=metadata.issn or metadata.collection_issn or None,
+        ),
+        rf"\input{{{macros_input}}}",
+    ]
+    if graphics_map_input is not None:
+        parts.append(rf"\input{{{graphics_map_input}}}")
+    parts.extend(
         [
-            render_purh_preamble_for_latei(
-                title=metadata.title or title or "LaTEI PURH",
-                subtitle=metadata.subtitle or None,
-                contributors=metadata.contributors,
-                publisher=metadata.publisher or None,
-                publication_year=metadata.publication_year or None,
-                doi=metadata.doi or None,
-                isbn_print=metadata.isbn_print or None,
-                isbn_pdf=metadata.isbn_pdf or None,
-                collection_title=metadata.collection_title or None,
-                collection_number=metadata.collection_number or None,
-                issn=metadata.issn or metadata.collection_issn or None,
-            ),
-            rf"\input{{{macros_input}}}",
             r"\begin{document}",
             _title_page(metadata),
             rf"\input{{{body_input}}}",
@@ -72,6 +82,7 @@ def build_latei_driver(
             r"\end{document}",
         ]
     )
+    content = "\n\n".join(parts)
     main_tex_path.write_text(content + "\n", encoding="utf-8")
     return main_tex_path
 
