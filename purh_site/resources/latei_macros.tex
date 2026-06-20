@@ -5,7 +5,14 @@
 \usepackage{xparse}
 \usepackage{xstring}
 
-\NewDocumentCommand{\teiP}{O{} +m}{\par #2\par}
+\NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
+  \IfStrEq{\lateiHeadContext}{figure}{%
+    \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
+      \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+    }%
+  }{\par #2\par}%
+}
+\NewDocumentCommand{\teiP}{O{} +m}{\lateiRenderParagraph[#1]{#2}}
 
 % Matter switches and group titles mirror the stable PURH book skeleton while
 % leaving the reversible LaTEI body unchanged.
@@ -38,11 +45,18 @@
 \tl_new:N \l_latei_option_type_tl
 \tl_new:N \l_latei_option_page_title_tl
 \tl_new:N \l_latei_option_target_tl
+\tl_new:N \l_latei_option_url_tl
+\tl_new:N \l_latei_option_n_tl
+\tl_new:N \l_latei_option_rend_tl
+\tl_new:N \l_latei_graphic_path_tl
 \keys_define:nn { latei / options }
   {
     type .tl_set:N = \l_latei_option_type_tl,
     data-page-title .tl_set:N = \l_latei_option_page_title_tl,
     target .tl_set:N = \l_latei_option_target_tl,
+    url .tl_set:N = \l_latei_option_url_tl,
+    n .tl_set:N = \l_latei_option_n_tl,
+    rend .tl_set:N = \l_latei_option_rend_tl,
     unknown .code:n = {},
   }
 \cs_new_protected:Npn \latei_extract_options:n #1
@@ -50,6 +64,9 @@
     \tl_clear:N \l_latei_option_type_tl
     \tl_clear:N \l_latei_option_page_title_tl
     \tl_clear:N \l_latei_option_target_tl
+    \tl_clear:N \l_latei_option_url_tl
+    \tl_clear:N \l_latei_option_n_tl
+    \tl_clear:N \l_latei_option_rend_tl
     \keys_set:nn { latei / options } { #1 }
   }
 \cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
@@ -104,6 +121,38 @@
     \tl_if_empty:NTF \l_latei_option_target_tl
       { #2 }
       { \href{\tl_use:N \l_latei_option_target_tl}{#2} }
+  }
+\cs_new_protected:Npn \latei_figure_fallback:
+  {
+    \fbox{\parbox{0.8\linewidth}{\centering\footnotesize Image absente ou non fournie}}
+  }
+\cs_new_protected:Npn \latei_include_graphic:n #1
+  {
+    \tl_if_blank:nTF { #1 }
+      { \latei_figure_fallback: }
+      {
+        \IfFileExists{\detokenize{#1}}
+          { \includegraphics[width=0.95\linewidth,keepaspectratio]{\detokenize{#1}} }
+          { \latei_figure_fallback: }
+      }
+  }
+\NewDocumentCommand{\lateiRenderGraphic}{O{}}
+  {
+    \latei_extract_options:n { #1 }
+    \tl_clear:N \l_latei_graphic_path_tl
+    \tl_if_empty:NF \l_latei_option_url_tl
+      { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_url_tl }
+    \tl_if_empty:NT \l_latei_graphic_path_tl
+      {
+        \tl_if_empty:NF \l_latei_option_target_tl
+          { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_target_tl }
+      }
+    \tl_if_empty:NT \l_latei_graphic_path_tl
+      {
+        \tl_if_empty:NF \l_latei_option_n_tl
+          { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_n_tl }
+      }
+    \exp_args:NV \latei_include_graphic:n \l_latei_graphic_path_tl
   }
 \ExplSyntaxOff
 
@@ -209,9 +258,7 @@
 \NewDocumentCommand{\teiBiblScope}{O{} +m}{#2}
 \NewDocumentCommand{\teiIdno}{O{} +m}{#2}
 
-\NewDocumentCommand{\teiGraphic}{O{}}{%
-  \par\smallskip\noindent{\footnotesize\itshape [graphic #1]}\par\smallskip
-}
+\NewDocumentCommand{\teiGraphic}{O{}}{\lateiRenderGraphic[#1]}
 \NewDocumentCommand{\teiPtr}{O{}}{}
 \NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
 \NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}

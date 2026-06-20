@@ -62,6 +62,32 @@ continues to serialize semantic commands such as `\teiNote`, `\teiHi`,
 - Complex list policies beyond the current simple macro behavior.
 - Full visual parity with the stable PDF.
 
+## Passe 17K: Figures And Image Fallback
+
+This passe migrates the stable figure fallback policy that can safely live in
+the direct LaTEI macro layer. The controlled body remains unchanged and still
+serializes figures as `teiFigure`, `teiHead`, `teiGraphic`, and ordinary
+paragraph macros with their TEI attributes.
+
+| Stable decision migrated | LaTEI direct implementation | Notes |
+| --- | --- | --- |
+| Centered figure block | `teiFigure` keeps a centered block and sets the `figure` head context. | This remains a typographic wrapper only. |
+| Figure title/head | `teiHead` in figure context renders as a bold figure title/legend line. | The stable renderer later combines title and caption more precisely; direct LaTEI is still conservative. |
+| Graphic source priority | `\teiGraphic` reads `url`, then `target`, then `n`. | This mirrors the stable parser's source selection order. |
+| Image inclusion | If the selected image path is found by LaTeX, `\includegraphics[width=0.95\linewidth,keepaspectratio]` is used. | Paths are passed through `\detokenize` for underscores, spaces, and similar characters. |
+| Missing-image fallback | If no image path is present or the file is not found, the macro renders `Image absente ou non fournie` in a framed box. | This is intentionally close to the stable fallback text. |
+| Captions and credits | `\teiP[rend={caption}]` and `\teiP[rend={credits}]` receive small and footnote-size figure-context rendering. | The paragraph remains semantically reversible. |
+
+## Still Not Migrated After 17K
+
+- Stable Python-side image path absolutization from the XML source directory.
+- Alternative image source selection beyond the first emitted `\teiGraphic`.
+- Full stable caption composition with title/caption punctuation parity.
+- Bibliography blocks and structured bibliography formatting.
+- Tables and tabular layout.
+- Complex list policies and verse.
+- Full visual parity with the stable PDF.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not
@@ -82,11 +108,11 @@ stable pipeline accepts. It is not the final architecture.
 
 Migrate the next stable decisions in small groups:
 
-1. Footnotes and inline policies that are already well defined in the stable
-   renderer.
-2. Figure path handling, captions, credits, and missing-image fallback.
-3. Bibliography blocks and hanging layout.
-4. Lists, tables, and remaining structured blocks.
+1. Bibliography blocks and hanging layout.
+2. Tables and tabular layout.
+3. Lists, verse, and remaining structured blocks.
+4. Asset-path parity, including Python-side absolutization for direct LaTEI if
+   the comparison against the stable pipeline shows it is needed.
 
 Each migration should keep the LaTEI body reversible and should compare against
 the stable pipeline rather than inventing a parallel typographic system.
