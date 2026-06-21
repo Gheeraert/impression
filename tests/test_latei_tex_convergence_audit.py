@@ -37,6 +37,9 @@ def test_latei_tex_convergence_audit_has_required_sections(tex_audit) -> None:
     assert "## Bibliography audit" in report
     assert "## Tables and lists audit" in report
     assert "## Suspected causes to verify before correction" in report
+    assert "Resolved local divergence: LaTEI title page no longer prints publication year" in report
+    assert "LaTEI contains `PURH - 2025`: `False`" in report
+    assert "LaTEI contains visible print ISBN on title page: `False`" in report
 
 
 def test_latei_tex_convergence_audit_flags_tei_p_inside_notes(tex_audit) -> None:

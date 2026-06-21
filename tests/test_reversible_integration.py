@@ -123,8 +123,10 @@ def test_latei_driver_uses_header_metadata_and_keeps_header_reversible(tmp_path:
     assert r"\newcommand{\PURHDOI}{10.0000/purh.test}" in main
     assert r"\PurhSubtitle{\PURHBookSubtitle}" in main
     assert r"\PurhContributors{\PURHBookAuthor}" in main
-    assert r"\PurhTitleExtra{ISBN PDF 979-10-000-0000-1}" in main
-    assert r"\PurhTitleExtra{ISBN imprime 979-10-000-0000-0}" in main
+    assert r"\PurhTitleExtra{PURH}" in main
+    assert r"\PurhTitleExtra{ISBN PDF 979-10-000-0000-1}" not in main
+    assert r"\PurhTitleExtra{ISBN imprime 979-10-000-0000-0}" not in main
+    assert r"\PurhTitleExtra{DOI 10.0000/purh.test}" not in main
     assert "name={teiHeader}" in macros
     assert "teiHeader is metadata, not running text" in macros
 

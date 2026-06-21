@@ -53,6 +53,23 @@ def test_latei_direct_title_page_has_no_visible_experimental_marker(convergence_
         assert "Document LaTEI PURH experimental" not in convergence_audit.latei_pdf.text_excerpt
 
 
+def test_latei_direct_title_page_does_not_print_divergent_metadata(convergence_audit) -> None:
+    main = convergence_audit.latei_result.latei_main_path.read_text(encoding="utf-8")
+    title_page = _title_page_from_text(main)
+    report = convergence_audit.report_path.read_text(encoding="utf-8")
+
+    assert r"\newcommand{\PURHYear}{2025}" in main
+    assert r"\newcommand{\PURHISBN}{979-10-240-1855-3}" in main
+    assert r"\PurhTitleExtra{PURH}" in title_page
+    assert "PURH - 2025" not in title_page
+    assert "ISBN imprime" not in title_page
+    assert "ISBN PDF" not in title_page
+    assert "ISBN ePub" not in title_page
+    assert "DOI" not in title_page
+    assert "no visible year line: stable `yes` / LaTEI `yes`" in report
+    assert "no visible print ISBN line: stable `yes` / LaTEI `yes`" in report
+
+
 def test_stable_and_latei_pdfs_share_page_format_when_pdfinfo_is_available(convergence_audit) -> None:
     if shutil.which("pdfinfo") is None:
         pytest.skip("pdfinfo is unavailable.")
@@ -72,3 +89,11 @@ def test_extracted_pdf_text_contains_essential_title_metadata(convergence_audit)
     for text in excerpts:
         assert "Héraldique et papauté" in text
         assert "PURH" in text
+
+
+def _title_page_from_text(text: str) -> str:
+    start = text.find(r"\begin{titlepage}")
+    end = text.find(r"\end{titlepage}", start)
+    assert start >= 0
+    assert end >= 0
+    return text[start : end + len(r"\end{titlepage}")]

@@ -205,21 +205,8 @@ def _title_page(metadata: LateiMetadata) -> str:
     if metadata.contributor_line:
         lines.append(r"\PurhContributors{\PURHBookAuthor}")
     lines.append(r"\vfill")
-    publication_parts = [
-        part
-        for part in (metadata.publisher, metadata.publication_year)
-        if part
-    ]
-    if publication_parts:
-        lines.append(rf"\PurhTitleExtra{{{_latex_text(' - '.join(publication_parts))}}}")
-    if metadata.isbn_pdf:
-        lines.append(rf"\PurhTitleExtra{{ISBN PDF {_latex_text(metadata.isbn_pdf)}}}")
-    if metadata.isbn_print:
-        lines.append(rf"\PurhTitleExtra{{ISBN imprime {_latex_text(metadata.isbn_print)}}}")
-    if metadata.isbn_epub:
-        lines.append(rf"\PurhTitleExtra{{ISBN ePub {_latex_text(metadata.isbn_epub)}}}")
-    if metadata.doi:
-        lines.append(rf"\PurhTitleExtra{{DOI {_latex_text(metadata.doi)}}}")
+    if metadata.publisher:
+        lines.append(rf"\PurhTitleExtra{{{_latex_text(metadata.publisher)}}}")
     lines.extend(
         [
             r"\end{titlepage}",

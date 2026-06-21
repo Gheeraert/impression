@@ -149,7 +149,9 @@ def test_real_metopes_fixture_full_export_uses_real_metadata(export_result: Reve
     assert r"\newcommand{\PURHISBN}{979-10-240-1855-3}" in main
     assert r"\newcommand{\PURHDOI}{}" in main
     assert r"\newcommand{\PURHBookSubtitle}{}" in main
-    assert r"\PurhTitleExtra{ISBN imprime 979-10-240-1855-3}" in main
+    assert r"\PurhTitleExtra{PURH}" in main
+    assert r"\PurhTitleExtra{PURH - 2025}" not in main
+    assert r"\PurhTitleExtra{ISBN imprime 979-10-240-1855-3}" not in main
 
     metadata = extract_latei_metadata(etree.parse(str(FIXTURE_PATH)).getroot())
     assert metadata.language == "fr-FR"

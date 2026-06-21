@@ -151,6 +151,8 @@ def build_latei_pdf_convergence_report(
     latei_main = _read_text_if_exists(latei_result.latei_main_path)
     latei_body = _read_text_if_exists(latei_result.latei_body_path)
     latei_macros = _read_text_if_exists(latei_result.latei_macros_path)
+    stable_title_page = _title_page_block(stable_tex)
+    latei_title_page = _title_page_block(latei_main)
     stable_text = _normalize_text(stable_pdf.text_excerpt)
     latei_text = _normalize_text(latei_pdf.text_excerpt)
     first_text_gap = _first_text_gap(stable_text, latei_text)
@@ -209,12 +211,15 @@ def build_latei_pdf_convergence_report(
         "",
         _checklist(
             [
-                ("titlepage", r"\begin{titlepage}", stable_tex, latei_main),
+                ("titlepage", r"\begin{titlepage}", stable_title_page, latei_title_page),
                 ("title", "Héraldique et papauté. Moyen Âge-Temps modernes. II", stable_tex, latei_main),
-                ("publisher", "PURH", stable_tex, latei_main),
-                ("year", "2025", stable_tex, latei_main),
-                ("print ISBN", "979-10-240-1855-3", stable_tex, latei_main),
-                ("no visible experimental mention", "Document LaTEI PURH experimental", stable_tex, latei_main, True),
+                ("publisher", "PURH", stable_title_page, latei_title_page),
+                ("no visible year line", "PURH - 2025", stable_title_page, latei_title_page, True),
+                ("no visible print ISBN line", "ISBN imprime", stable_title_page, latei_title_page, True),
+                ("no visible PDF ISBN line", "ISBN PDF", stable_title_page, latei_title_page, True),
+                ("no visible ePub ISBN line", "ISBN ePub", stable_title_page, latei_title_page, True),
+                ("no visible DOI line", "DOI", stable_title_page, latei_title_page, True),
+                ("no visible experimental mention", "Document LaTEI PURH experimental", stable_title_page, latei_title_page, True),
             ]
         ),
         "",
@@ -277,6 +282,9 @@ def build_latei_tex_convergence_report(
     latei_main = _read_text_if_exists(latei_result.latei_main_path)
     latei_body = _read_text_if_exists(latei_result.latei_body_path)
     latei_macros = _read_text_if_exists(latei_result.latei_macros_path)
+    stable_title_page = _title_page_block(stable_tex)
+    latei_title_page = _title_page_block(latei_main)
+    title_extra_token = "\\PurhTitleExtra"
     stable_footnotes = _sample_latex_commands(stable_tex, r"\footnote", limit=3)
     latei_notes = _sample_latei_notes(latei_body, limit=3)
     notes_with_paragraphs = _sample_latei_notes_with_paragraphs(latei_body, limit=5)
@@ -317,15 +325,17 @@ def build_latei_tex_convergence_report(
         "",
         "## Title page audit",
         "",
-        f"- Stable title extras: `{_count_occurrences(stable_tex, r'\\PurhTitleExtra')}`",
-        f"- LaTEI title extras: `{_count_occurrences(latei_main, r'\\PurhTitleExtra')}`",
-        f"- Stable contains `PURH - 2025`: `{_contains(stable_tex, 'PURH - 2025')}`",
-        f"- LaTEI contains `PURH - 2025`: `{_contains(latei_main, 'PURH - 2025')}`",
-        f"- Stable contains print ISBN on title page: `{_contains(stable_tex, 'ISBN imprime')}`",
-        f"- LaTEI contains print ISBN on title page: `{_contains(latei_main, 'ISBN imprime')}`",
-        f"- LaTEI visible experimental marker: `{_contains(latei_main, 'Document LaTEI PURH experimental')}`",
+        f"- Stable title extras: `{_count_occurrences(stable_title_page, title_extra_token)}`",
+        f"- LaTEI title extras: `{_count_occurrences(latei_title_page, title_extra_token)}`",
+        f"- Stable contains `PURH - 2025`: `{_contains(stable_title_page, 'PURH - 2025')}`",
+        f"- LaTEI contains `PURH - 2025`: `{_contains(latei_title_page, 'PURH - 2025')}`",
+        f"- Stable contains visible print ISBN on title page: `{_contains(stable_title_page, 'ISBN imprime')}`",
+        f"- LaTEI contains visible print ISBN on title page: `{_contains(latei_title_page, 'ISBN imprime')}`",
+        f"- Stable contains visible DOI on title page: `{_contains(stable_title_page, 'DOI')}`",
+        f"- LaTEI contains visible DOI on title page: `{_contains(latei_title_page, 'DOI')}`",
+        f"- LaTEI visible experimental marker: `{_contains(latei_title_page, 'Document LaTEI PURH experimental')}`",
         "",
-        "Potential divergence: LaTEI currently prints publication year and print ISBN on the title page, while the stable extracted PDF text reaches front matter immediately after `PURH`.",
+        "Resolved local divergence: LaTEI title page no longer prints publication year, ISBN, or DOI lines absent from the stable title page.",
         "",
         "## Footnote audit",
         "",
@@ -402,7 +412,7 @@ def build_latei_tex_convergence_report(
         "## Suspected causes to verify before correction",
         "",
         "1. Footnote paragraph breaks were localized to `\\teiP` inside `\\teiNote`; the macro layer now suppresses the initial paragraph break in note context.",
-        "2. LaTEI title-page extras currently print more metadata than the stable title-page extracted text.",
+        "2. LaTEI title-page extras now match the stable visible metadata policy for the audited fixture.",
         "3. Figures and bibliography are readable but still macro-level approximations of the stable renderer.",
         "4. Tables/lists are not yet migrated to visual parity.",
         "",
@@ -412,6 +422,16 @@ def build_latei_tex_convergence_report(
 
 def _read_text_if_exists(path: Path) -> str:
     return Path(path).read_text(encoding="utf-8", errors="replace") if Path(path).exists() else ""
+
+
+def _title_page_block(text: str) -> str:
+    start = text.find(r"\begin{titlepage}")
+    if start < 0:
+        return ""
+    end = text.find(r"\end{titlepage}", start)
+    if end < 0:
+        return text[start:]
+    return text[start : end + len(r"\end{titlepage}")]
 
 
 def _count_occurrences(text: str, token: str) -> int:

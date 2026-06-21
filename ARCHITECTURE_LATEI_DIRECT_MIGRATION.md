@@ -199,6 +199,24 @@ direct LaTEI page count moved from 365 pages to 353 pages while the stable PDF
 remains 351 pages, so the major footnote break cause is removed but convergence
 is not complete.
 
+### Passe 17N-quater: Title-Page Metadata Convergence
+
+The remaining first textual gap after 17N-ter came from visible metadata printed
+on the direct LaTEI title page: `PURH - 2025` and ISBN lines. The stable PDF for
+the Heraldiques fixture prints the title and the visible publisher line, then
+continues into front matter; it does not print publication year, ISBN, ePub,
+PDF ISBN, or DOI lines on the title page.
+
+The correction keeps metadata extraction intact but narrows the visible direct
+LaTEI title page to the stable policy. `\PURHYear`, `\PURHISBN`, `\PURHDOI`,
+and related metadata commands remain available in the preamble and reports, but
+`_title_page(...)` no longer prints those values as title-page extras. The
+reversible body, LaTEI reader/writer, and grammar remain unchanged.
+
+The stable PDF remains the reference. After this correction, the PDF audit no
+longer reports the `PURH - 2025` / ISBN title-page gap; the direct LaTEI PDF
+still needs later block-level convergence work.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not

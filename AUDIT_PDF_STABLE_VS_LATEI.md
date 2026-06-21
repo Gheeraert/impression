@@ -22,11 +22,11 @@
 - Stable success: `True`
 - LaTEI success: `True`
 - Stable pages: `351`
-- LaTEI pages: `353`
+- LaTEI pages: `357`
 - Stable page size: `439.37 x 651.968 pts`
 - LaTEI page size: `439.37 x 651.968 pts`
 - Stable PDF size: `1345582` bytes
-- LaTEI PDF size: `1206842` bytes
+- LaTEI PDF size: `1219867` bytes
 
 ## LaTeX Comparison
 
@@ -48,8 +48,11 @@
 - titlepage: stable `yes` / LaTEI `yes`
 - title: stable `yes` / LaTEI `yes`
 - publisher: stable `yes` / LaTEI `yes`
-- year: stable `yes` / LaTEI `yes`
-- print ISBN: stable `yes` / LaTEI `yes`
+- no visible year line: stable `yes` / LaTEI `yes`
+- no visible print ISBN line: stable `yes` / LaTEI `yes`
+- no visible PDF ISBN line: stable `yes` / LaTEI `yes`
+- no visible ePub ISBN line: stable `yes` / LaTEI `yes`
+- no visible DOI line: stable `yes` / LaTEI `yes`
 - no visible experimental mention: stable `yes` / LaTEI `yes`
 
 ### Book Structure
@@ -78,8 +81,8 @@
 ## PDF Text Comparison
 
 - Stable text starts with: `Héraldique et papauté. Moyen Âge-Temps modernes. II PURH Remerciements Toute notre gratitude va aux institutions qui ont permis la publication de ce recueil : le Centre Saint-Louis à Rome et son directeur François-Xavier Adam, hôtes du deux`
-- LaTEI text starts with: `Héraldique et papauté. Moyen Âge-Temps modernes. II PURH - 2025 ISBN imprime 979-10-240-1855-3 Remerciements Toute notre gratitude va aux institutions qui ont permis la publication de ce recueil : le Centre Saint-Louis à Rome et son directe`
-- First significant text gap: word 9: stable `Remerciements` vs LaTEI `-`
+- LaTEI text starts with: `Héraldique et papauté. Moyen Âge-Temps modernes. II PURH Remerciements Toute notre gratitude va aux institutions qui ont permis la publication de ce recueil : le Centre Saint-Louis à Rome et son directeur François-Xavier Adam, hôtes du deux`
+- First significant text gap: same prefix, different extracted length: stable 113919 words, LaTEI 113379 words
 
 ## Elements Not Yet Migrated Or Still Divergent
 

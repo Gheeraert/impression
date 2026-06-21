@@ -14,15 +14,17 @@ The comparison below is structural and cause-oriented.
 
 ## Title page audit
 
-- Stable title extras: `0`
-- LaTEI title extras: `0`
+- Stable title extras: `1`
+- LaTEI title extras: `1`
 - Stable contains `PURH - 2025`: `False`
-- LaTEI contains `PURH - 2025`: `True`
-- Stable contains print ISBN on title page: `False`
-- LaTEI contains print ISBN on title page: `True`
+- LaTEI contains `PURH - 2025`: `False`
+- Stable contains visible print ISBN on title page: `False`
+- LaTEI contains visible print ISBN on title page: `False`
+- Stable contains visible DOI on title page: `False`
+- LaTEI contains visible DOI on title page: `False`
 - LaTEI visible experimental marker: `False`
 
-Potential divergence: LaTEI currently prints publication year and print ISBN on the title page, while the stable extracted PDF text reaches front matter immediately after `PURH`.
+Resolved local divergence: LaTEI title page no longer prints publication year, ISBN, or DOI lines absent from the stable title page.
 
 ## Footnote audit
 
@@ -212,6 +214,6 @@ Probable impact: tables/lists are not yet proven visually equivalent and can con
 ## Suspected causes to verify before correction
 
 1. Footnote paragraph breaks were localized to `\teiP` inside `\teiNote`; the macro layer now suppresses the initial paragraph break in note context.
-2. LaTEI title-page extras currently print more metadata than the stable title-page extracted text.
+2. LaTEI title-page extras now match the stable visible metadata policy for the audited fixture.
 3. Figures and bibliography are readable but still macro-level approximations of the stable renderer.
 4. Tables/lists are not yet migrated to visual parity.
