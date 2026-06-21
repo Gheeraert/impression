@@ -46,8 +46,10 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
         latei_main_path=tmp_path / "book.latei_main.tex",
         latei_macros_path=tmp_path / "book.latei_macros.tex",
         latei_graphics_map_path=tmp_path / "book.latei_graphics_map.tex",
+        latei_running_titles_map_path=tmp_path / "book.latei_running_titles_map.tex",
         latei_assets_dir=tmp_path / "latei_assets",
         latei_copied_images_count=2,
+        latei_short_running_titles_count=3,
         latei_asset_warnings=["Image not found for LaTEI package: missing.jpg"],
         latei_pdf_path=tmp_path / "book.latei.pdf",
         latei_log_path=tmp_path / "book.latei_build.log",
@@ -62,6 +64,7 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
         result.latei_main_path,
         result.latei_macros_path,
         result.latei_graphics_map_path,
+        result.latei_running_titles_map_path,
         result.latei_log_path,
         result.roundtrip_xml_path,
         result.diagnostics_path,
@@ -80,6 +83,8 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
     assert f"Driver compilable : {result.latei_main_path}" in summary
     assert f"Macros locales : {result.latei_macros_path}" in summary
     assert f"Mapping images : {result.latei_graphics_map_path}" in summary
+    assert f"Mapping titres courants : {result.latei_running_titles_map_path}" in summary
+    assert "Titres courants abrÃ©gÃ©s : 3" in summary
     assert "Images copiées : 2" in summary
     assert "Warnings images : 1" in summary
     assert "PDF LaTEI : non produit (LaTeX engine not found: lualatex)" in summary

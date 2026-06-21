@@ -211,6 +211,18 @@ LaTEI bibliography macro sample:
 
 Probable impact: tables/lists are not yet proven visually equivalent and can contribute to page-count drift, but the footnote paragraph pattern is the clearest localized note-layout suspect.
 
+## Running titles and Unicode spaces audit
+
+- Running-title map loaded: `True`
+- Running-title declarations: `21`
+- LaTEI mark helper present: `True`
+- U+00A0 mapped: `True`
+- U+202F mapped: `True`
+- U+2009 mapped: `True`
+- U+2011 mapped: `True`
+- U+2033 mapped: `True`
+- LaTEI log contains `Missing character`: `False`
+
 ## Suspected causes to verify before correction
 
 1. Footnote paragraph breaks were localized to `\teiP` inside `\teiNote`; the macro layer now suppresses the initial paragraph break in note context.

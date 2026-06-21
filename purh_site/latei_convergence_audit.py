@@ -282,6 +282,7 @@ def build_latei_tex_convergence_report(
     latei_main = _read_text_if_exists(latei_result.latei_main_path)
     latei_body = _read_text_if_exists(latei_result.latei_body_path)
     latei_macros = _read_text_if_exists(latei_result.latei_macros_path)
+    latei_log = _read_text_if_exists(latei_result.latei_log_path) if latei_result.latei_log_path else ""
     stable_title_page = _title_page_block(stable_tex)
     latei_title_page = _title_page_block(latei_main)
     title_extra_token = "\\PurhTitleExtra"
@@ -408,6 +409,18 @@ def build_latei_tex_convergence_report(
         f"- LaTEI list environments in body: `{latei_list_count}`",
         "",
         "Probable impact: tables/lists are not yet proven visually equivalent and can contribute to page-count drift, but the footnote paragraph pattern is the clearest localized note-layout suspect.",
+        "",
+        "## Running titles and Unicode spaces audit",
+        "",
+        f"- Running-title map loaded: `{_contains(latei_main, 'latei_running_titles_map.tex')}`",
+        f"- Running-title declarations: `{_count_occurrences(_read_text_if_exists(latei_result.latei_running_titles_map_path), '\\lateiDeclareRunningTitle')}`",
+        f"- LaTEI mark helper present: `{_contains(latei_macros, '\\lateiMarkBoth')}`",
+        f"- U+00A0 mapped: `{_contains(latei_macros, chr(0x00A0))}`",
+        f"- U+202F mapped: `{_contains(latei_macros, chr(0x202F))}`",
+        f"- U+2009 mapped: `{_contains(latei_macros, chr(0x2009))}`",
+        f"- U+2011 mapped: `{_contains(latei_macros, chr(0x2011))}`",
+        f"- U+2033 mapped: `{_contains(latei_macros, chr(0x2033))}`",
+        f"- LaTEI log contains `Missing character`: `{_contains(latei_log, 'Missing character')}`",
         "",
         "## Suspected causes to verify before correction",
         "",

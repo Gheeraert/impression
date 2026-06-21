@@ -34,6 +34,7 @@ def build_latei_driver(
     *,
     macros_tex_path: Path | None = None,
     graphics_map_tex_path: Path | None = None,
+    running_titles_map_tex_path: Path | None = None,
     metadata: LateiMetadata | None = None,
     title: str | None = None,
 ) -> Path:
@@ -50,6 +51,11 @@ def build_latei_driver(
     graphics_map_input = (
         _latex_input_path(graphics_map_tex_path, relative_to=main_tex_path.parent)
         if graphics_map_tex_path is not None and Path(graphics_map_tex_path).exists()
+        else None
+    )
+    running_titles_map_input = (
+        _latex_input_path(running_titles_map_tex_path, relative_to=main_tex_path.parent)
+        if running_titles_map_tex_path is not None and Path(running_titles_map_tex_path).exists()
         else None
     )
     metadata = metadata or LateiMetadata(title=title or "LaTEI PURH")
@@ -72,6 +78,8 @@ def build_latei_driver(
     ]
     if graphics_map_input is not None:
         parts.append(rf"\input{{{graphics_map_input}}}")
+    if running_titles_map_input is not None:
+        parts.append(rf"\input{{{running_titles_map_input}}}")
     parts.extend(
         [
             r"\begin{document}",

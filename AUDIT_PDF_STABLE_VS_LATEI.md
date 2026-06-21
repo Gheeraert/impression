@@ -22,11 +22,11 @@
 - Stable success: `True`
 - LaTEI success: `True`
 - Stable pages: `351`
-- LaTEI pages: `357`
+- LaTEI pages: `359`
 - Stable page size: `439.37 x 651.968 pts`
 - LaTEI page size: `439.37 x 651.968 pts`
 - Stable PDF size: `1345582` bytes
-- LaTEI PDF size: `1219867` bytes
+- LaTEI PDF size: `1230204` bytes
 
 ## LaTeX Comparison
 
@@ -82,7 +82,7 @@
 
 - Stable text starts with: `Héraldique et papauté. Moyen Âge-Temps modernes. II PURH Remerciements Toute notre gratitude va aux institutions qui ont permis la publication de ce recueil : le Centre Saint-Louis à Rome et son directeur François-Xavier Adam, hôtes du deux`
 - LaTEI text starts with: `Héraldique et papauté. Moyen Âge-Temps modernes. II PURH Remerciements Toute notre gratitude va aux institutions qui ont permis la publication de ce recueil : le Centre Saint-Louis à Rome et son directeur François-Xavier Adam, hôtes du deux`
-- First significant text gap: same prefix, different extracted length: stable 113919 words, LaTEI 113379 words
+- First significant text gap: same prefix, different extracted length: stable 113919 words, LaTEI 113418 words
 
 ## Elements Not Yet Migrated Or Still Divergent
 

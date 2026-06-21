@@ -217,6 +217,28 @@ The stable PDF remains the reference. After this correction, the PDF audit no
 longer reports the `PURH - 2025` / ISBN title-page gap; the direct LaTEI PDF
 still needs later block-level convergence work.
 
+### Passe 17N-quinquies: Frontmatter Numbering, Running Titles And Unicode Spaces
+
+The stable renderer uses the book-class matter switches: `\frontmatter` for
+liminaries, then `\mainmatter` for the main body. Direct LaTEI keeps this policy
+instead of forcing a separate page-numbering command; liminary numbering remains
+the book-class/stable policy, and the body numbering restarts at `\mainmatter`.
+
+Running titles now reuse the stable Python shortening logic
+`_short_running_title(...)` and the same stopword list. The reversible body is
+not enriched with typographic attributes. Instead, the export writes a technical
+`*.latei_running_titles_map.tex` file with `\lateiDeclareRunningTitle{full}{short}`
+declarations, and the macro layer consults that mapping only when emitting
+`\markboth`. Chapter, part, and section titles printed in the body remain full.
+
+Unicode spacing characters remain in the controlled LaTEI body so they can
+round-trip back to Metopes TEI. The direct LaTEI macro layer maps U+00A0,
+U+202F, and U+2009 with `newunicodechar` so LuaLaTeX does not render missing
+glyph boxes for ordinary French typographic spaces.
+
+The LaTEI reader/writer and grammar remain unchanged. The stable PDF remains
+the reference for later pagination and block-level convergence work.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not

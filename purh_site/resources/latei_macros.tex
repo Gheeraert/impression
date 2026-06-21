@@ -4,6 +4,15 @@
 
 \usepackage{xparse}
 \usepackage{xstring}
+\usepackage{newunicodechar}
+
+% Unicode spaces remain documentary characters in the reversible body; these
+% typographic mappings only prevent missing glyphs in direct LaTEI compilation.
+\newunicodechar{ }{~}
+\newunicodechar{ }{\nobreak\,}
+\newunicodechar{ }{\,}
+\newunicodechar{‑}{\nobreak\hbox{-}}
+\newunicodechar{″}{\ensuremath{\prime\prime}}
 
 \NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
   \iflateiinfootnote
@@ -53,6 +62,8 @@
 \lateiinbibliographyfalse
 \NewDocumentCommand{\lateiEnsureFrontMatter}{}{%
   \iflateifrontmatterstarted\else
+    % Match the stable renderer: book-class frontmatter gives liminaries their
+    % separate numbering policy; mainmatter starts the body numbering again.
     \frontmatter
     \lateifrontmatterstartedtrue
   \fi
@@ -79,11 +90,27 @@
 \tl_new:N \l_latei_option_rend_tl
 \tl_new:N \l_latei_graphic_path_tl
 \tl_new:N \l_latei_graphic_local_path_tl
+\tl_new:N \l_latei_running_title_tl
 \prop_new:N \g_latei_graphics_map_prop
+\prop_new:N \g_latei_running_titles_map_prop
 \cs_generate_variant:Nn \prop_get:NnNTF { NVNTF }
 \NewDocumentCommand{\lateiDeclareGraphic}{m m}
   {
     \prop_gput:Nnn \g_latei_graphics_map_prop { #1 } { #2 }
+  }
+\NewDocumentCommand{\lateiDeclareRunningTitle}{m m}
+  {
+    \prop_gput:Nnn \g_latei_running_titles_map_prop { #1 } { #2 }
+  }
+\cs_new_protected:Npn \latei_markboth:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      { \markboth{\tl_use:N \l_latei_running_title_tl}{\tl_use:N \l_latei_running_title_tl} }
+      { \markboth{#1}{#1} }
+  }
+\NewDocumentCommand{\lateiMarkBoth}{m}
+  {
+    \latei_markboth:n { #1 }
   }
 \keys_define:nn { latei / options }
   {
@@ -110,7 +137,7 @@
     \tl_if_empty:NF \l_latei_option_page_title_tl
       {
         \chapter*{\tl_use:N \l_latei_option_page_title_tl}
-        \markboth{\tl_use:N \l_latei_option_page_title_tl}{\tl_use:N \l_latei_option_page_title_tl}
+        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
         \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
       }
   }
@@ -119,7 +146,7 @@
     \tl_if_empty:NF \l_latei_option_page_title_tl
       {
         \chapter{\tl_use:N \l_latei_option_page_title_tl}
-        \markboth{\tl_use:N \l_latei_option_page_title_tl}{\tl_use:N \l_latei_option_page_title_tl}
+        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
       }
   }
 \NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
@@ -213,9 +240,9 @@
 \newcommand{\lateiHeadContext}{fallback}
 \newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
 \NewDocumentCommand{\lateiRenderHead}{m}{%
-  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\markboth{#1}{#1}\addcontentsline{toc}{part}{#1}}{%
-  \IfStrEq{\lateiHeadContext}{chapter}{\chapter{#1}\markboth{#1}{#1}}{%
-    \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\markboth{#1}{#1}\addcontentsline{toc}{chapter}{#1}}{%
+  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{part}{#1}}{%
+  \IfStrEq{\lateiHeadContext}{chapter}{\chapter{#1}\lateiMarkBoth{#1}}{%
+    \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
     \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
       \IfStrEq{\lateiHeadContext}{subsection}{\subsection{#1}}{%
         \IfStrEq{\lateiHeadContext}{subsubsection}{\subsubsection{#1}}{%
