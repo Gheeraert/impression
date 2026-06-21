@@ -179,6 +179,26 @@ through `\par`. This gives a concrete hypothesis for note text starting on a new
 line after the footnote number. Corrections should be made in a focused note
 pass, not mixed with title-page, figure, bibliography, table, or list work.
 
+### Passe 17N-ter: Footnote Paragraph Convergence
+
+The observed problem was a visible line break after the footnote number in the
+direct LaTEI PDF. The TeX audit confirmed the likely local cause: many notes in
+the real Metopes fixture contain `\teiP` inside `\teiNote`, and the normal
+paragraph behavior of `\teiP` emitted `\par` before note text.
+
+The correction stays entirely in the typographic macro layer. `\teiP` now checks
+the existing footnote context and renders inline inside `\teiNote`; outside a
+note, it keeps the normal paragraph behavior, including figure caption and
+credits handling. Multiple paragraph notes are rendered compactly rather than
+forcing an initial vertical break.
+
+The reversible body is unchanged. The writer and reader grammar are unchanged,
+and notes containing paragraph elements still round-trip back to Metopes TEI.
+The stable PDF pipeline remains the reference. On the Heraldiques fixture, the
+direct LaTEI page count moved from 365 pages to 353 pages while the stable PDF
+remains 351 pages, so the major footnote break cause is removed but convergence
+is not complete.
+
 ## Remaining Differences
 
 The direct LaTEI PDF is no longer a completely flat stream, but it is still not

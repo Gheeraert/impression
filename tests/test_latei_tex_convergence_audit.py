@@ -44,9 +44,10 @@ def test_latei_tex_convergence_audit_flags_tei_p_inside_notes(tex_audit) -> None
 
     assert "LaTEI notes containing `\\teiP`" in report
     assert "`\\teiP` definition emits `\\par`: `True`" in report
+    assert "`\\teiP` has note-context inline branch: `True`" in report
     assert "\\teiNote" in report
     assert "\\teiP" in report
-    assert "Potential divergence: `\\teiP` appears inside `\\teiNote`" in report
+    assert "Resolved local cause: `\\teiP` still appears inside `\\teiNote`" in report
 
 
 def test_latei_tex_convergence_audit_is_structural_not_raw_equality(tex_audit) -> None:

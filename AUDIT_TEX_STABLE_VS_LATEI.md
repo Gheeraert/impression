@@ -48,6 +48,7 @@ LaTEI sample:
 
 - LaTEI notes containing `\teiP`: `471`
 - LaTEI `\teiP` definition emits `\par`: `True`
+- LaTEI `\teiP` has note-context inline branch: `True`
 - LaTEI note macro has nested-note guard: `True`
 
 LaTEI notes containing `\teiP` samples:
@@ -67,19 +68,21 @@ LaTEI notes containing `\teiP` samples:
 Macro definitions involved:
 
 ```latex
-\IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
-    }%
-  }{\par #2\par}%
+\NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
+  \iflateiinfootnote
+    #2\unskip\space
+  \else
+    \IfStrEq{\lateiHeadContext}{figure}{%
+      \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
+        \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+      }%
+    }{\par #2\par}%
+  \fi
 }
 \NewDocumentCommand{\teiP}{O{} +m}{\lateiRenderParagraph[#1]{#2}}
 
-% Matter switches and group titles mirror the stable PURH book skeleton while
-% leaving the reversible LaTEI body unchanged.
-\newif\iflateifrontmatterstarted
-\newif\iflateimainmatterstarted
-\newif\iflateibackmatterstarted
-\newif\iflateiinbibliography
-\lateifrontmatterstartedfalse
+% Nested footnotes are not valid LaTeX. If a teiNote appears inside another
+% note, render a visible symbolic marker and inline parenthesized content.
 
 % Nested footnotes are not valid LaTeX. If a teiNote appears inside another
 % note, render a visible symbolic marker and inline parenthesized content.
@@ -102,7 +105,7 @@ Macro definitions involved:
       \IfSubStr{#1}{level={a}}{\enquote{#2}}{#2}%
 ```
 
-Potential divergence: `\teiP` appears inside `\teiNote`. If `\teiP` emits paragraph breaks, this can force a line break after the footnote number and increase page count.
+Resolved local cause: `\teiP` still appears inside `\teiNote`, but it now has a note-context branch that renders inline before the normal paragraph branch can emit `\par`.
 
 ## Paragraph audit
 
@@ -208,7 +211,7 @@ Probable impact: tables/lists are not yet proven visually equivalent and can con
 
 ## Suspected causes to verify before correction
 
-1. `\teiP` inside `\teiNote` is likely responsible for note text starting on a new line when paragraph macros emit `\par`.
+1. Footnote paragraph breaks were localized to `\teiP` inside `\teiNote`; the macro layer now suppresses the initial paragraph break in note context.
 2. LaTEI title-page extras currently print more metadata than the stable title-page extracted text.
 3. Figures and bibliography are readable but still macro-level approximations of the stable renderer.
 4. Tables/lists are not yet migrated to visual parity.

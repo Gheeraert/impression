@@ -280,8 +280,9 @@ def build_latei_tex_convergence_report(
     stable_footnotes = _sample_latex_commands(stable_tex, r"\footnote", limit=3)
     latei_notes = _sample_latei_notes(latei_body, limit=3)
     notes_with_paragraphs = _sample_latei_notes_with_paragraphs(latei_body, limit=5)
-    tei_p_definition = _extract_definition_window(latei_macros, r"\NewDocumentCommand{\teiP}", before=4, after=8)
+    tei_p_definition = _extract_definition_window(latei_macros, r"\NewDocumentCommand{\lateiRenderParagraph}", before=1, after=14)
     tei_note_definition = _extract_definition_window(latei_macros, r"\NewDocumentCommand{\teiNote}", before=4, after=14)
+    tei_p_has_note_context_branch = r"\iflateiinfootnote" in tei_p_definition and r"#2\unskip\space" in tei_p_definition
     stable_figure = _extract_definition_window(stable_tex, r"\fbox{\parbox", before=4, after=6)
     latei_figure = _extract_definition_window(latei_macros, r"\NewDocumentEnvironment{teiFigure}", before=6, after=8)
     stable_bibliography = _extract_definition_window(stable_tex, r"\begin{PurhBibliography}", before=2, after=8)
@@ -338,6 +339,7 @@ def build_latei_tex_convergence_report(
         "",
         f"- LaTEI notes containing `\\teiP`: `{len(_latei_notes_with_paragraphs(latei_body))}`",
         f"- LaTEI `\\teiP` definition emits `\\par`: `{_definition_emits_par(tei_p_definition)}`",
+        f"- LaTEI `\\teiP` has note-context inline branch: `{tei_p_has_note_context_branch}`",
         f"- LaTEI note macro has nested-note guard: `{_contains(latei_macros, 'Nested footnotes are not valid LaTeX')}`",
         "",
         "LaTEI notes containing `\\teiP` samples:",
@@ -348,7 +350,7 @@ def build_latei_tex_convergence_report(
         "",
         _fenced(tei_p_definition + "\n\n" + tei_note_definition),
         "",
-        "Potential divergence: `\\teiP` appears inside `\\teiNote`. If `\\teiP` emits paragraph breaks, this can force a line break after the footnote number and increase page count.",
+        "Resolved local cause: `\\teiP` still appears inside `\\teiNote`, but it now has a note-context branch that renders inline before the normal paragraph branch can emit `\\par`.",
         "",
         "## Paragraph audit",
         "",
@@ -399,7 +401,7 @@ def build_latei_tex_convergence_report(
         "",
         "## Suspected causes to verify before correction",
         "",
-        "1. `\\teiP` inside `\\teiNote` is likely responsible for note text starting on a new line when paragraph macros emit `\\par`.",
+        "1. Footnote paragraph breaks were localized to `\\teiP` inside `\\teiNote`; the macro layer now suppresses the initial paragraph break in note context.",
         "2. LaTEI title-page extras currently print more metadata than the stable title-page extracted text.",
         "3. Figures and bibliography are readable but still macro-level approximations of the stable renderer.",
         "4. Tables/lists are not yet migrated to visual parity.",

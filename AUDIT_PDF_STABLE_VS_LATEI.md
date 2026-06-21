@@ -3,12 +3,12 @@
 ## Source
 
 - Fixture: `tests\fixtures\metopes\heraldique_ii.book.normalized.xml`
-- Stable TeX: `C:\impression2\_latei_audit_runtime\stable_pdf\book.tex`
-- Stable PDF: `C:\impression2\_latei_audit_runtime\stable_pdf\book.pdf`
-- LaTEI body: `_latei_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei_body.tex`
-- LaTEI main: `_latei_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei_main.tex`
-- LaTEI macros: `_latei_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei_macros.tex`
-- LaTEI PDF: `_latei_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei.pdf`
+- Stable TeX: `C:\impression2\_latei_pdf_audit_runtime\stable_pdf\book.tex`
+- Stable PDF: `C:\impression2\_latei_pdf_audit_runtime\stable_pdf\book.pdf`
+- LaTEI body: `_latei_pdf_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei_body.tex`
+- LaTEI main: `_latei_pdf_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei_main.tex`
+- LaTEI macros: `_latei_pdf_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei_macros.tex`
+- LaTEI PDF: `_latei_pdf_audit_runtime\latei_pdf\heraldique_ii.book.normalized.latei.pdf`
 
 ## Essential Metadata
 
@@ -22,11 +22,11 @@
 - Stable success: `True`
 - LaTEI success: `True`
 - Stable pages: `351`
-- LaTEI pages: `365`
+- LaTEI pages: `353`
 - Stable page size: `439.37 x 651.968 pts`
 - LaTEI page size: `439.37 x 651.968 pts`
 - Stable PDF size: `1345582` bytes
-- LaTEI PDF size: `1215251` bytes
+- LaTEI PDF size: `1206842` bytes
 
 ## LaTeX Comparison
 

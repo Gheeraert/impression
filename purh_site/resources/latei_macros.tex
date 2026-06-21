@@ -6,13 +6,40 @@
 \usepackage{xstring}
 
 \NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
-  \IfStrEq{\lateiHeadContext}{figure}{%
-    \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
-      \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
-    }%
-  }{\par #2\par}%
+  \iflateiinfootnote
+    #2\unskip\space
+  \else
+    \IfStrEq{\lateiHeadContext}{figure}{%
+      \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
+        \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+      }%
+    }{\par #2\par}%
+  \fi
 }
 \NewDocumentCommand{\teiP}{O{} +m}{\lateiRenderParagraph[#1]{#2}}
+
+% Nested footnotes are not valid LaTeX. If a teiNote appears inside another
+% note, render a visible symbolic marker and inline parenthesized content.
+\newif\iflateiinfootnote
+\lateiinfootnotefalse
+\NewDocumentCommand{\teiNote}{O{} +m}{%
+  \iflateiinfootnote
+    \textsuperscript{*}%
+  \else
+    \begingroup
+      \lateiinfootnotetrue
+      \footnote{#2}%
+    \endgroup
+  \fi
+}
+\NewDocumentCommand{\teiRef}{O{} +m}{\lateiRenderRef[#1]{#2}}
+\NewDocumentCommand{\teiTitle}{O{} +m}{%
+  \IfSubStr{#1}{level={m}}{\textit{#2}}{%
+    \IfSubStr{#1}{level={j}}{\textit{#2}}{%
+      \IfSubStr{#1}{level={a}}{\enquote{#2}}{#2}%
+    }%
+  }%
+}
 
 % Matter switches and group titles mirror the stable PURH book skeleton while
 % leaving the reversible LaTEI body unchanged.
@@ -244,28 +271,6 @@
   \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{#2}}}}%
 }
 
-% Nested footnotes are not valid LaTeX. If a teiNote appears inside another
-% note, render a visible symbolic marker and inline parenthesized content.
-\newif\iflateiinfootnote
-\lateiinfootnotefalse
-\NewDocumentCommand{\teiNote}{O{} +m}{%
-  \iflateiinfootnote
-    \textsuperscript{*}%
-  \else
-    \begingroup
-      \lateiinfootnotetrue
-      \footnote{#2}%
-    \endgroup
-  \fi
-}
-\NewDocumentCommand{\teiRef}{O{} +m}{\lateiRenderRef[#1]{#2}}
-\NewDocumentCommand{\teiTitle}{O{} +m}{%
-  \IfSubStr{#1}{level={m}}{\textit{#2}}{%
-    \IfSubStr{#1}{level={j}}{\textit{#2}}{%
-      \IfSubStr{#1}{level={a}}{\enquote{#2}}{#2}%
-    }%
-  }%
-}
 \NewDocumentCommand{\teiForeign}{O{} +m}{\textit{#2}}
 \NewDocumentCommand{\teiTerm}{O{} +m}{#2}
 \NewDocumentCommand{\teiName}{O{} +m}{#2}

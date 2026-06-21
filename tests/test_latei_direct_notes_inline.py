@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import shutil
+import subprocess
 
 import pytest
 from lxml import etree
@@ -40,6 +42,20 @@ def inline_export(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportR
 
 
 @pytest.fixture(scope="module")
+def note_paragraph_export(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
+    tmp_path = tmp_path_factory.mktemp("latei_direct_note_paragraph")
+    xml_path = write_xml(
+        tmp_path / "note_paragraph.xml",
+        '<TEI xmlns="http://www.tei-c.org/ns/1.0">'
+        "<text><body>"
+        "<p>Texte avec note<note place=\"foot\"><p>Texte de note en paragraphe.</p></note>.</p>"
+        "</body></text>"
+        "</TEI>",
+    )
+    return run_reversible_export_for_file(xml_path, tmp_path)
+
+
+@pytest.fixture(scope="module")
 def fixture_export(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
     output_dir = tmp_path_factory.mktemp("latei_direct_inline_fixture")
     return run_reversible_export_for_file(FIXTURE_PATH, output_dir)
@@ -60,6 +76,20 @@ def test_latei_direct_inline_body_remains_reversible(inline_export: ReversibleEx
     assert r"\teiRef[target={https://example.org?a=1\&b=2}]" in body
     assert r"\teiQ{citation}" in body
     assert r"\teiNote[place={foot},xmlid={n\_inline}]" in body
+    assert compare_tei_elements(source, emitted) == []
+
+
+def test_latei_direct_note_with_paragraph_body_remains_reversible(
+    note_paragraph_export: ReversibleExportResult,
+) -> None:
+    source = etree.parse(str(note_paragraph_export.source_path)).getroot()
+    body = note_paragraph_export.latei_body_path.read_text(encoding="utf-8")
+    emitted = write_tei_element(read_latex_document(body))
+
+    assert note_paragraph_export.success is True
+    assert note_paragraph_export.diagnostics_count == 0
+    assert r"\teiNote[place={foot}]{\teiP" in body
+    assert r"\teiP{Texte de note en paragraphe.}" in body
     assert compare_tei_elements(source, emitted) == []
 
 
@@ -87,6 +117,22 @@ def test_latei_direct_inline_macros_follow_stable_inline_contract(
     assert "indice" in macros
 
 
+def test_latei_direct_note_paragraph_macro_contract(
+    note_paragraph_export: ReversibleExportResult,
+) -> None:
+    macros = note_paragraph_export.latei_macros_path.read_text(encoding="utf-8")
+    paragraph_definition = macros[
+        macros.index(r"\NewDocumentCommand{\lateiRenderParagraph}") : macros.index("% Matter switches")
+    ]
+
+    assert r"\iflateiinfootnote" in paragraph_definition
+    assert r"#2\unskip\space" in paragraph_definition
+    assert r"\IfStrEq{\lateiHeadContext}{figure}" in paragraph_definition
+    assert r"\par #2\par" in paragraph_definition
+    assert r"\footnote{#2}" in macros
+    assert "Nested footnotes are not valid LaTeX" in macros
+
+
 def test_latei_direct_inline_pdf_compiles_when_lualatex_is_available(
     inline_export: ReversibleExportResult,
 ) -> None:
@@ -100,6 +146,33 @@ def test_latei_direct_inline_pdf_compiles_when_lualatex_is_available(
 
     assert inline_export.latei_pdf_path.exists()
     assert inline_export.latei_pdf_path.stat().st_size > 0
+
+
+def test_latei_direct_note_paragraph_pdf_text_has_no_number_only_note_line(
+    note_paragraph_export: ReversibleExportResult,
+) -> None:
+    if shutil.which("lualatex") is None:
+        pytest.skip("LuaLaTeX is unavailable.")
+    pdftotext = shutil.which("pdftotext")
+    if pdftotext is None:
+        pytest.skip("pdftotext is unavailable.")
+    if not note_paragraph_export.latei_pdf_success:
+        log = note_paragraph_export.latei_log_path.read_text(encoding="utf-8", errors="replace")
+        excerpt = "\n".join(log.splitlines()[:120])
+        pytest.fail(f"Direct LaTEI note paragraph sample did not compile.\n{excerpt}")
+
+    process = subprocess.run(
+        [pdftotext, "-enc", "UTF-8", str(note_paragraph_export.latei_pdf_path), "-"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+
+    assert process.returncode == 0
+    assert "Texte de note en paragraphe." in process.stdout
+    assert not re.search(r"(?m)^\s*1\s*$\s*^Texte de note en paragraphe\.", process.stdout)
 
 
 def test_latei_direct_real_fixture_still_round_trips_and_compiles(
