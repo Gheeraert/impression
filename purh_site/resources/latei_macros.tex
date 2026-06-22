@@ -13,6 +13,9 @@
 \newunicodechar{ }{\,}
 \newunicodechar{‑}{\nobreak\hbox{-}}
 \newunicodechar{″}{\ensuremath{\prime\prime}}
+\newcommand{\lateiCurrentRunningTitle}{}
+\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}
+\AtBeginDocument{\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}}
 
 \NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
   \iflateiinfootnote
@@ -91,9 +94,14 @@
 \tl_new:N \l_latei_graphic_path_tl
 \tl_new:N \l_latei_graphic_local_path_tl
 \tl_new:N \l_latei_running_title_tl
+\tl_new:N \g_latei_current_running_title_tl
 \prop_new:N \g_latei_graphics_map_prop
 \prop_new:N \g_latei_running_titles_map_prop
 \cs_generate_variant:Nn \prop_get:NnNTF { NVNTF }
+\RenewDocumentCommand{\lateiCurrentRunningTitle}{}
+  {
+    \tl_use:N \g_latei_current_running_title_tl
+  }
 \NewDocumentCommand{\lateiDeclareGraphic}{m m}
   {
     \prop_gput:Nnn \g_latei_graphics_map_prop { #1 } { #2 }
@@ -105,12 +113,37 @@
 \cs_new_protected:Npn \latei_markboth:n #1
   {
     \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
-      { \markboth{\tl_use:N \l_latei_running_title_tl}{\tl_use:N \l_latei_running_title_tl} }
-      { \markboth{#1}{#1} }
+      {
+        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
+        \markboth{\tl_use:N \l_latei_running_title_tl}{\tl_use:N \l_latei_running_title_tl}
+      }
+      {
+        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
+        \markboth{#1}{#1}
+      }
   }
 \NewDocumentCommand{\lateiMarkBoth}{m}
   {
     \latei_markboth:n { #1 }
+  }
+\RenewDocumentCommand{\chaptermark}{m}{\lateiMarkBoth{#1}}
+\cs_new_protected:Npn \latei_chapter:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      {
+        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
+        \chapter{#1}
+        \lateiMarkBoth{#1}
+      }
+      {
+        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
+        \chapter{#1}
+        \lateiMarkBoth{#1}
+      }
+  }
+\NewDocumentCommand{\lateiChapter}{m}
+  {
+    \latei_chapter:n { #1 }
   }
 \keys_define:nn { latei / options }
   {
@@ -241,7 +274,7 @@
 \newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
 \NewDocumentCommand{\lateiRenderHead}{m}{%
   \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{part}{#1}}{%
-  \IfStrEq{\lateiHeadContext}{chapter}{\chapter{#1}\lateiMarkBoth{#1}}{%
+  \IfStrEq{\lateiHeadContext}{chapter}{\lateiChapter{#1}}{%
     \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
     \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
       \IfStrEq{\lateiHeadContext}{subsection}{\subsection{#1}}{%
