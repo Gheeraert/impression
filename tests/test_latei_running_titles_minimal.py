@@ -6,7 +6,7 @@ import subprocess
 
 import pytest
 
-from purh_site.latex_renderer import _short_running_title
+from purh_site.latei_typography import _short_running_title
 from purh_site.reversible_integration import run_reversible_export_for_file
 
 

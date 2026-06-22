@@ -7,7 +7,7 @@ from pathlib import Path
 
 from lxml import etree
 
-from purh_site.latex_renderer import _short_running_title
+from purh_site.latei_typography import _short_running_title
 from purh_site.reversible.latex_writer import escape_latex
 from purh_site.utils import TEI_NS
 
