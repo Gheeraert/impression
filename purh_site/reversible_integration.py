@@ -15,7 +15,7 @@ from typing import Sequence
 from lxml import etree
 
 from .latei_assets import package_latei_graphics
-from .latei_driver import build_latei_driver, compile_latei_pdf
+from .latei_driver import build_latei_driver, build_latei_monofile, compile_latei_pdf
 from .latei_metadata import extract_latei_metadata
 from .latei_running_titles import package_latei_running_titles
 from .reversible import Diagnostic, read_latex_document, run_tei_latex_tei_roundtrip, write_tei_element
@@ -39,6 +39,11 @@ class ReversibleExportResult:
     latei_log_path: Path | None
     latei_pdf_success: bool
     latei_pdf_message: str
+    latei_monofile_path: Path
+    latei_monofile_pdf_path: Path
+    latei_monofile_log_path: Path | None
+    latei_monofile_pdf_success: bool
+    latei_monofile_pdf_message: str
     roundtrip_xml_path: Path
     diagnostics_path: Path
     diagnostics_count: int
@@ -69,6 +74,9 @@ def run_reversible_export_for_file(
         latei_log_path,
         roundtrip_xml_path,
         diagnostics_path,
+        latei_monofile_path,
+        latei_monofile_pdf_path,
+        latei_monofile_log_path,
     ) = _output_paths(source_path, resolved_output_dir)
 
     if not source_path.exists():
@@ -91,6 +99,11 @@ def run_reversible_export_for_file(
             latei_log_path=None,
             latei_pdf_success=False,
             latei_pdf_message="LaTEI PDF not produced because the source XML was not read.",
+            latei_monofile_path=latei_monofile_path,
+            latei_monofile_pdf_path=latei_monofile_pdf_path,
+            latei_monofile_log_path=None,
+            latei_monofile_pdf_success=False,
+            latei_monofile_pdf_message="LaTEI monofile not produced because the source XML was not read.",
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
@@ -117,6 +130,11 @@ def run_reversible_export_for_file(
             latei_log_path=None,
             latei_pdf_success=False,
             latei_pdf_message="LaTEI PDF not produced because the source XML was not a file.",
+            latei_monofile_path=latei_monofile_path,
+            latei_monofile_pdf_path=latei_monofile_pdf_path,
+            latei_monofile_log_path=None,
+            latei_monofile_pdf_success=False,
+            latei_monofile_pdf_message="LaTEI monofile not produced because the source XML was not a file.",
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
@@ -146,6 +164,11 @@ def run_reversible_export_for_file(
             latei_log_path=None,
             latei_pdf_success=False,
             latei_pdf_message="LaTEI PDF not produced because the source XML was malformed.",
+            latei_monofile_path=latei_monofile_path,
+            latei_monofile_pdf_path=latei_monofile_pdf_path,
+            latei_monofile_log_path=None,
+            latei_monofile_pdf_success=False,
+            latei_monofile_pdf_message="LaTEI monofile not produced because the source XML was malformed.",
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
@@ -182,6 +205,22 @@ def run_reversible_export_for_file(
         latei_pdf_path,
         log_path=latei_log_path,
     )
+
+    graphics_map_content = latei_graphics_map_path.read_text(encoding="utf-8") if latei_graphics_map_path.exists() else None
+    running_titles_map_content = latei_running_titles_map_path.read_text(encoding="utf-8") if latei_running_titles_map_path.exists() else None
+    build_latei_monofile(
+        result.latex,
+        latei_monofile_path,
+        graphics_map_content=graphics_map_content,
+        running_titles_map_content=running_titles_map_content,
+        metadata=metadata,
+    )
+    monofile_pdf_result = compile_latei_pdf(
+        latei_monofile_path,
+        latei_monofile_pdf_path,
+        log_path=latei_monofile_log_path,
+    )
+
     etree.ElementTree(result.emitted).write(
         str(roundtrip_xml_path),
         encoding="utf-8",
@@ -214,6 +253,11 @@ def run_reversible_export_for_file(
         latei_log_path=pdf_result.log_path,
         latei_pdf_success=pdf_result.success,
         latei_pdf_message=pdf_result.message,
+        latei_monofile_path=latei_monofile_path,
+        latei_monofile_pdf_path=latei_monofile_pdf_path,
+        latei_monofile_log_path=monofile_pdf_result.log_path,
+        latei_monofile_pdf_success=monofile_pdf_result.success,
+        latei_monofile_pdf_message=monofile_pdf_result.message,
         roundtrip_xml_path=roundtrip_xml_path,
         diagnostics_path=diagnostics_path,
         diagnostics_count=diagnostics_count,
@@ -252,7 +296,7 @@ def _resolve_output_dir(source_path: Path, output_dir: Path | None) -> Path:
     return resolved
 
 
-def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
+def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
     stem = source_path.stem
     return (
         output_dir / f"{stem}.reversible.tex",
@@ -266,6 +310,9 @@ def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path
         output_dir / f"{stem}.latei_build.log",
         output_dir / f"{stem}.roundtrip.xml",
         output_dir / f"{stem}.roundtrip_diagnostics.txt",
+        output_dir / f"{stem}.latei.tex",
+        output_dir / f"{stem}.latei_mono.pdf",
+        output_dir / f"{stem}.latei_mono_build.log",
     )
 
 

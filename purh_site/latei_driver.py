@@ -91,6 +91,111 @@ def build_latei_driver(
     return main_tex_path
 
 
+_MONOFILE_FILE_HEADER = """\
+% !TeX program = lualatex
+% Fichier LaTEI généré depuis XML-TEI Métopes / Commons-Publishing.
+% Zone technique (préambule, macros, mappings) : régénérable depuis le XML source.
+% NE PAS MODIFIER la zone technique — elle sera écrasée à la prochaine génération.
+% Zone éditoriale réversible : l'environnement lateiDocument dans ce fichier.
+% Corriger uniquement dans la zone réversible.\
+"""
+
+
+def build_latei_monofile(
+    body_latex: str,
+    monofile_path: Path,
+    *,
+    graphics_map_content: str | None = None,
+    running_titles_map_content: str | None = None,
+    metadata: LateiMetadata | None = None,
+    title: str | None = None,
+) -> Path:
+    """Write a single compilable LaTEI file with everything inline (no \\input{})."""
+    monofile_path = Path(monofile_path)
+    monofile_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata = metadata or LateiMetadata(title=title or "LaTEI PURH")
+    content = _monofile_content(
+        body_latex=body_latex,
+        metadata=metadata,
+        graphics_map_content=graphics_map_content,
+        running_titles_map_content=running_titles_map_content,
+    )
+    monofile_path.write_text(content, encoding="utf-8")
+    return monofile_path
+
+
+def _monofile_content(
+    *,
+    body_latex: str,
+    metadata: LateiMetadata,
+    graphics_map_content: str | None,
+    running_titles_map_content: str | None,
+) -> str:
+    macros_content = LATEI_MACROS_PATH.read_text(encoding="utf-8")
+    preamble = render_purh_latex_preamble(PurhPreambleData(
+        title=metadata.title or "LaTEI PURH",
+        subtitle=metadata.subtitle or "",
+        authors=tuple(metadata.contributors),
+        publisher=metadata.publisher or "Presses universitaires de Rouen et du Havre",
+        year=metadata.publication_year or "",
+        doi=metadata.doi or "",
+        isbn=metadata.isbn_pdf or metadata.isbn_print or "",
+    ))
+
+    parts: list[str] = [
+        _MONOFILE_FILE_HEADER,
+        "",
+        preamble,
+        "",
+        _monofile_section("Macros LaTEI — régénérables, ne pas modifier"),
+        "",
+        macros_content.rstrip(),
+    ]
+
+    if graphics_map_content:
+        parts.extend([
+            "",
+            _monofile_section("Mappings graphiques — régénérables, ne pas modifier"),
+            "",
+            graphics_map_content.rstrip(),
+        ])
+
+    if running_titles_map_content:
+        parts.extend([
+            "",
+            _monofile_section("Mappings titres courants — régénérables, ne pas modifier"),
+            "",
+            running_titles_map_content.rstrip(),
+        ])
+
+    title_page = _title_page(metadata)
+
+    parts.extend([
+        "",
+        r"\begin{document}",
+        "",
+        title_page,
+        "",
+        _monofile_section("Zone éditoriale réversible — corrections autorisées ici"),
+        "",
+        r"\begin{lateiDocument}",
+        body_latex.rstrip(),
+        r"\end{lateiDocument}",
+        "",
+        r"\cleardoublepage",
+        r"\tableofcontents",
+        "",
+        r"\end{document}",
+    ])
+
+    return "\n".join(parts) + "\n"
+
+
+def _monofile_section(label: str) -> str:
+    bar = "=" * 60
+    return f"% {bar}\n% {label}\n% {bar}"
+
+
 def compile_latei_pdf(
     main_tex_path: Path,
     pdf_path: Path,
