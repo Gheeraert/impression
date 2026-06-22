@@ -13,8 +13,8 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from .latex_renderer import render_purh_preamble_for_latei
 from .latei_metadata import LateiMetadata
+from .latei_preamble import PurhPreambleData, render_purh_latex_preamble
 
 
 LATEI_MACROS_PATH = Path(__file__).resolve().parent / "resources" / "latei_macros.tex"
@@ -61,19 +61,15 @@ def build_latei_driver(
     metadata = metadata or LateiMetadata(title=title or "LaTEI PURH")
 
     parts = [
-        render_purh_preamble_for_latei(
+        render_purh_latex_preamble(PurhPreambleData(
             title=metadata.title or title or "LaTEI PURH",
-            subtitle=metadata.subtitle or None,
-            contributors=metadata.contributors,
-            publisher=metadata.publisher or None,
-            publication_year=metadata.publication_year or None,
-            doi=metadata.doi or None,
-            isbn_print=metadata.isbn_print or None,
-            isbn_pdf=metadata.isbn_pdf or None,
-            collection_title=metadata.collection_title or None,
-            collection_number=metadata.collection_number or None,
-            issn=metadata.issn or metadata.collection_issn or None,
-        ),
+            subtitle=metadata.subtitle or "",
+            authors=tuple(metadata.contributors),
+            publisher=metadata.publisher or "Presses universitaires de Rouen et du Havre",
+            year=metadata.publication_year or "",
+            doi=metadata.doi or "",
+            isbn=metadata.isbn_pdf or metadata.isbn_print or "",
+        )),
         rf"\input{{{macros_input}}}",
     ]
     if graphics_map_input is not None:

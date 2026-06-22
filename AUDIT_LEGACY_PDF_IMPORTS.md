@@ -289,23 +289,75 @@ extraira `_render_purh_preamble` hors de `LatexRenderer`.
 
 ---
 
-## Première passe de refactor suivante (Passe B2)
+## Passe B2 réalisée
 
-**Passe B2 — Extraire `_render_purh_preamble` hors de `LatexRenderer`**
+**Date :** 2026-06-22
 
-`render_purh_preamble_for_latei` ne peut être rendue autonome que si
-`_render_purh_preamble` est refactorisée en fonction standalone qui n'a plus besoin
-d'un objet `LatexRenderer` complet. Deux options :
+### Module créé
 
-1. Extraire la méthode en fonction libre dans `latex_renderer.py`, puis la déplacer
-   dans `latei_typography.py` ou `latei_preamble.py`.
-2. Transformer les paramètres structurés (`Book`, `BookMetadata`) en paramètres
-   simples (`str`, `list[str]`) — `render_purh_preamble_for_latei` fait déjà ce
-   travail de conversion, il faudrait juste que `_render_purh_preamble` accepte ces
-   primitives directement.
+**`purh_site/latei_preamble.py`** — indépendant de `LatexRenderer`, `LatexRenderOptions`,
+`semantic_model`, `tei_to_model`, `pdf_builder`. Dépend uniquement de la bibliothèque
+standard Python (`dataclasses`).
 
-Option 2 est la plus propre car elle coupe la dépendance sur `semantic_model` en
-même temps.
+Contient :
+- `PurhPreambleData` — dataclass `frozen=True, slots=True` avec 7 champs `str`
+  (`title`, `subtitle`, `authors: tuple[str,...]`, `publisher`, `year`, `doi`, `isbn`)
+- `render_purh_latex_preamble(data)` — fonction autonome produisant le préambule PURH complet
+- `_escape(value)` — fonction interne d'échappement LaTeX
+
+### Imports mis à jour
+
+| Fichier | Changement |
+|---|---|
+| `purh_site/latei_driver.py:16` | suppression de `from .latex_renderer import render_purh_preamble_for_latei` ; ajout de `from .latei_preamble import PurhPreambleData, render_purh_latex_preamble` |
+| `purh_site/latex_renderer.py` : `_render_purh_preamble` | remplacé par délégation à `render_purh_latex_preamble` via import local |
+| `purh_site/latex_renderer.py` : `render_purh_preamble_for_latei` | remplacé par wrapper mince vers `render_purh_latex_preamble` |
+
+### `render_purh_preamble_for_latei` dans `latex_renderer.py`
+
+Conservée comme wrapper de compatibilité pour les tests legacy et les modules de
+comparaison. Ne construit plus de `Book`/`BookMetadata`/`LatexRenderer` — délègue
+directement à `latei_preamble.render_purh_latex_preamble`.
+
+### Garantie d'identité de sortie
+
+`LatexRenderer._render_purh_preamble(book)` et `render_purh_preamble_for_latei(...)`
+produisent désormais exactement la même chaîne via le même chemin de code.
+Vérifié par `test_latei_preamble_output_matches_latex_renderer_wrapper`.
+
+### Note sur `collection_title`, `collection_number`, `issn`
+
+Ces paramètres de `render_purh_preamble_for_latei` passaient dans `PublicationInfo`
+mais n'étaient jamais utilisés dans le template du préambule. Ils sont intentionnellement
+absents de `PurhPreambleData`. Le comportement visible est inchangé.
+
+### Tests ciblés — résultats
+
+| Test | Résultat |
+|---|---|
+| `tests/test_latei_preamble_independent.py` (9 tests) | ✓ 9 passés |
+| `tests/test_latei_direct_title_page.py` | ✓ 3 passés |
+| `tests/test_latei_real_metopes_fixture.py` | ✓ 8 passés |
+| `tests/test_latei_direct_running_titles.py` | ✓ 2 passés |
+| `tests/test_latei_running_titles_minimal.py` | ✓ 1 passé |
+| **Total** | **23/23** |
+
+### État après Passe B2
+
+La chaîne LaTEI active n'importe plus `purh_site.latex_renderer` depuis aucun de ses
+modules de production :
+
+```
+purh_site/latei_driver.py          → latei_preamble  (✓ propre)
+purh_site/latei_running_titles.py  → latei_typography (✓ propre, Passe B)
+purh_site/latei_preamble.py        → stdlib uniquement (✓ propre)
+purh_site/latei_typography.py      → stdlib uniquement (✓ propre, Passe B)
+purh_site/latei_assets.py          → pas de latex_renderer (✓)
+purh_site/latei_metadata.py        → pas de latex_renderer (✓)
+purh_site/reversible_integration.py→ pas de latex_renderer (✓)
 ```
 
-**Critère de succès :** Après la Passe B, `grep -r "from.*latex_renderer" purh_site/latei_driver.py purh_site/latei_running_titles.py` ne retourne aucun résultat. Tous les tests existants passent sans modification.
+`latex_renderer.py` peut désormais être déplacé en `legacy/` en Passe H sans
+casser la chaîne LaTEI de production. Il ne reste plus qu'une seule dépendance
+vers `latex_renderer.py` depuis du code de production : `site_builder.py:396`
+(`PdfBuilder`) — reportée à la Passe E.

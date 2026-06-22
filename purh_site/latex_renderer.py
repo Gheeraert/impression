@@ -273,281 +273,25 @@ class LatexRenderer:
         Le style ``purh`` suit explicitement l'architecture validée par l'audit :
         ``book`` + ``geometry`` + ``babel`` + ``titlesec``/``titletoc`` +
         ``fancyhdr``. Le style par défaut reste volontairement sur ``memoir``.
+
+        Délègue à ``latei_preamble.render_purh_latex_preamble`` pour partager
+        exactement le même template entre la chaîne stable et la chaîne LaTEI.
         """
+        from .latei_preamble import PurhPreambleData, render_purh_latex_preamble
 
-        title = self._escape_text(book.metadata.title)
-        subtitle = self._escape_text(book.metadata.subtitle)
-        author = self._escape_text(self._join_contributor_names(book.metadata.contributors))
         publication = book.metadata.publication
-        publisher = self._escape_text(publication.publisher or "Presses universitaires de Rouen et du Havre")
-        year = self._escape_text(publication.publication_year)
-        doi = self._escape_text(publication.doi)
-        isbn = self._escape_text(publication.isbn_pdf or publication.isbn_print)
-
-        return rf"""
-\documentclass[12pt,twoside,openany]{{book}}
-
-\usepackage[
-  paperwidth=155mm,
-  paperheight=230mm,
-  top=30mm,
-  bottom=19mm,
-  inner=23mm,
-  outer=23mm,
-  headheight=14pt,
-  headsep=8mm,
-  footskip=10mm
-]{{geometry}}
-\raggedbottom
-
-\usepackage{{fontspec}}
-\usepackage[french]{{babel}}
-\usepackage{{csquotes}}
-\usepackage{{microtype}}
-\usepackage{{indentfirst}}
-\usepackage{{emptypage}}
-
-\IfFontExistsTF{{Chaparral Pro}}
-  {{\setmainfont{{Chaparral Pro}}}}
-  {{\setmainfont{{TeX Gyre Pagella}}}}
-
-\IfFontExistsTF{{Josefin Sans}}
-  {{\newfontfamily\PURHTitleFont{{Josefin Sans}}}}
-  {{\newfontfamily\PURHTitleFont{{TeX Gyre Heros}}}}
-
-\IfFontExistsTF{{Latin Modern Mono}}
-  {{\setmonofont{{Latin Modern Mono}}}}
-  {{\setmonofont{{TeX Gyre Cursor}}}}
-
-\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}
-
-\newcommand{{\PURHBookTitle}}{{{title}}}
-\newcommand{{\PURHBookSubtitle}}{{{subtitle}}}
-\newcommand{{\PURHBookAuthor}}{{{author}}}
-\newcommand{{\PURHPublisher}}{{{publisher}}}
-\newcommand{{\PURHYear}}{{{year}}}
-\newcommand{{\PURHDOI}}{{{doi}}}
-\newcommand{{\PURHISBN}}{{{isbn}}}
-
-\title{{\PURHBookTitle}}
-\author{{\PURHBookAuthor}}
-\date{{\PURHYear}}
-
-\setlength{{\parindent}}{{5mm}}
-\setlength{{\parskip}}{{0pt}}
-\linespread{{1.0}}
-\pretolerance=100
-\tolerance=500
-\hyphenpenalty=500
-\exhyphenpenalty=500
-\emergencystretch=3em
-\clubpenalty=10000
-\widowpenalty=10000
-\displaywidowpenalty=10000
-
-\usepackage{{enumitem}}
-
-\setlist[itemize,1]{{
-  label=\textendash,
-  leftmargin=1.5em,
-  itemsep=0.2\baselineskip,
-  topsep=0.4\baselineskip
-}}
-
-\setlist[enumerate,1]{{
-  leftmargin=1.8em,
-  itemsep=0.2\baselineskip,
-  topsep=0.4\baselineskip
-}}
-
-\usepackage[nobottomtitles*]{{titlesec}}
-\usepackage{{titletoc}}
-
-\setcounter{{secnumdepth}}{{0}}
-\setcounter{{tocdepth}}{{2}}
-
-\titleformat{{\chapter}}[display]
-  {{\PURHTitleFont\huge\bfseries\raggedright}}
-  {{\chaptertitlename~\thechapter}}
-  {{10pt}}
-  {{}}
-
-\titleformat{{\section}}[block]
-  {{\PURHTitleFont\Large\bfseries\raggedright}}
-  {{}}
-  {{0pt}}
-  {{}}
-
-\titleformat{{\subsection}}[block]
-  {{\PURHTitleFont\large\bfseries\raggedright}}
-  {{}}
-  {{0pt}}
-  {{}}
-
-\titleformat{{\subsubsection}}[block]
-  {{\PURHTitleFont\normalsize\bfseries\raggedright}}
-  {{}}
-  {{0pt}}
-  {{}}
-
-\titlespacing*{{\chapter}}{{0pt}}{{20pt}}{{18pt}}
-\titlespacing*{{\section}}{{0pt}}{{18pt}}{{10pt}}
-\titlespacing*{{\subsection}}{{0pt}}{{14pt}}{{8pt}}
-\titlespacing*{{\subsubsection}}{{0pt}}{{12pt}}{{6pt}}
-
-\addto\captionsfrench{{
-  \renewcommand{{\contentsname}}{{Table des matières}}
-}}
-
-\titlecontents{{chapter}}
-  [0pt]
-  {{\addvspace{{8pt}}\PURHTitleFont\bfseries}}
-  {{}}
-  {{}}
-  {{\hfill\contentspage}}
-  [\smallskip]
-
-\titlecontents{{section}}
-  [1.5em]
-  {{}}
-  {{}}
-  {{}}
-  {{\titlerule*[0.5pc]{{.}}\contentspage}}
-
-\titlecontents{{subsection}}
-  [3em]
-  {{\small}}
-  {{}}
-  {{}}
-  {{\titlerule*[0.5pc]{{.}}\contentspage}}
-
-\usepackage{{fancyhdr}}
-
-\pagestyle{{fancy}}
-\fancyhf{{}}
-\fancyhead[LE]{{\PURHHeaderFont\thepage}}
-\fancyhead[RE]{{\PURHHeaderFont\nouppercase{{\PURHBookTitle}}}}
-\fancyhead[LO]{{\PURHHeaderFont\nouppercase{{\leftmark}}}}
-\fancyhead[RO]{{\PURHHeaderFont\thepage}}
-\renewcommand{{\headrulewidth}}{{0pt}}
-\renewcommand{{\footrulewidth}}{{0pt}}
-\renewcommand{{\chaptermark}}[1]{{\markboth{{#1}}{{}}}}
-
-\fancypagestyle{{plain}}{{%
-  \fancyhf{{}}%
-  \renewcommand{{\headrulewidth}}{{0pt}}%
-  \renewcommand{{\footrulewidth}}{{0pt}}%
-}}
-
-\usepackage[hang,flushmargin]{{footmisc}}
-
-\setlength{{\footnotesep}}{{0.6\baselineskip}}
-\setlength{{\skip\footins}}{{1.2\baselineskip}}
-\renewcommand{{\footnotelayout}}{{\fontsize{{9.5pt}}{{10.5pt}}\selectfont}}
-
-\usepackage{{etoolbox}}
-
-\renewenvironment{{quote}}
-  {{%
-    \par\begingroup
-    \fontsize{{11pt}}{{14pt}}\selectfont
-    \list{{}}{{\leftmargin=1.5em\rightmargin=1.5em}}%
-    \item\relax
-  }}
-  {{%
-    \endlist
-    \endgroup
-  }}
-
-\AtBeginEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
-\AtEndEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
-
-\usepackage{{graphicx}}
-\usepackage{{caption}}
-
-\graphicspath{{{{media/}}{{images/}}{{assets/images/}}}}
-
-\captionsetup{{
-  font=small,
-  labelfont=bf,
-  labelsep=period,
-  skip=11pt
-}}
-
-\addto\captionsfrench{{
-  \renewcommand{{\figurename}}{{Figure}}
-  \renewcommand{{\tablename}}{{Tableau}}
-}}
-
-\usepackage{{array}}
-\usepackage{{longtable}}
-\usepackage{{tabularx}}
-\usepackage{{booktabs}}
-
-\usepackage{{verse}}
-\usepackage{{ragged2e}}
-\usepackage{{xurl}}
-\urlstyle{{same}}
-
-\usepackage[
-  unicode=true,
-  hidelinks,
-  pdfusetitle
-]{{hyperref}}
-
-\usepackage{{bookmark}}
-
-\hypersetup{{
-  pdftitle={{\PURHBookTitle}},
-  pdfauthor={{\PURHBookAuthor}},
-  pdfsubject={{\PURHPublisher}},
-  pdfcreator={{Impressions}},
-  pdfproducer={{LuaLaTeX}}
-}}
-
-% -----------------------------------------------------------------
-% Macros utilitaires PURH
-% -----------------------------------------------------------------
-\newcommand{{\PURHSeparator}}{{%
-  \par\addvspace{{1.5\baselineskip}}%
-  \noindent\rule{{5cm}}{{0.4pt}}%
-  \par\addvspace{{1.5\baselineskip}}%
-}}
-
-\newcommand{{\PurhSubtitle}}[1]{{%
-  \par\vspace{{0.4\baselineskip}}%
-  {{\large\itshape #1\par}}%
-  \vspace{{0.6\baselineskip}}%
-}}
-
-\newcommand{{\PurhContributors}}[1]{{%
-  \par\vspace{{0.5\baselineskip}}%
-  {{\normalsize\scshape #1\par}}%
-  \vspace{{0.6\baselineskip}}%
-}}
-
-\newcommand{{\PurhTitleExtra}}[1]{{%
-  {{\small #1\par}}%
-}}
-
-\newenvironment{{PurhBlockQuote}}
-  {{%
-    \begin{{quote}}
-  }}
-  {{%
-    \end{{quote}}
-  }}
-
-\newenvironment{{PurhBibliography}}
-  {{%
-    \par
-    \setlength{{\parindent}}{{0pt}}%
-    \setlength{{\leftskip}}{{0pt}}%
-  }}
-  {{%
-    \par
-  }}
-""".strip()
+        return render_purh_latex_preamble(PurhPreambleData(
+            title=book.metadata.title or "",
+            subtitle=book.metadata.subtitle or "",
+            authors=tuple(
+                c.full_name for c in book.metadata.contributors
+                if getattr(c, "full_name", "").strip()
+            ),
+            publisher=publication.publisher or "Presses universitaires de Rouen et du Havre",
+            year=publication.publication_year or "",
+            doi=publication.doi or "",
+            isbn=publication.isbn_pdf or publication.isbn_print or "",
+        ))
 
 
 # ---------------------------------------------------------------------------
@@ -1235,31 +979,19 @@ def render_purh_preamble_for_latei(
     collection_number: str | None = None,
     issn: str | None = None,
 ) -> str:
-    """Return the stable PURH preamble for the experimental LaTEI driver.
+    """Wrapper de compatibilité — délègue à latei_preamble.render_purh_latex_preamble.
 
-    This helper intentionally delegates to the existing PURH preamble renderer
-    so the experimental LaTEI route does not fork page geometry, fonts, running
-    heads, footnote settings, or package choices.
+    Conservé pour les tests legacy et les modules de comparaison. La chaîne LaTEI
+    active n'appelle plus cette fonction : elle passe directement par latei_preamble.
     """
-    metadata = BookMetadata(
+    from .latei_preamble import PurhPreambleData, render_purh_latex_preamble
+
+    return render_purh_latex_preamble(PurhPreambleData(
         title=title or "LaTEI PURH",
-        subtitle=subtitle,
-        contributors=[
-            Contributor(full_name=value)
-            for value in (contributors or [])
-            if value.strip()
-        ],
-        publication=PublicationInfo(
-            publisher=publisher or "Presses universitaires de Rouen et du Havre",
-            publication_year=publication_year or None,
-            doi=doi or None,
-            isbn_print=isbn_print or None,
-            isbn_pdf=isbn_pdf or None,
-            collection_name=collection_title or None,
-            collection_number=collection_number or None,
-            issn=issn or None,
-        ),
-    )
-    book = Book(metadata=metadata)
-    renderer = LatexRenderer(options=LatexRenderOptions(style="purh"))
-    return renderer._render_purh_preamble(book)
+        subtitle=subtitle or "",
+        authors=tuple(v for v in (contributors or []) if v.strip()),
+        publisher=publisher or "Presses universitaires de Rouen et du Havre",
+        year=publication_year or "",
+        doi=doi or "",
+        isbn=isbn_pdf or isbn_print or "",
+    ))

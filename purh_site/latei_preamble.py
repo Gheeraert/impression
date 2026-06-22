@@ -1,0 +1,322 @@
+from __future__ import annotations
+
+"""Autonomous PURH LaTeX preamble renderer for the LaTEI production chain.
+
+Deliberately independent of LatexRenderer, LatexRenderOptions, semantic_model,
+tei_to_model, and pdf_builder. Depends only on the Python standard library.
+"""
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True, slots=True)
+class PurhPreambleData:
+    """Plain-data container for PURH preamble rendering.
+
+    All fields are plain strings. The caller resolves model-level choices
+    (e.g. isbn_pdf vs isbn_print, contributors list) before constructing
+    this object. Fields unused by the template (collection, issn) are
+    intentionally absent.
+    """
+
+    title: str = "LaTEI PURH"
+    subtitle: str = ""
+    authors: tuple[str, ...] = ()
+    publisher: str = "Presses universitaires de Rouen et du Havre"
+    year: str = ""
+    doi: str = ""
+    isbn: str = ""
+
+
+def render_purh_latex_preamble(data: PurhPreambleData) -> str:
+    """Return the full PURH LaTeX preamble string."""
+    title = _escape(data.title)
+    subtitle = _escape(data.subtitle)
+    author = _escape(" ; ".join(a for a in data.authors if a.strip()))
+    publisher = _escape(data.publisher or "Presses universitaires de Rouen et du Havre")
+    year = _escape(data.year)
+    doi = _escape(data.doi)
+    isbn = _escape(data.isbn)
+
+    return rf"""
+\documentclass[12pt,twoside,openany]{{book}}
+
+\usepackage[
+  paperwidth=155mm,
+  paperheight=230mm,
+  top=30mm,
+  bottom=19mm,
+  inner=23mm,
+  outer=23mm,
+  headheight=14pt,
+  headsep=8mm,
+  footskip=10mm
+]{{geometry}}
+\raggedbottom
+
+\usepackage{{fontspec}}
+\usepackage[french]{{babel}}
+\usepackage{{csquotes}}
+\usepackage{{microtype}}
+\usepackage{{indentfirst}}
+\usepackage{{emptypage}}
+
+\IfFontExistsTF{{Chaparral Pro}}
+  {{\setmainfont{{Chaparral Pro}}}}
+  {{\setmainfont{{TeX Gyre Pagella}}}}
+
+\IfFontExistsTF{{Josefin Sans}}
+  {{\newfontfamily\PURHTitleFont{{Josefin Sans}}}}
+  {{\newfontfamily\PURHTitleFont{{TeX Gyre Heros}}}}
+
+\IfFontExistsTF{{Latin Modern Mono}}
+  {{\setmonofont{{Latin Modern Mono}}}}
+  {{\setmonofont{{TeX Gyre Cursor}}}}
+
+\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}
+
+\newcommand{{\PURHBookTitle}}{{{title}}}
+\newcommand{{\PURHBookSubtitle}}{{{subtitle}}}
+\newcommand{{\PURHBookAuthor}}{{{author}}}
+\newcommand{{\PURHPublisher}}{{{publisher}}}
+\newcommand{{\PURHYear}}{{{year}}}
+\newcommand{{\PURHDOI}}{{{doi}}}
+\newcommand{{\PURHISBN}}{{{isbn}}}
+
+\title{{\PURHBookTitle}}
+\author{{\PURHBookAuthor}}
+\date{{\PURHYear}}
+
+\setlength{{\parindent}}{{5mm}}
+\setlength{{\parskip}}{{0pt}}
+\linespread{{1.0}}
+\pretolerance=100
+\tolerance=500
+\hyphenpenalty=500
+\exhyphenpenalty=500
+\emergencystretch=3em
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+\usepackage{{enumitem}}
+
+\setlist[itemize,1]{{
+  label=\textendash,
+  leftmargin=1.5em,
+  itemsep=0.2\baselineskip,
+  topsep=0.4\baselineskip
+}}
+
+\setlist[enumerate,1]{{
+  leftmargin=1.8em,
+  itemsep=0.2\baselineskip,
+  topsep=0.4\baselineskip
+}}
+
+\usepackage[nobottomtitles*]{{titlesec}}
+\usepackage{{titletoc}}
+
+\setcounter{{secnumdepth}}{{0}}
+\setcounter{{tocdepth}}{{2}}
+
+\titleformat{{\chapter}}[display]
+  {{\PURHTitleFont\huge\bfseries\raggedright}}
+  {{\chaptertitlename~\thechapter}}
+  {{10pt}}
+  {{}}
+
+\titleformat{{\section}}[block]
+  {{\PURHTitleFont\Large\bfseries\raggedright}}
+  {{}}
+  {{0pt}}
+  {{}}
+
+\titleformat{{\subsection}}[block]
+  {{\PURHTitleFont\large\bfseries\raggedright}}
+  {{}}
+  {{0pt}}
+  {{}}
+
+\titleformat{{\subsubsection}}[block]
+  {{\PURHTitleFont\normalsize\bfseries\raggedright}}
+  {{}}
+  {{0pt}}
+  {{}}
+
+\titlespacing*{{\chapter}}{{0pt}}{{20pt}}{{18pt}}
+\titlespacing*{{\section}}{{0pt}}{{18pt}}{{10pt}}
+\titlespacing*{{\subsection}}{{0pt}}{{14pt}}{{8pt}}
+\titlespacing*{{\subsubsection}}{{0pt}}{{12pt}}{{6pt}}
+
+\addto\captionsfrench{{
+  \renewcommand{{\contentsname}}{{Table des matières}}
+}}
+
+\titlecontents{{chapter}}
+  [0pt]
+  {{\addvspace{{8pt}}\PURHTitleFont\bfseries}}
+  {{}}
+  {{}}
+  {{\hfill\contentspage}}
+  [\smallskip]
+
+\titlecontents{{section}}
+  [1.5em]
+  {{}}
+  {{}}
+  {{}}
+  {{\titlerule*[0.5pc]{{.}}\contentspage}}
+
+\titlecontents{{subsection}}
+  [3em]
+  {{\small}}
+  {{}}
+  {{}}
+  {{\titlerule*[0.5pc]{{.}}\contentspage}}
+
+\usepackage{{fancyhdr}}
+
+\pagestyle{{fancy}}
+\fancyhf{{}}
+\fancyhead[LE]{{\PURHHeaderFont\thepage}}
+\fancyhead[RE]{{\PURHHeaderFont\nouppercase{{\PURHBookTitle}}}}
+\fancyhead[LO]{{\PURHHeaderFont\nouppercase{{\leftmark}}}}
+\fancyhead[RO]{{\PURHHeaderFont\thepage}}
+\renewcommand{{\headrulewidth}}{{0pt}}
+\renewcommand{{\footrulewidth}}{{0pt}}
+\renewcommand{{\chaptermark}}[1]{{\markboth{{#1}}{{}}}}
+
+\fancypagestyle{{plain}}{{%
+  \fancyhf{{}}%
+  \renewcommand{{\headrulewidth}}{{0pt}}%
+  \renewcommand{{\footrulewidth}}{{0pt}}%
+}}
+
+\usepackage[hang,flushmargin]{{footmisc}}
+
+\setlength{{\footnotesep}}{{0.6\baselineskip}}
+\setlength{{\skip\footins}}{{1.2\baselineskip}}
+\renewcommand{{\footnotelayout}}{{\fontsize{{9.5pt}}{{10.5pt}}\selectfont}}
+
+\usepackage{{etoolbox}}
+
+\renewenvironment{{quote}}
+  {{%
+    \par\begingroup
+    \fontsize{{11pt}}{{14pt}}\selectfont
+    \list{{}}{{\leftmargin=1.5em\rightmargin=1.5em}}%
+    \item\relax
+  }}
+  {{%
+    \endlist
+    \endgroup
+  }}
+
+\AtBeginEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
+\AtEndEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
+
+\usepackage{{graphicx}}
+\usepackage{{caption}}
+
+\graphicspath{{{{media/}}{{images/}}{{assets/images/}}}}
+
+\captionsetup{{
+  font=small,
+  labelfont=bf,
+  labelsep=period,
+  skip=11pt
+}}
+
+\addto\captionsfrench{{
+  \renewcommand{{\figurename}}{{Figure}}
+  \renewcommand{{\tablename}}{{Tableau}}
+}}
+
+\usepackage{{array}}
+\usepackage{{longtable}}
+\usepackage{{tabularx}}
+\usepackage{{booktabs}}
+
+\usepackage{{verse}}
+\usepackage{{ragged2e}}
+\usepackage{{xurl}}
+\urlstyle{{same}}
+
+\usepackage[
+  unicode=true,
+  hidelinks,
+  pdfusetitle
+]{{hyperref}}
+
+\usepackage{{bookmark}}
+
+\hypersetup{{
+  pdftitle={{\PURHBookTitle}},
+  pdfauthor={{\PURHBookAuthor}},
+  pdfsubject={{\PURHPublisher}},
+  pdfcreator={{Impressions}},
+  pdfproducer={{LuaLaTeX}}
+}}
+
+% -----------------------------------------------------------------
+% Macros utilitaires PURH
+% -----------------------------------------------------------------
+\newcommand{{\PURHSeparator}}{{%
+  \par\addvspace{{1.5\baselineskip}}%
+  \noindent\rule{{5cm}}{{0.4pt}}%
+  \par\addvspace{{1.5\baselineskip}}%
+}}
+
+\newcommand{{\PurhSubtitle}}[1]{{%
+  \par\vspace{{0.4\baselineskip}}%
+  {{\large\itshape #1\par}}%
+  \vspace{{0.6\baselineskip}}%
+}}
+
+\newcommand{{\PurhContributors}}[1]{{%
+  \par\vspace{{0.5\baselineskip}}%
+  {{\normalsize\scshape #1\par}}%
+  \vspace{{0.6\baselineskip}}%
+}}
+
+\newcommand{{\PurhTitleExtra}}[1]{{%
+  {{\small #1\par}}%
+}}
+
+\newenvironment{{PurhBlockQuote}}
+  {{%
+    \begin{{quote}}
+  }}
+  {{%
+    \end{{quote}}
+  }}
+
+\newenvironment{{PurhBibliography}}
+  {{%
+    \par
+    \setlength{{\parindent}}{{0pt}}%
+    \setlength{{\leftskip}}{{0pt}}%
+  }}
+  {{%
+    \par
+  }}""".strip()
+
+
+def _escape(value: str | None) -> str:
+    """Escape LaTeX special characters in plain text."""
+    if value is None:
+        return ""
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "{": r"\{",
+        "}": r"\}",
+        "$": r"\$",
+        "&": r"\&",
+        "%": r"\%",
+        "#": r"\#",
+        "_": r"\_",
+        "^": r"\textasciicircum{}",
+        "~": r"\textasciitilde{}",
+    }
+    return "".join(replacements.get(char, char) for char in value)
