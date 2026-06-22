@@ -229,6 +229,37 @@ class _Parser:
             self.pos += 1
 
 
+_BEGIN_LATEI_DOCUMENT = r"\begin{lateiDocument}"
+_END_LATEI_DOCUMENT = r"\end{lateiDocument}"
+
+
+def extract_latei_document_zone(monofile_text: str) -> str:
+    """Extract the reversible body from a complete LaTEI monofile.
+
+    Returns only the text between \\begin{lateiDocument} and
+    \\end{lateiDocument}. Everything outside (preamble, macros, mappings,
+    title page) is ignored. This function does not parse LaTeX; it is a
+    plain string search.
+    """
+    first_begin = monofile_text.find(_BEGIN_LATEI_DOCUMENT)
+    if first_begin == -1:
+        raise LatexParseError(r"Missing \begin{lateiDocument} in monofile text.")
+    second_begin = monofile_text.find(_BEGIN_LATEI_DOCUMENT, first_begin + 1)
+    if second_begin != -1:
+        raise LatexParseError(
+            r"Multiple \begin{lateiDocument} found in monofile text; expected exactly one."
+        )
+    content_start = first_begin + len(_BEGIN_LATEI_DOCUMENT)
+    if monofile_text[content_start : content_start + 1] == "\n":
+        content_start += 1
+    end = monofile_text.find(_END_LATEI_DOCUMENT, content_start)
+    if end == -1:
+        raise LatexParseError(
+            r"Missing \end{lateiDocument} after \begin{lateiDocument} in monofile text."
+        )
+    return monofile_text[content_start:end].rstrip("\n")
+
+
 def read_latex(latex: str) -> Node:
     return _Parser(latex).parse_document()
 

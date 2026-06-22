@@ -624,4 +624,71 @@ Explicitement reportée à la **passe M2**. Le parser actuel (`latex_reader.py`)
 
 ---
 
+## Passe M2 réalisée
+
+**Date** : 2026-06-22
+
+### Fonction d'extraction
+
+`extract_latei_document_zone(monofile_text: str) -> str`  
+**Module** : `purh_site/reversible/latex_reader.py`  
+**Exportée** via `purh_site/reversible/__init__.py`
+
+La fonction :
+- cherche `\begin{lateiDocument}` — lève `LatexParseError` si absent ;
+- vérifie qu'il n'en existe pas plusieurs — lève `LatexParseError` si plusieurs ;
+- cherche `\end{lateiDocument}` à partir du contenu — lève `LatexParseError` si absent (couvre aussi le cas où `\end` précède `\begin`) ;
+- saute le saut de ligne cosmétique immédiatement après `\begin{lateiDocument}` ;
+- supprime les sauts de ligne finaux inutiles (`.rstrip("\n")`) avant de retourner le texte ;
+- ne parse pas le LaTeX général : c'est une recherche de chaîne plain-text.
+
+### Fonction de restauration XML depuis monofichier
+
+`restore_xml_from_latei_monofile(monofile_path: Path, output_xml_path: Path) -> Path`  
+**Module** : `purh_site/reversible_integration.py`
+
+Pipeline :
+```
+monofile_path → read_text() → extract_latei_document_zone()
+→ read_latex_document() → write_tei_element() → XML écrit sur disque
+```
+
+### Ce que le parser lit
+
+Uniquement le contenu entre `\begin{lateiDocument}` et `\end{lateiDocument}` — identique au corps `*.latei_body.tex`.
+
+### Ce que le parser ignore
+
+Tout ce qui précède `\begin{lateiDocument}` : `\documentclass`, `\usepackage`, `\newcommand`, préambule PURH, macros inline, mappings graphiques, mappings titres courants, `\begin{document}`, page de titre.
+
+Tout ce qui suit `\end{lateiDocument}` : `\cleardoublepage`, `\tableofcontents`, `\end{document}`.
+
+### Invariants de strictesse
+
+Le parser strict (`read_latex_document`) reste inchangé. Passer le monofichier complet à `read_latex_document` sans extraction lève toujours `LatexParseError` (validé par `test_parser_strict_rejects_full_monofile`).
+
+### Restauration depuis body non cassée
+
+`restore_xml_from_latei_body` est inchangée. Les résultats des deux fonctions sont identiques sur le fixture Métopes (`compare_tei_elements` retourne `[]`).
+
+### Fichiers modifiés
+
+| Fichier | Nature de la modification |
+|---|---|
+| `purh_site/reversible/latex_reader.py` | Ajout `extract_latei_document_zone`, constantes `_BEGIN_LATEI_DOCUMENT` / `_END_LATEI_DOCUMENT` |
+| `purh_site/reversible/__init__.py` | Export de `extract_latei_document_zone` |
+| `purh_site/reversible_integration.py` | Import et ajout `restore_xml_from_latei_monofile` |
+| `tests/test_latei_monofile_restore.py` | Nouveau fichier — 9 tests |
+
+### Tests lancés
+
+```
+tests/test_latei_monofile_restore.py   →  9 passed
+tests/test_latei_monofile.py           → 16 passed  (M1 non cassé)
+tests/test_latei_restore_from_body.py  →  3 passed  (body non cassé)
+tests/test_reversible_roundtrip.py     → 12 passed  (noyau réversible non cassé)
+```
+
+---
+
 *Audit rédigé depuis l'inspection directe du code. Aucun fichier modifié.*

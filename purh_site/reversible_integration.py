@@ -18,7 +18,7 @@ from .latei_assets import package_latei_graphics
 from .latei_driver import build_latei_driver, build_latei_monofile, compile_latei_pdf
 from .latei_metadata import extract_latei_metadata
 from .latei_running_titles import package_latei_running_titles
-from .reversible import Diagnostic, read_latex_document, run_tei_latex_tei_roundtrip, write_tei_element
+from .reversible import Diagnostic, extract_latei_document_zone, read_latex_document, run_tei_latex_tei_roundtrip, write_tei_element
 
 
 @dataclass(slots=True)
@@ -277,6 +277,34 @@ def restore_xml_from_latei_body(latei_body_path: Path, output_xml_path: Path) ->
     output_path = Path(output_xml_path).expanduser()
     latex = body_path.read_text(encoding="utf-8")
     element = write_tei_element(read_latex_document(latex))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    etree.ElementTree(element).write(
+        str(output_path),
+        encoding="utf-8",
+        xml_declaration=True,
+        pretty_print=True,
+    )
+    return output_path
+
+
+def restore_xml_from_latei_monofile(monofile_path: Path, output_xml_path: Path) -> Path:
+    """Restore TEI XML from the reversible zone of a LaTEI monofile.
+
+    Extracts the content between \\begin{lateiDocument} and
+    \\end{lateiDocument}, then passes it to the strict parser exactly as
+    ``restore_xml_from_latei_body`` would. The preamble, macros, mappings,
+    and title page are never seen by the parser.
+    """
+    mono_path = Path(monofile_path).expanduser()
+    if not mono_path.exists():
+        raise FileNotFoundError(f"LaTEI monofile does not exist: {mono_path}")
+    if not mono_path.is_file():
+        raise ValueError(f"LaTEI monofile path is not a file: {mono_path}")
+
+    output_path = Path(output_xml_path).expanduser()
+    monofile_text = mono_path.read_text(encoding="utf-8")
+    zone = extract_latei_document_zone(monofile_text)
+    element = write_tei_element(read_latex_document(zone))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     etree.ElementTree(element).write(
         str(output_path),

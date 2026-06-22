@@ -39,7 +39,7 @@ from .nodes import (
 )
 from .tei_reader import read_tei_element
 from .tei_writer import write_tei_element
-from .latex_reader import LatexParseError, read_latex, read_latex_document
+from .latex_reader import LatexParseError, extract_latei_document_zone, read_latex, read_latex_document
 from .latex_writer import write_latex, write_latex_document
 from .roundtrip import (
     Diagnostic,
@@ -87,6 +87,7 @@ __all__ = [
     "TitleNode",
     "Diagnostic",
     "LatexParseError",
+    "extract_latei_document_zone",
     "RoundTripResult",
     "compare_tei_elements",
     "read_latex",
