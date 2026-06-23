@@ -365,3 +365,38 @@ E1 — Créer `site_latei_pdf_export.py` en isolation totale. Aucun fichier exis
 - Ne pas supprimer `stable_pdf_export.py` avant que l'adaptateur LaTEI soit validé en production.
 - Ne pas modifier `site_builder.py` avant que l'adaptateur E1 soit stable et testé.
 - Ne pas compiler le PDF LaTEI de manière inconditionnelle dans le contexte site sans gérer le mode `"latei"` (sans PDF) séparément du mode `"latei_pdf"` (avec PDF).
+
+
+---
+
+## Passe E1 réalisée
+
+Date : 2026-06-23
+
+**Nouveau module créé : `purh_site/site_latei_pdf_export.py`**
+
+- Non branché dans `site_builder.py` — le comportement du site n'a pas changé.
+- Traduit les artefacts natifs LaTEI vers les noms contractuels du site :
+  - `{stem}.latei.tex` → `book.tex`
+  - `{stem}.latei_manifest.json` → `book.latei_manifest.json`
+  - `{stem}.latei_mono.pdf` → `book.pdf` (seulement si `compile_pdf=True` et PDF produit)
+- Écrit toujours `pdf_build_report.txt` avec une synthèse (XML source, chemins natifs, chemins site, message LaTEI).
+- Les artefacts natifs LaTEI (`{stem}.latei.tex`, `{stem}.latei_manifest.json`, etc.) restent en place.
+- `latei_assets/` n'est pas déplacé.
+- Le paramètre `latex_engine` est accepté pour symétrie d'API avec `stable_pdf_export`, mais pas encore transmis à `run_reversible_export_for_file`.
+
+**Nouveau test : `tests/test_site_latei_pdf_export_adapter.py`** (8 tests)
+
+- Test 1 : importabilité
+- Test 2 : mode LaTeX seul — `book.tex`, `book.latei_manifest.json`, `pdf_build_report.txt` produits
+- Test 3 : `book.tex` contient `\begin{lateiDocument}` et pas de `\input{`
+- Test 4 : rapport contient les champs attendus
+- Test 5 : cohérence des champs du résultat
+- Test 6 : artefacts natifs non supprimés
+- Test 7 : mode PDF conditionnel (`compile_pdf=True`) — `book.pdf` copié si produit ; sinon dégradation propre
+- Test 8 : `site_builder.py` n'importe pas encore `site_latei_pdf_export`
+
+**Tests lancés :**
+
+- `test_site_latei_pdf_export_adapter.py` : 8 passed (86 s — dépend de la génération LaTEI, pas de lualatex)
+- `test_stable_pdf_export_adapter.py`, `test_smoke.py`, `test_site_quality_report.py` : 33 passed
