@@ -400,3 +400,46 @@ Date : 2026-06-23
 
 - `test_site_latei_pdf_export_adapter.py` : 8 passed (86 s — dépend de la génération LaTEI, pas de lualatex)
 - `test_stable_pdf_export_adapter.py`, `test_smoke.py`, `test_site_quality_report.py` : 33 passed
+
+---
+
+## Passe E2 réalisée
+
+Date : 2026-06-23
+
+**Modes LaTEI branchés dans `site_builder.py`**
+
+- `pdf_export_mode="latei"` et `"latei_pdf"` sont désormais acceptés par `_normalized_pdf_export_mode`.
+- `_build_pdf_site_artifacts` délègue aux modes LaTEI via `build_site_latei_pdf_artifacts` (adaptateur E1).
+- Les modes `"latex"` et `"latex_pdf"` stables restent **inchangés** et continuent de passer.
+- Le GUI n'est **pas encore modifié** (prévu en E3).
+- `site_builder.py` n'importe **pas** `PdfBuilder` directement : isolation préservée.
+- Le site continue d'exposer `assets/generated/book.tex` et `assets/generated/book.pdf` sous les mêmes noms contractuels.
+
+**Modifications apportées :**
+
+- `purh_site/site_latei_pdf_export.py` : champ `success` ajusté — vaut `pdf_copied` quand `compile_pdf=True`, `result.success` sinon. Ceci garantit que `_pdf_site_report_lines` déclenche le WARNING correct lorsque `latei_pdf` a été demandé mais LuaLaTeX était absent.
+- `purh_site/site_builder.py` :
+  - Import ajouté : `from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts`
+  - `PdfSiteArtifacts.build_result` : type étendu à `PdfBuildResult | SiteLateiPdfExportResult | None`
+  - `_normalized_pdf_export_mode` : accepte `"latei"` et `"latei_pdf"`
+  - `_build_pdf_site_artifacts` : branche LaTEI ajoutée avant la branche stable
+- `tests/test_site_latei_pdf_export_adapter.py` : test 8 inversé — vérifie maintenant que `site_builder.py` **importe** `site_latei_pdf_export`
+
+**Note sur `latex_engine` :** La chaîne LaTEI gère son propre moteur et n'honore pas encore le paramètre `latex_engine` de `BuildConfig`. Ce paramètre est transmis pour symétrie d'API mais sans effet sur `run_reversible_export_for_file`. Le test 3 est donc adaptatif (observe le résultat réel plutôt que de simuler l'absence de LuaLaTeX via un faux moteur).
+
+**Nouveau fichier de tests : `tests/test_site_latei_pdf_mode.py`** (6 tests)
+
+- Test 1 : mode `latei` produit `book.tex`, `book.latei_manifest.json`, `pdf_build_report.txt` ; lien HTML correct ; rapport de build correct
+- Test 2 : `book.tex` est un monofichier LaTEI (`\begin{lateiDocument}`, pas de `\input{`)
+- Test 3 : mode `latei_pdf` — adaptatif selon disponibilité de LuaLaTeX ; invariants communs toujours vérifiés
+- Test 4a : mode stable `latex` toujours fonctionnel
+- Test 4b : mode stable `none` toujours fonctionnel
+- Test 5 : PDF éditeur court-circuite les modes LaTEI comme les modes stables
+
+**Tests lancés :**
+
+- `test_site_latei_pdf_mode.py` : 6 passed
+- `test_stable_pdf_export_adapter.py` + `test_site_latei_pdf_export_adapter.py` : 12 passed
+- `test_smoke.py` : 22 passed
+- `test_site_quality_report.py` : 7 passed

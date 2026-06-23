@@ -151,10 +151,10 @@ def test_pdf_mode_copies_pdf_when_produced(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 8 — Non-branchement dans site_builder
+# Test 8 — Branchement dans site_builder (E2)
 # ---------------------------------------------------------------------------
 
-def test_site_builder_does_not_import_site_latei_pdf_export() -> None:
+def test_site_builder_imports_site_latei_pdf_export() -> None:
     source = Path("purh_site/site_builder.py").read_text(encoding="utf-8")
-    assert "site_latei_pdf_export" not in source
-    assert "build_site_latei_pdf_artifacts" not in source
+    assert "site_latei_pdf_export" in source
+    assert "build_site_latei_pdf_artifacts" in source

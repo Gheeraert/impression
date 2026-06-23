@@ -100,6 +100,12 @@ def build_site_latei_pdf_artifacts(
     ]
     report_path.write_text("\n".join(report_lines), encoding="utf-8")
 
+    # Quand compile_pdf=True, success signifie "le PDF a été produit et copié".
+    # Quand compile_pdf=False, success signifie "l'export LaTEI s'est terminé sans diagnostics".
+    # Cette sémantique permet à _pdf_site_report_lines de déclencher le WARNING
+    # correctement lorsque latei_pdf a été demandé mais LuaLaTeX était absent.
+    export_success = pdf_copied if compile_pdf else result.success
+
     return SiteLateiPdfExportResult(
         tex_path=tex_path,
         pdf_path=pdf_path,
@@ -108,6 +114,6 @@ def build_site_latei_pdf_artifacts(
         source_latei_path=result.primary_latei_path,
         source_pdf_path=result.primary_pdf_path,
         source_manifest_path=result.manifest_path,
-        success=result.success,
+        success=export_success,
         message=result.message,
     )
