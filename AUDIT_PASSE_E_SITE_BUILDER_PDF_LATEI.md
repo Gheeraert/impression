@@ -502,3 +502,41 @@ Date : 2026-06-23
 
 - `test_latei_gui_preflight.py` : 9 passed (5 existants + 4 nouveaux)
 - `test_site_latei_pdf_mode.py` : 7 passed (non-régression)
+
+---
+
+## Passe E4 réalisée
+
+Date : 2026-06-23
+
+**Contexte :** Point le plus fragile identifié par l'audit initial — les chemins d'images relatifs et le répertoire `latei_assets/`. E4 valide que tout fonctionne correctement dans le contexte site avec de vraies images.
+
+**Point technique clé — résolution des chemins images :**
+
+L'adaptateur passe le TEI normalisé (`site/book.normalized.xml`) à `run_reversible_export_for_file`. `latei_assets.py` résout les `graphic/@url` relativement à ce fichier (`base_dir = site/`). La stratégie du test est :
+
+- `assets_dir = tmp_path / "assets"` → copié dans `site/assets/` par `_copy_user_assets` (avant la chaîne LaTEI)
+- XML source avec `url="assets/images/test.png"` → résout `tmp_path/assets/images/test.png` depuis le XML source, et `site/assets/images/test.png` depuis le TEI normalisé ✅
+- La copie `_copy_user_assets` précède l'appel LaTEI, donc l'image est déjà en place au moment de la résolution ✅
+
+**Résultats confirmés par les tests :**
+
+- `latei_assets/images/` est bien créé dans `assets/generated/` (pas dans `assets/` ni ailleurs)
+- Les images sont copiées avec noms sha1 (`{sha1_12char}-{safe-stem}.png`)
+- `book.tex` contient `latei_assets/images/{sha1}-{name}.png` — chemins relatifs valides depuis `generated/`
+- LuaLaTeX s'exécute depuis `pdf_path.parent` = `generated/`, donc il trouve `latei_assets/images/` ✅
+- `book.pdf` compile avec image si LuaLaTeX est disponible
+- L'absence d'image ne casse pas le mode `latei` (warning dans le rapport, pas d'erreur)
+
+**Nouveau fichier de tests : `tests/test_site_latei_pdf_assets.py`** (4 tests)
+
+- Test 1 : `latei_assets/images/` créé et image copiée en mode `latei`
+- Test 2 : `book.tex` référence `latei_assets/images/` avec chemins valides
+- Test 3 : `latei_pdf` compile `book.pdf` non vide avec image (conditionnel lualatex)
+- Test 4 : mode `latei` sans image ne plante pas (non-régression)
+
+**Tests lancés :**
+
+- `test_site_latei_pdf_assets.py` : 4 passed
+- `test_site_latei_pdf_mode.py` + `test_site_latei_pdf_export_adapter.py` : 15 passed
+- `test_site_quality_report.py` : 7 passed
