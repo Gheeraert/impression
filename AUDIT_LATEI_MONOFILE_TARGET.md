@@ -895,4 +895,31 @@ tests/test_latei_monofile_editorial_workflow.py  →  8 passed (M3/M4 intact)
 
 ---
 
+## Passe M6 réalisée
+
+**Date** : 2026-06-23
+
+**Objectif** : Faire apparaître le LaTEI monofichier comme sortie principale dans CLI/GUI.
+
+### Modifications
+
+| Fichier | Changement |
+|---|---|
+| `purh_site/gui.py` | `LATEI_USAGE_HELP` mentionne `*.latei.tex` comme fichier principal ; `format_latei_export_summary` affiche monofichier/PDF/manifeste en tête, fragments sous « Fragments debug : » ; `expected_latei_package_artifacts` inclut `primary_latei_path` et `manifest_path` en tête |
+| `purh_site/reversible_integration.py` | `main()` réorganisé : monofichier et manifeste affichés en premier, fragments sous « Fragments debug : » |
+| `tests/test_reversible_export_summary.py` | Nouveau fichier — 6 tests |
+| `tests/test_latei_gui_preflight.py` | SimpleNamespace étendu avec champs M5 ; assertions mises à jour pour vérifier monofichier principal |
+| `AUDIT_LATEI_MONOFILE_TARGET.md` | Section « Passe M6 réalisée » |
+
+### Tests lancés
+
+```
+tests/test_reversible_export_summary.py          →  6 passed
+tests/test_latei_gui_preflight.py                →  2 passed
+tests/test_latei_output_manifest.py              → 13 passed
+Total : 21 passed (7.31 s)
+```
+
+---
+
 *Audit rédigé depuis l'inspection directe du code. Aucun fichier modifié.*

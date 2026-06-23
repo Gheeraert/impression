@@ -23,6 +23,7 @@ def test_gui_labels_use_latei_vocabulary() -> None:
     assert "À corriger" in source
     assert "À compiler" in source
     assert "À restaurer en XML" in source
+    assert "*.latei.tex" in source
     assert "*.latei_body.tex" in source
     assert "*.latei_main.tex" in source
     assert "*.latei_body.tex ne compile pas seul" in source
@@ -42,6 +43,13 @@ def test_gui_labels_use_latei_vocabulary() -> None:
 
 def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path: Path) -> None:
     result = SimpleNamespace(
+        latei_monofile_path=tmp_path / "book.latei.tex",
+        latei_monofile_pdf_path=tmp_path / "book.latei_mono.pdf",
+        latei_monofile_pdf_success=False,
+        latei_monofile_pdf_message="LuaLaTeX non disponible",
+        primary_latei_path=tmp_path / "book.latei.tex",
+        primary_pdf_path=tmp_path / "book.latei_mono.pdf",
+        manifest_path=tmp_path / "book.latei_manifest.json",
         latei_body_path=tmp_path / "book.latei_body.tex",
         latei_main_path=tmp_path / "book.latei_main.tex",
         latei_macros_path=tmp_path / "book.latei_macros.tex",
@@ -60,6 +68,8 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
         diagnostics_count=0,
     )
     for path in [
+        result.latei_monofile_path,
+        result.manifest_path,
         result.latei_body_path,
         result.latei_main_path,
         result.latei_macros_path,
@@ -76,9 +86,12 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
 
     summary = format_latei_export_summary(result)
     assert "Export LaTEI terminé." in summary
-    assert f"À corriger : {result.latei_body_path}" in summary
-    assert f"À compiler : {result.latei_main_path}" in summary
-    assert f"À restaurer en XML : {result.latei_body_path}" in summary
+    assert f"À corriger : {result.primary_latei_path}" in summary
+    assert f"À compiler : {result.primary_latei_path}" in summary
+    assert f"À restaurer en XML : {result.primary_latei_path}" in summary
+    assert f"Fichier LaTEI éditable : {result.primary_latei_path}" in summary
+    assert f"Manifeste : {result.manifest_path}" in summary
+    assert "Fragments debug :" in summary
     assert f"Corps réversible à corriger : {result.latei_body_path}" in summary
     assert f"Driver compilable : {result.latei_main_path}" in summary
     assert f"Macros locales : {result.latei_macros_path}" in summary
@@ -87,7 +100,7 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
     assert "Titres courants abrÃ©gÃ©s : 3" in summary
     assert "Images copiées : 2" in summary
     assert "Warnings images : 1" in summary
-    assert "PDF LaTEI : non produit (LaTeX engine not found: lualatex)" in summary
+    assert "PDF LaTEI (debug) : non produit (LaTeX engine not found: lualatex)" in summary
     assert f"XML restauré : {result.roundtrip_xml_path}" in summary
     assert "Diagnostics round-trip : 0" in summary
     assert "Prévol paquet LaTEI : tous les artefacts attendus sont présents." in summary

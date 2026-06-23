@@ -515,25 +515,34 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
 
     print(result.message)
-    print(f"LaTeX: {result.latex_path}")
-    print(f"LaTEI body: {result.latei_body_path}")
-    print(f"LaTEI main: {result.latei_main_path}")
-    print(f"LaTEI macros: {result.latei_macros_path}")
-    print(f"LaTEI graphics map: {result.latei_graphics_map_path}")
-    print(f"LaTEI running titles map: {result.latei_running_titles_map_path}")
+    print("")
+    print("Fichier LaTEI éditable (principal) :")
+    print(f"  {result.primary_latei_path}")
+    if result.latei_monofile_pdf_success:
+        print(f"PDF principal : {result.primary_pdf_path}")
+    else:
+        print(f"PDF principal : non produit ({result.latei_monofile_pdf_message})")
+    print(f"Manifeste : {result.manifest_path}")
+    print("")
+    print("Fragments debug :")
+    print(f"  Corps réversible : {result.latei_body_path}")
+    print(f"  Driver compilable : {result.latei_main_path}")
+    print(f"  Macros : {result.latei_macros_path}")
+    print(f"  Mapping images : {result.latei_graphics_map_path}")
+    print(f"  Mapping titres courants : {result.latei_running_titles_map_path}")
     print(f"LaTEI assets: {result.latei_assets_dir} ({result.latei_copied_images_count} copied image(s))")
     print(f"LaTEI shortened running titles: {result.latei_short_running_titles_count}")
     for warning in result.latei_asset_warnings:
         print(f"LaTEI asset warning: {warning}")
     if result.latei_pdf_success:
-        print(f"LaTEI PDF: {result.latei_pdf_path}")
+        print(f"PDF LaTEI (debug) : {result.latei_pdf_path}")
     else:
-        print(f"LaTEI PDF: not produced ({result.latei_pdf_message})")
+        print(f"PDF LaTEI (debug) : non produit ({result.latei_pdf_message})")
     if result.latei_log_path is not None:
         print(f"LaTEI log: {result.latei_log_path}")
     print(f"Round-trip XML: {result.roundtrip_xml_path}")
     print(f"Diagnostics: {result.diagnostics_path}")
-    print(f"Manifest: {result.manifest_path}")
+    print(f"LaTeX: {result.latex_path}")
     return 0 if result.success else 1
 
 

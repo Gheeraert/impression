@@ -20,26 +20,30 @@ LATEI_PACKAGE_HELP = (
 
 LATEI_USAGE_HELP = """Le paquet LaTEI contient plusieurs fichiers.
 
-À corriger :
-*.latei_body.tex
+Fichier éditorial principal :
+*.latei.tex
 
-C’est le corps LaTEI réversible. C’est ce fichier que l’éditrice peut corriger.
+C’est le monofichier LaTEI complet. L’éditrice corrige uniquement la zone lateiDocument,
+le compile avec LuaLaTeX et le transmet pour restaurer le XML Métopes.
+
+À corriger :
+*.latei.tex (zone lateiDocument uniquement)
 
 À compiler :
-*.latei_main.tex
-
-C’est le driver compilable avec LuaLaTeX. Il charge le corps, les macros et le mapping d’images. Le fichier *.latei_body.tex ne compile pas seul.
+*.latei.tex (avec LuaLaTeX)
 
 À restaurer en XML :
-*.latei_body.tex
+*.latei.tex
 
-Pour récupérer un XML Métopes après corrections, utilisez :
-Outils → Restaurer un XML Métopes depuis un corps LaTEI…
+Fragments techniques (debug) — à ne pas corriger directement :
+*.latei_body.tex     — corps réversible pur (le fichier *.latei_body.tex ne compile pas seul)
+*.latei_main.tex     — ancien driver de compilation fragmenté
+*.latei_macros.tex   — macros locales
+*.latei_graphics_map.tex — mappings d’images
+latei_assets/        — images copiées
 
-Fichiers techniques à ne pas corriger directement :
-*.latei_macros.tex
-*.latei_graphics_map.tex
-latei_assets/"""
+Pour restaurer depuis un corps LaTEI fragmenté (format legacy) :
+Outils → Restaurer un XML Métopes depuis un corps LaTEI…"""
 
 
 class App(ttk.Frame):
@@ -610,7 +614,12 @@ class App(ttk.Frame):
 
 def expected_latei_package_artifacts(result) -> list[Path]:
     """Return the expected compilation/documentation artifacts for a LaTEI export."""
-    artifacts = [
+    primary_latei = getattr(result, "primary_latei_path", None) or getattr(result, "latei_monofile_path", None)
+    manifest = getattr(result, "manifest_path", None)
+    artifacts: list[Path] = []
+    if primary_latei is not None:
+        artifacts.append(primary_latei)
+    artifacts.extend([
         result.latei_body_path,
         result.latei_main_path,
         result.latei_macros_path,
@@ -619,7 +628,9 @@ def expected_latei_package_artifacts(result) -> list[Path]:
         result.latei_assets_dir,
         result.roundtrip_xml_path,
         result.diagnostics_path,
-    ]
+    ])
+    if manifest is not None:
+        artifacts.append(manifest)
     if result.latei_log_path is not None:
         artifacts.append(result.latei_log_path)
     if result.latei_pdf_success:
@@ -635,12 +646,39 @@ def missing_latei_package_artifacts(result) -> list[Path]:
 def format_latei_export_summary(result, *, missing_artifacts: list[Path] | None = None) -> str:
     """Build the concise GUI/CLI-facing summary for a LaTEI export."""
     missing = missing_latei_package_artifacts(result) if missing_artifacts is None else missing_artifacts
-    pdf_status = str(result.latei_pdf_path) if result.latei_pdf_success else f"non produit ({result.latei_pdf_message})"
-    lines = [
-        "Export LaTEI terminé.",
-        f"À corriger : {result.latei_body_path}",
-        f"À compiler : {result.latei_main_path}",
-        f"À restaurer en XML : {result.latei_body_path}",
+
+    primary_latei = getattr(result, "primary_latei_path", None) or getattr(result, "latei_monofile_path", None)
+    primary_pdf = getattr(result, "primary_pdf_path", None) or getattr(result, "latei_monofile_pdf_path", None)
+    manifest = getattr(result, "manifest_path", None)
+    monofile_pdf_success = getattr(result, "latei_monofile_pdf_success", False)
+    monofile_pdf_message = getattr(result, "latei_monofile_pdf_message", "non produit")
+
+    pdf_debug_status = (
+        str(result.latei_pdf_path) if result.latei_pdf_success
+        else f"non produit ({result.latei_pdf_message})"
+    )
+
+    lines = ["Export LaTEI terminé.", ""]
+
+    if primary_latei is not None:
+        lines.extend([
+            f"À corriger : {primary_latei}",
+            f"À compiler : {primary_latei}",
+            f"À restaurer en XML : {primary_latei}",
+            f"Fichier LaTEI éditable : {primary_latei}",
+        ])
+    if primary_pdf is not None:
+        mono_pdf_status = (
+            str(primary_pdf) if monofile_pdf_success
+            else f"non produit ({monofile_pdf_message})"
+        )
+        lines.append(f"PDF principal : {mono_pdf_status}")
+    if manifest is not None:
+        lines.append(f"Manifeste : {manifest}")
+
+    lines.extend([
+        "",
+        "Fragments debug :",
         f"Corps réversible à corriger : {result.latei_body_path}",
         f"Driver compilable : {result.latei_main_path}",
         f"Macros locales : {result.latei_macros_path}",
@@ -650,18 +688,16 @@ def format_latei_export_summary(result, *, missing_artifacts: list[Path] | None 
         f"Assets LaTEI : {result.latei_assets_dir}",
         f"Images copiées : {result.latei_copied_images_count}",
         f"Warnings images : {len(result.latei_asset_warnings)}",
-    ]
+    ])
     for warning in result.latei_asset_warnings:
         lines.append(f"Warning image : {warning}")
-    lines.extend(
-        [
-            f"PDF LaTEI : {pdf_status}",
-            f"Log LaTEI : {result.latei_log_path}",
-            f"XML restauré : {result.roundtrip_xml_path}",
-            f"Diagnostics round-trip : {result.diagnostics_count}",
-            f"Rapport diagnostics : {result.diagnostics_path}",
-        ]
-    )
+    lines.extend([
+        f"PDF LaTEI (debug) : {pdf_debug_status}",
+        f"Log LaTEI : {result.latei_log_path}",
+        f"XML restauré : {result.roundtrip_xml_path}",
+        f"Diagnostics round-trip : {result.diagnostics_count}",
+        f"Rapport diagnostics : {result.diagnostics_path}",
+    ])
     if missing:
         lines.append("Artefacts manquants :")
         lines.extend(f"- {path}" for path in missing)
