@@ -298,20 +298,20 @@
 % Apply rend values predictably, including combined values in any order. This
 % mirrors the stable renderer order: small caps / position / weight / italic.
 \NewDocumentCommand{\lateiIfRendSmallCaps}{m m m}{%
-  \IfSubStr{#1}{small-caps}{#2}{%
-    \IfSubStr{#1}{small_caps}{#2}{%
-      \IfSubStr{#1}{small caps}{#2}{#3}%
+  \IfSubStr{\detokenize{#1}}{\detokenize{small-caps}}{#2}{%
+    \IfSubStr{\detokenize{#1}}{\detokenize{small_caps}}{#2}{%
+      \IfSubStr{\detokenize{#1}}{\detokenize{small caps}}{#2}{#3}%
     }%
   }%
 }
 \NewDocumentCommand{\lateiIfRendBold}{m m m}{%
-  \IfSubStr{#1}{bold}{#2}{\IfSubStr{#1}{gras}{#2}{#3}}%
+  \IfSubStr{\detokenize{#1}}{\detokenize{bold}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{gras}}{#2}{#3}}%
 }
 \NewDocumentCommand{\lateiIfRendSup}{m m m}{%
-  \IfSubStr{#1}{sup}{#2}{\IfSubStr{#1}{exposant}{#2}{#3}}%
+  \IfSubStr{\detokenize{#1}}{\detokenize{sup}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{exposant}}{#2}{#3}}%
 }
 \NewDocumentCommand{\lateiIfRendSub}{m m m}{%
-  \IfSubStr{#1}{sub}{#2}{\IfSubStr{#1}{indice}{#2}{#3}}%
+  \IfSubStr{\detokenize{#1}}{\detokenize{sub}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{indice}}{#2}{#3}}%
 }
 \NewDocumentCommand{\lateiHiSmallCaps}{m +m}{%
   \lateiIfRendSmallCaps{#1}{\textsc{#2}}{#2}%
@@ -325,7 +325,7 @@
   \lateiIfRendBold{#1}{\textbf{#2}}{#2}%
 }
 \NewDocumentCommand{\lateiHiItalic}{m +m}{%
-  \IfSubStr{#1}{italic}{\textit{#2}}{#2}%
+  \IfSubStr{\detokenize{#1}}{\detokenize{italic}}{\textit{#2}}{#2}%
 }
 \NewDocumentCommand{\teiHi}{O{} +m}{%
   \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{#2}}}}%

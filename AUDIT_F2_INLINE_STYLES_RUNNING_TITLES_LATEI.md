@@ -357,3 +357,107 @@ Tous les tests passent. Aucune régression détectée.
 
 *Rapport initial : aucun fichier de production modifié.*  
 *Passe F3 réalisée dans la branche `integrate-reversible-core`.*
+
+---
+
+## Passe F4 réalisée — Correction du bug d'italique (et petites capitales, exposants, etc.)
+
+**Date :** 2026-06-23
+
+### Cause racine
+
+Le rapport F2 indiquait « Italiques ✅ » après analyse statique des macros. Cette conclusion était erronée : les macros n'avaient pas été testées par compilation.
+
+La chaîne d'appel pour `\teiHi[rend={italic}]{texte}` est :
+
+```
+\teiHi[rend={italic}]{texte}
+  → \lateiHiItalic{rend={italic}}{texte}
+    → \IfSubStr{rend={italic}}{italic}{...}{...}
+```
+
+xparse `O{}` capture `[rend={italic}]` **en préservant la structure de groupe TeX** : le token `{italic}` est un groupe (accolades de catcode 1/2). xstring `\IfSubStr` **ne cherche pas à l'intérieur des groupes TeX** par conception documentée. Le test retourne donc toujours FAUX → `\textit` jamais appelé → sortie en romain.
+
+Le même bug affectait toutes les macros `\lateiIfRend*` :
+- `\lateiHiItalic` : `\IfSubStr{#1}{italic}` → toujours faux pour `rend={italic}`
+- `\lateiIfRendSmallCaps` : `\IfSubStr{#1}{small-caps}` → toujours faux pour `rend={small-caps}`
+- `\lateiIfRendBold` : `\IfSubStr{#1}{bold}` → toujours faux pour `rend={bold}`
+- `\lateiIfRendSup` : `\IfSubStr{#1}{sup}` → toujours faux pour `rend={sup}`
+- `\lateiIfRendSub` : `\IfSubStr{#1}{sub}` → toujours faux pour `rend={sub}`
+
+### Diagnostic par micro-tests
+
+**`micro_test_ifsubstr.tex`** — tests A-I confirment la cause et valident le fix :
+
+| Test | Entrée | Résultat | Explication |
+|------|--------|----------|-------------|
+| A | `\IfSubStr{rend=italic}{italic}` | TROUVE | pas de groupe |
+| B | `\IfSubStr{rend={italic}}{italic}` | NON-TROUVE | `{italic}` est un groupe |
+| C | `\IfSubStr{\detokenize{rend={italic}}}{italic}` | NON-TROUVE | catcode-12 vs catcode-11 |
+| F | `\IfSubStr{\detokenize{rend={italic}}}{\detokenize{italic}}` | TROUVE | fix complet |
+| G | macro avec `\detokenize` des deux côtés | ITALIQUE? en italique | fix via macro |
+| H | `\detokenize{small-caps}` | TROUVE | fix small-caps |
+| I | `\detokenize{sup}` | TROUVE | fix sup |
+
+`pdffonts` sur `micro_test_ifsubstr.pdf` : `ChaparralPro-Italic.otf` présent → "ITALIQUE?" rendu en vrai italique.
+
+**`micro_test_italic.tex`** (4 cas avec macros réelles) — avant fix :
+
+| Page | Cas | ChaparralPro-Italic |
+|------|-----|---------------------|
+| 1 | `\textit` direct | ✅ présent |
+| 2 | `\teiHi[rend={italic}]` en corps | ❌ absent |
+| 3 | `\teiHi` dans note minimale | ❌ absent |
+| 4 | Note Pastor exacte | ❌ absent |
+
+Après fix : toutes les pages ont `ChaparralPro-Italic.otf` ✅
+
+### Correction appliquée
+
+**Fichier modifié : `purh_site/resources/latei_macros.tex`**
+
+Principe : `\detokenize` convertit les deux opérandes de `\IfSubStr` en chaînes catcode-12, permettant la comparaison quelle que soit la structure de groupe.
+
+```latex
+% Avant
+\NewDocumentCommand{\lateiHiItalic}{m +m}{%
+  \IfSubStr{#1}{italic}{\textit{#2}}{#2}%
+}
+
+% Après
+\NewDocumentCommand{\lateiHiItalic}{m +m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{italic}}{\textit{#2}}{#2}%
+}
+```
+
+Même pattern appliqué à `\lateiIfRendSmallCaps`, `\lateiIfRendBold`, `\lateiIfRendSup`, `\lateiIfRendSub`.
+
+### Ce qui n'a pas été modifié
+
+- `\teiHi`, `\lateiHiSmallCaps`, `\lateiHiPosition`, `\lateiHiBold` : inchangés (ils délèguent aux `\lateiIfRend*`)
+- Titres courants (F3) : non modifiés ✓
+- Auteurs, pagination, en-têtes verso, GUI, chaîne stable : non modifiés ✓
+
+### Test de régression (F4-bis)
+
+**Fichier créé : `tests/test_latei_rend_macro_rendering.py`** (6 tests)
+
+- `test_latei_macros_file_exists` : vérifie que `purh_site/resources/latei_macros.tex` est bien en place
+- `test_rend_macros_use_detokenize_on_both_sides` : pour chaque macro `\lateiHiItalic`, `\lateiIfRendSmallCaps`, `\lateiIfRendBold`, `\lateiIfRendSup`, `\lateiIfRendSub` — vérifie que `\detokenize{#1}` ET un deuxième `\detokenize{` sont présents dans le bloc de définition
+- `test_no_bare_ifsubstr_on_hash1_for_rend_macros` : détecte tout `\IfSubStr{#1}{...}` sans `\detokenize` résiduel dans le contexte de ces macros
+- `test_lualatex_compilation_succeeds` : compile un mini-document avec `\teiHi[rend={italic}]`, `\teiHi[rend={small-caps}]`, `\teiHi[rend={sup}]`, `\teiHi[rend={sub}]`, et une note footnote — vérifie que le PDF est produit (skip si lualatex absent)
+- `test_lualatex_log_has_no_fatal_errors` : vérifie l'absence de lignes `!` dans le log
+- `test_pdf_contains_italic_font` : `pdffonts` doit rapporter une fonte italique/oblique — confirme que `\textit` a bien été appelé (skip si pdffonts absent)
+
+**Micro-tests temporaires (`.audit_f1/latei/`)** : restent hors Git — artefacts de diagnostic, non commités.
+
+### Tests lancés
+
+```
+tests/test_latei_rend_macro_rendering.py          6 passed
+tests/test_reversible_inline_scholarly_elements.py  }
+tests/test_latei_real_metopes_fixture.py            } 12 passed
+tests/test_site_latei_pdf_mode.py                  7 passed
+```
+
+Aucune régression détectée.

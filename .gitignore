@@ -15,3 +15,6 @@ __pycache__/
 # Fichiers divers système/éditeur
 .DS_Store
 Thumbs.db
+
+# Micro-tests de diagnostic LaTEI (artefacts temporaires, non commités)
+.audit_f1/latei/micro_test_*
