@@ -189,19 +189,35 @@ class App(ttk.Frame):
         ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
 
     def _add_pdf_export_controls(self, row: int) -> None:
-        ttk.Label(self, text="Export LaTEI / PDF PURH").grid(row=row, column=0, sticky="w", pady=(0, 6))
+        ttk.Label(self, text="Export LaTEI / PDF PURH").grid(row=row, column=0, sticky="nw", pady=(0, 6))
         frame = ttk.Frame(self)
         frame.grid(row=row, column=1, columnspan=2, sticky="w", pady=(0, 6))
-        options = [
+
+        stable_options = [
             ("Ne pas générer de paquet LaTEI", "none"),
             ("Exporter le paquet LaTEI seul", "latex"),
             ("Exporter le paquet LaTEI + compiler le PDF", "latex_pdf"),
         ]
-        for index, (label, value) in enumerate(options):
+        latei_options = [
+            ("Monofichier LaTEI seul (book.tex)", "latei"),
+            ("Monofichier LaTEI + PDF compilé (book.tex + book.pdf)", "latei_pdf"),
+        ]
+
+        ttk.Label(frame, text="Chaîne stable (legacy) :").grid(row=0, column=0, sticky="w", pady=(0, 2))
+        for i, (label, value) in enumerate(stable_options):
             radio = ttk.Radiobutton(frame, text=label, variable=self.pdf_export_mode_var, value=value)
-            radio.grid(row=0, column=index, sticky="w", padx=(0, 16))
+            radio.grid(row=i + 1, column=0, sticky="w", padx=(12, 0))
             self.pdf_export_widgets.append(radio)
-        ttk.Label(frame, textvariable=self.pdf_export_status_var).grid(row=1, column=0, columnspan=3, sticky="w", pady=(4, 0))
+
+        sep_row = len(stable_options) + 1
+        ttk.Label(frame, text="Chaîne LaTEI monofichier :").grid(row=sep_row, column=0, sticky="w", pady=(6, 2))
+        for i, (label, value) in enumerate(latei_options):
+            radio = ttk.Radiobutton(frame, text=label, variable=self.pdf_export_mode_var, value=value)
+            radio.grid(row=sep_row + i + 1, column=0, sticky="w", padx=(12, 0))
+            self.pdf_export_widgets.append(radio)
+
+        status_row = sep_row + len(latei_options) + 1
+        ttk.Label(frame, textvariable=self.pdf_export_status_var).grid(row=status_row, column=0, sticky="w", pady=(4, 0))
 
     def _choose_master_xml(self) -> None:
         path = filedialog.askopenfilename(title="Choisir un fichier XML maître", filetypes=[("Fichiers XML", "*.xml")])

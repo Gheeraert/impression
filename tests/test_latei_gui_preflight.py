@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+from purh_site.config import BuildConfig
 from purh_site.gui import (
     format_latei_export_summary,
     latei_monofile_restored_stem,
@@ -133,3 +134,29 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
     assert f"XML restauré : {result.roundtrip_xml_path}" in summary
     assert "Diagnostics round-trip : 0" in summary
     assert "Prévol paquet LaTEI : tous les artefacts attendus sont présents." in summary
+
+
+# ---------------------------------------------------------------------------
+# Tests E3 — exposition des modes LaTEI dans le GUI
+# ---------------------------------------------------------------------------
+
+def test_gui_exposes_latei_pdf_mode_values() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    assert '"latei"' in source, 'la valeur "latei" doit être dans le source du GUI'
+    assert '"latei_pdf"' in source, 'la valeur "latei_pdf" doit être dans le source du GUI'
+
+
+def test_gui_all_five_pdf_modes_present() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    for mode in ('"none"', '"latex"', '"latex_pdf"', '"latei"', '"latei_pdf"'):
+        assert mode in source, f"le mode {mode} doit apparaître dans le source du GUI"
+
+
+def test_build_config_accepts_latei_mode() -> None:
+    config = BuildConfig(output_dir=Path("."), pdf_export_mode="latei")
+    assert config.pdf_export_mode == "latei"
+
+
+def test_build_config_accepts_latei_pdf_mode() -> None:
+    config = BuildConfig(output_dir=Path("."), pdf_export_mode="latei_pdf")
+    assert config.pdf_export_mode == "latei_pdf"

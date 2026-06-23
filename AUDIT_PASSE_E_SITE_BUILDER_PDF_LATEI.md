@@ -470,3 +470,35 @@ Date : 2026-06-23
 - `test_site_latei_pdf_mode.py` : 7 passed (dont le nouveau test déterministe + le conditionnel lualatex)
 - `test_site_latei_pdf_export_adapter.py` + `test_reversible_integration.py` : 20 passed
 - `test_latei_monofile.py` + `test_latei_monofile_restore.py` : 25 passed
+
+---
+
+## Passe E3 réalisée
+
+Date : 2026-06-23
+
+**Contexte :** Les modes `"latei"` et `"latei_pdf"` étaient déjà fonctionnels dans `site_builder.py` (E2) et `latex_engine` était correctement transmis (E2-bis). E3 les expose dans le GUI.
+
+**Modifications apportées :**
+
+- `purh_site/gui.py` — `_add_pdf_export_controls` :
+  - Layout horizontal (3 options en ligne) → layout vertical en deux sections.
+  - Section **"Chaîne stable (legacy) :"** : conserve les 3 modes existants (`none`, `latex`, `latex_pdf`) avec leurs libellés inchangés.
+  - Section **"Chaîne LaTEI monofichier :"** : ajoute 2 nouveaux modes :
+    - `"Monofichier LaTEI seul (book.tex)"` → `pdf_export_mode="latei"`
+    - `"Monofichier LaTEI + PDF compilé (book.tex + book.pdf)"` → `pdf_export_mode="latei_pdf"`
+  - Le mode par défaut (`"none"`) est **inchangé**.
+  - `_make_build_config` est **inchangé** : lit `self.pdf_export_mode_var.get()` sans filtrage, transmet la valeur telle quelle à `BuildConfig`.
+
+- `tests/test_latei_gui_preflight.py` :
+  - Import ajouté : `from purh_site.config import BuildConfig`
+  - 4 tests ajoutés :
+    - `test_gui_exposes_latei_pdf_mode_values` : vérifie que `"latei"` et `"latei_pdf"` apparaissent dans le source GUI.
+    - `test_gui_all_five_pdf_modes_present` : vérifie les 5 valeurs (`none`, `latex`, `latex_pdf`, `latei`, `latei_pdf`).
+    - `test_build_config_accepts_latei_mode` : `BuildConfig(pdf_export_mode="latei")` sans erreur.
+    - `test_build_config_accepts_latei_pdf_mode` : `BuildConfig(pdf_export_mode="latei_pdf")` sans erreur.
+
+**Tests lancés :**
+
+- `test_latei_gui_preflight.py` : 9 passed (5 existants + 4 nouveaux)
+- `test_site_latei_pdf_mode.py` : 7 passed (non-régression)
