@@ -1,15 +1,19 @@
 from __future__ import annotations
 
-"""M3 — editorial workflow tests for the LaTEI monofile.
+"""M3/M4 — editorial workflow and compilation tests for the LaTEI monofile.
 
 Proves that a corrected monofile produces a corrected XML, and that
 modifications outside the lateiDocument zone are invisible to the parser.
+M4 adds: the corrected monofile remains compilable to PDF.
 """
 
+import shutil
 from pathlib import Path
 
+import pytest
 from lxml import etree
 
+from purh_site.latei_driver import compile_latei_pdf
 from purh_site.reversible import (
     compare_tei_elements,
     read_tei_element,
@@ -226,3 +230,49 @@ def test_editorial_correction_on_real_generated_monofile(tmp_path: Path) -> None
     content = restored_xml_path.read_text(encoding="utf-8")
     assert "Texte après correction éditoriale." in content
     assert "Texte avant correction." not in content
+
+
+# ---------------------------------------------------------------------------
+# Test M4 — monofichier corrigé → PDF + XML depuis le même fichier
+# ---------------------------------------------------------------------------
+
+def test_corrected_monofile_compiles_and_restores_xml(tmp_path: Path) -> None:
+    xml_path = tmp_path / "mini.xml"
+    xml_path.write_text(MINI_XML, encoding="utf-8")
+
+    result = run_reversible_export_for_file(xml_path, tmp_path / "out")
+    monofile_text = result.latei_monofile_path.read_text(encoding="utf-8")
+    assert "Texte avant correction." in monofile_text
+
+    edited_text = replace_inside_latei_document(
+        monofile_text, "Texte avant correction.", "Texte après correction éditoriale."
+    )
+    edited_path = tmp_path / "edited.latei.tex"
+    edited_path.write_text(edited_text, encoding="utf-8")
+
+    # Vérification XML — indépendante de LuaLaTeX
+    restored_xml_path = tmp_path / "restored.xml"
+    restore_xml_from_latei_monofile(edited_path, restored_xml_path)
+    xml_content = restored_xml_path.read_text(encoding="utf-8")
+    assert "Texte après correction éditoriale." in xml_content
+    assert "Texte avant correction." not in xml_content
+
+    # Compilation PDF — skippée proprement si LuaLaTeX absent
+    if shutil.which("lualatex") is None:
+        pytest.skip("LuaLaTeX is unavailable — PDF compilation not verified.")
+
+    edited_pdf_path = tmp_path / "edited.latei_mono.pdf"
+    edited_log_path = tmp_path / "edited.latei_mono_build.log"
+    pdf_result = compile_latei_pdf(edited_path, edited_pdf_path, log_path=edited_log_path)
+
+    if not pdf_result.success:
+        log_excerpt = ""
+        if edited_log_path.exists():
+            log_excerpt = "\n".join(
+                edited_log_path.read_text(encoding="utf-8", errors="replace").splitlines()[:160]
+            )
+        pytest.fail(f"Corrected monofile did not compile.\n{log_excerpt}")
+
+    assert edited_pdf_path.exists()
+    assert edited_pdf_path.stat().st_size > 0
+    assert edited_log_path.exists()

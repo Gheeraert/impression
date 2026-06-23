@@ -757,4 +757,56 @@ tests/test_reversible_roundtrip.py               → 12 passed (noyau intact)
 
 ---
 
+## Passe M4 réalisée
+
+**Date** : 2026-06-23
+
+### Objectif validé
+
+Un fichier LaTEI monofichier corrigé dans la zone `lateiDocument` est à la fois :
+- **source PDF compilable** via `compile_latei_pdf` ;
+- **source XML restaurable** via `restore_xml_from_latei_monofile`.
+
+Le même fichier corrigé sert les deux usages depuis une seule source.
+
+### Test ajouté
+
+`test_corrected_monofile_compiles_and_restores_xml` (dans `test_latei_monofile_editorial_workflow.py`) :
+
+1. Mini XML TEI écrit sur disque
+2. `run_reversible_export_for_file` → vrai `*.latei.tex` généré
+3. `replace_inside_latei_document` → correction dans la zone réversible
+4. `edited.latei.tex` écrit sur disque
+5. **XML** : `restore_xml_from_latei_monofile` → texte corrigé présent, original absent
+6. **PDF** : `compile_latei_pdf` → PDF créé, non vide, log créé  
+   *(test skippé proprement si LuaLaTeX absent via `pytest.skip`)*
+
+### Comportement sans LuaLaTeX
+
+Si `shutil.which("lualatex")` retourne `None`, la partie PDF est skippée avec un message explicite. La partie XML (assertions sur le texte corrigé) est toujours exécutée.
+
+### Invariants confirmés
+
+- Le parser strict reste inchangé.
+- Le writer reste inchangé.
+- Le générateur monofichier reste inchangé.
+- La correction est uniquement dans la zone `lateiDocument` — le préambule n'est pas touché.
+
+### Fichiers modifiés
+
+| Fichier | Nature de la modification |
+|---|---|
+| `tests/test_latei_monofile_editorial_workflow.py` | Import `compile_latei_pdf`, `shutil`, `pytest` ; ajout test M4 |
+| `AUDIT_LATEI_MONOFILE_TARGET.md` | Section « Passe M4 réalisée » |
+
+### Tests lancés
+
+```
+tests/test_latei_monofile_editorial_workflow.py  →  8 passed (20.55 s, LuaLaTeX disponible — PDF compilé)
+tests/test_latei_monofile.py                     → 16 passed (M1 intact)
+tests/test_latei_monofile_restore.py             →  9 passed (M2 intact)
+```
+
+---
+
 *Audit rédigé depuis l'inspection directe du code. Aucun fichier modifié.*
