@@ -1,0 +1,110 @@
+\babel@toc {french}{}\relax 
+\contentsline {chapter}{Remerciements}{i}{chapter*.1}%
+\contentsline {chapter}{Table des abréviations}{i}{chapter*.2}%
+\contentsline {chapter}{Introduction}{i}{chapter*.3}%
+\contentsline {part}{Première partie : Papes}{2}{part*.4}%
+\contentsline {chapter}{\numberline {1}Aspects ludiques dans l’appareil héraldique des manuscrits de Léon X (1513-1521)}{2}{chapter.1}%
+\contentsline {section}{Le pontifical de 1520}{4}{section*.5}%
+\contentsline {section}{Le cadeau de l’Empire}{10}{section*.6}%
+\contentsline {section}{Conclusions}{15}{section*.7}%
+\contentsline {chapter}{\numberline {2}L’héraldique de Jules III Ciocchi del Monte (1550-1555) dans l’ornement pour le livre}{18}{chapter.2}%
+\contentsline {section}{Les armoiries de Jules III}{19}{section*.8}%
+\contentsline {section}{L’ornement des manuscrits}{21}{section*.9}%
+\contentsline {subsection}{Le fonds Vatican latin}{22}{subsection*.10}%
+\contentsline {subsection}{Le fonds Vatican de la chapelle Sixtine}{24}{subsection*.11}%
+\contentsline {subsection}{La Bibliothèque capitulaire de Tolède}{29}{subsection*.12}%
+\contentsline {section}{L’ornement du livre imprimé}{30}{section*.13}%
+\contentsline {subsection}{Rome}{31}{subsection*.14}%
+\contentsline {subsubsection}{Les armoiries simples}{31}{subsubsection*.15}%
+\contentsline {subsubsection}{Les armoiries dans une couronne}{33}{subsubsection*.16}%
+\contentsline {subsubsection}{Les armoiries à tenants}{34}{subsubsection*.17}%
+\contentsline {subsubsection}{Le \teiHi [rend={italic}]{Missarum liber primus} de Palestrina}{36}{subsubsection*.18}%
+\contentsline {subsection}{Hors de Rome}{37}{subsection*.19}%
+\contentsline {chapter}{\numberline {3}Érudits et héraldique dans la Rome d’Urbain VIII (1623-1644)}{45}{chapter.3}%
+\contentsline {section}{Publications de sujet héraldique : Gozze et Pietrasanta}{46}{section*.20}%
+\contentsline {section}{Francesco Gualdi et les armoiries, entre érudition et conservation}{55}{section*.21}%
+\contentsline {section}{Commerce et noblesse}{68}{section*.22}%
+\contentsline {chapter}{\numberline {4}L’héraldique d’Innocent X Pamphili (1644-1655)}{79}{chapter.4}%
+\contentsline {section}{Les lettrés du milieu romain des Pamphili et l’origine de leur emblème nobiliaire}{81}{section*.23}%
+\contentsline {section}{La « colombe portant le rameau d’olivier au bec » à Gubbio et à Rome}{86}{section*.24}%
+\contentsline {section}{L’écu des Pamphili durant le pontificat d’Innocent X (1644-1655) : deux exemples en architecture}{99}{section*.25}%
+\contentsline {section}{Épilogue. Une nouvelle fortune pour le blason pamphili : la \teiHi [rend={italic}]{Raccolta Di Varie Targhe di Roma }de Filippo Juvarra (1711)}{110}{section*.26}%
+\contentsline {chapter}{\numberline {5}« Micat in vertice »}{117}{chapter.5}%
+\contentsline {section}{Girolamo Farnèse, légat à Bologne : «\teiHi [rend={italic}]{ Aeterna hic LILIA semper erunt }»}{119}{section*.27}%
+\contentsline {section}{« \teiHi [rend={italic}]{Micet in vertice }» : Pietro Vidoni et la célébration d’Alexandre VII Chigi}{128}{section*.28}%
+\contentsline {chapter}{\numberline {6}Piranèse, l’héraldique et Clément XIII Rezzonico (1758-1769)}{141}{chapter.6}%
+\contentsline {section}{Piranèse et l’héraldique}{142}{section*.29}%
+\contentsline {subsection}{Le frontispice Charlemont}{142}{subsection*.30}%
+\contentsline {subsection}{Le frontispice Schouvaloff}{145}{subsection*.31}%
+\contentsline {subsection}{Le tombeau de Cecilia Metella}{147}{subsection*.32}%
+\contentsline {section}{Clément XIII Rezzonico : un cycle de dédicaces}{148}{section*.33}%
+\contentsline {subsection}{\teiHi [rend={italic}]{Della magnificenza ed architettura de’ Romani} (1761)}{149}{subsection*.34}%
+\contentsline {subsection}{\teiHi [rend={italic}]{Lapides Capitolini} (1762)}{150}{subsection*.35}%
+\contentsline {subsection}{\teiHi [rend={italic}]{Antichità d’Albano e di Castel Gandolfo} (1764)}{151}{subsection*.36}%
+\contentsline {subsection}{\teiHi [rend={italic}]{Diverse maniere d’adornare i cammini} (1769)}{152}{subsection*.37}%
+\contentsline {section}{L’œuvre architecturale}{153}{section*.38}%
+\contentsline {subsection}{Saint-Jean de Latran}{153}{subsection*.39}%
+\contentsline {subsection}{L’église Santa Maria del Priorato sur l’Aventin}{153}{subsection*.40}%
+\contentsline {subsubsection}{La place des chevaliers et le portail d’entrée}{154}{subsubsection*.41}%
+\contentsline {subsubsection}{L’extérieur de l’église}{156}{subsubsection*.42}%
+\contentsline {subsubsection}{L’intérieur de l’église}{158}{subsubsection*.43}%
+\contentsline {part}{Deuxième partie : Monuments}{2}{part*.44}%
+\contentsline {chapter}{\numberline {7}La mise en signe de l’espace par les papes : pratiques et conflits}{2}{chapter.7}%
+\contentsline {section}{Les supports de la mise en signe}{4}{section*.45}%
+\contentsline {section}{Quels signes pour les papes et l’Église ?}{5}{section*.46}%
+\contentsline {section}{Le droit d’apposer ses armoiries}{7}{section*.47}%
+\contentsline {section}{S’emparer d’une ville par les « armes », quelques exemples}{11}{section*.48}%
+\contentsline {chapter}{\numberline {8}La collégiale Saint-Jean-Baptiste puis Saint-Louis de Castelnau-Bretenoux : un lien étroit et discret avec la papauté}{20}{chapter.8}%
+\contentsline {section}{Une famille et une collégiale}{21}{section*.49}%
+\contentsline {section}{Un décor héraldique omniprésent et un paradis familial}{25}{section*.50}%
+\contentsline {chapter}{\numberline {9}Légitimer la légation avignonnaise}{32}{chapter.9}%
+\contentsline {section}{L’entrée Farnèse de 1553}{33}{section*.51}%
+\contentsline {section}{Peintres et héraldique}{37}{section*.52}%
+\contentsline {section}{Avignon, une « Altera Roma »}{42}{section*.53}%
+\contentsline {section}{Conclusion}{46}{section*.54}%
+\contentsline {chapter}{\numberline {10}Sainte-Prisca-sur-l’Aventin}{49}{chapter.10}%
+\contentsline {section}{Remarques sur le monument}{49}{section*.55}%
+\contentsline {section}{L’héraldique cardinalice et pontificale du monument}{56}{section*.56}%
+\contentsline {section}{Autres témoignages héraldiques intéressants présents dans l’église}{58}{section*.57}%
+\contentsline {chapter}{\numberline {11}Héraldique et représentation à Saint-Pierre de Rome}{63}{chapter.11}%
+\contentsline {section}{La basilique : un monument marqué par ses constructeurs et ses utilisateurs}{65}{section*.58}%
+\contentsline {section}{Les personnes}{66}{section*.59}%
+\contentsline {subsection}{Les tombeaux des papes}{66}{subsection*.60}%
+\contentsline {subsection}{Les tombeaux de personnalités }{67}{subsection*.61}%
+\contentsline {section}{La basilique lieu du cérémonial : cérémonies éphémères et représentations}{68}{section*.62}%
+\contentsline {subsection}{Les funérailles}{68}{subsection*.63}%
+\contentsline {subsection}{Les rituels d’investiture}{70}{subsection*.64}%
+\contentsline {subsection}{L’exercice du pouvoir : quelques exemples d’utilisation des emblèmes}{72}{subsection*.65}%
+\contentsline {subsection}{L’accueil des personnalités}{73}{subsection*.66}%
+\contentsline {section}{Conclusion}{75}{section*.67}%
+\contentsline {chapter}{\numberline {12}Apothéoses armoriales dans la Rome baroque}{77}{chapter.12}%
+\contentsline {section}{Seul en scène : l’apothéose Ludovisi (\teiHi [rend={italic}]{circa} 1623)}{80}{section*.68}%
+\contentsline {section}{Dématérialisation, inchoativité, contextualisation : les Apothéoses Barberini (1632-1636) et Médici (1644-1646)}{84}{section*.69}%
+\contentsline {section}{L’écu familial et l’ancêtre fondateur : l’apothéose Altieri (\teiHi [rend={italic}]{circa} 1675-1676)}{89}{section*.70}%
+\contentsline {section}{Extension scénique, dissémination et transformisme : l’apothéose Aldobrandini (1596-1602)}{92}{section*.71}%
+\contentsline {section}{Poétique}{98}{section*.72}%
+\contentsline {section}{De la scène au milieu, de l’interprétation à la subjectivation}{102}{section*.73}%
+\contentsline {chapter}{Sources et bibliographie}{111}{chapter*.74}%
+\contentsline {section}{Manuscrits et documents d’archives}{111}{section*.75}%
+\contentsline {subsection}{Avignon}{111}{subsection*.76}%
+\contentsline {subsection}{Bologne}{111}{subsection*.77}%
+\contentsline {subsection}{Cahors}{111}{subsection*.78}%
+\contentsline {subsection}{Cité du Vatican}{111}{subsection*.79}%
+\contentsline {subsection}{Florence}{112}{subsection*.80}%
+\contentsline {subsection}{Harvard}{112}{subsection*.81}%
+\contentsline {subsection}{Milan}{112}{subsection*.82}%
+\contentsline {subsection}{New York}{112}{subsection*.83}%
+\contentsline {subsection}{Paris}{113}{subsection*.84}%
+\contentsline {subsection}{Rome}{113}{subsection*.85}%
+\contentsline {subsection}{Tolède}{113}{subsection*.86}%
+\contentsline {subsection}{Vallombreuse}{113}{subsection*.87}%
+\contentsline {subsection}{Viterbe}{114}{subsection*.88}%
+\contentsline {section}{Livres}{114}{section*.89}%
+\contentsline {subsection}{Livres anciens (éditions antérieures à 1800)}{114}{subsection*.90}%
+\contentsline {subsection}{Livres modernes (éditions postérieures à 1800)}{122}{subsection*.91}%
+\contentsline {section}{Articles}{136}{section*.92}%
+\contentsline {subsection}{Articles d’ouvrages}{136}{subsection*.93}%
+\contentsline {subsection}{Articles de périodiques}{149}{subsection*.94}%
+\contentsline {subsection}{Thèses et mémoires}{157}{subsection*.95}%
+\contentsline {chapter}{\numberline {13}Les auteurs}{1}{chapter.13}%
+\contentsfinish 

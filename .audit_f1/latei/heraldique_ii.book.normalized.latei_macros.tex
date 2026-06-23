@@ -1,0 +1,424 @@
+% Experimental LaTEI macros for the reversible TEI/PURH convergence path.
+% These definitions are typographic only; the reversible source remains the
+% controlled LaTEI body produced by purh_site.reversible.latex_writer.
+
+\usepackage{xparse}
+\usepackage{xstring}
+\usepackage{newunicodechar}
+
+% Unicode spaces remain documentary characters in the reversible body; these
+% typographic mappings only prevent missing glyphs in direct LaTEI compilation.
+\newunicodechar{ }{~}
+\newunicodechar{ }{\nobreak\,}
+\newunicodechar{ }{\,}
+\newunicodechar{‑}{\nobreak\hbox{-}}
+\newunicodechar{″}{\ensuremath{\prime\prime}}
+\newcommand{\lateiCurrentRunningTitle}{}
+\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}
+\AtBeginDocument{\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}}
+
+\NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
+  \iflateiinfootnote
+    #2\unskip\space
+  \else
+    \IfStrEq{\lateiHeadContext}{figure}{%
+      \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
+        \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+      }%
+    }{\par #2\par}%
+  \fi
+}
+\NewDocumentCommand{\teiP}{O{} +m}{\lateiRenderParagraph[#1]{#2}}
+
+% Nested footnotes are not valid LaTeX. If a teiNote appears inside another
+% note, render a visible symbolic marker and inline parenthesized content.
+\newif\iflateiinfootnote
+\lateiinfootnotefalse
+\NewDocumentCommand{\teiNote}{O{} +m}{%
+  \iflateiinfootnote
+    \textsuperscript{*}%
+  \else
+    \begingroup
+      \lateiinfootnotetrue
+      \footnote{#2}%
+    \endgroup
+  \fi
+}
+\NewDocumentCommand{\teiRef}{O{} +m}{\lateiRenderRef[#1]{#2}}
+\NewDocumentCommand{\teiTitle}{O{} +m}{%
+  \IfSubStr{#1}{level={m}}{\textit{#2}}{%
+    \IfSubStr{#1}{level={j}}{\textit{#2}}{%
+      \IfSubStr{#1}{level={a}}{\enquote{#2}}{#2}%
+    }%
+  }%
+}
+
+% Matter switches and group titles mirror the stable PURH book skeleton while
+% leaving the reversible LaTEI body unchanged.
+\newif\iflateifrontmatterstarted
+\newif\iflateimainmatterstarted
+\newif\iflateibackmatterstarted
+\newif\iflateiinbibliography
+\lateifrontmatterstartedfalse
+\lateimainmatterstartedfalse
+\lateibackmatterstartedfalse
+\lateiinbibliographyfalse
+\NewDocumentCommand{\lateiEnsureFrontMatter}{}{%
+  \iflateifrontmatterstarted\else
+    % Match the stable renderer: book-class frontmatter gives liminaries their
+    % separate numbering policy; mainmatter starts the body numbering again.
+    \frontmatter
+    \lateifrontmatterstartedtrue
+  \fi
+}
+\NewDocumentCommand{\lateiEnsureMainMatter}{}{%
+  \iflateimainmatterstarted\else
+    \mainmatter
+    \lateimainmatterstartedtrue
+  \fi
+}
+\NewDocumentCommand{\lateiEnsureBackMatter}{}{%
+  \iflateibackmatterstarted\else
+    \backmatter
+    \lateibackmatterstartedtrue
+  \fi
+}
+
+\ExplSyntaxOn
+\tl_new:N \l_latei_option_type_tl
+\tl_new:N \l_latei_option_page_title_tl
+\tl_new:N \l_latei_option_target_tl
+\tl_new:N \l_latei_option_url_tl
+\tl_new:N \l_latei_option_n_tl
+\tl_new:N \l_latei_option_rend_tl
+\tl_new:N \l_latei_graphic_path_tl
+\tl_new:N \l_latei_graphic_local_path_tl
+\tl_new:N \l_latei_running_title_tl
+\tl_new:N \g_latei_current_running_title_tl
+\prop_new:N \g_latei_graphics_map_prop
+\prop_new:N \g_latei_running_titles_map_prop
+\cs_generate_variant:Nn \prop_get:NnNTF { NVNTF }
+\RenewDocumentCommand{\lateiCurrentRunningTitle}{}
+  {
+    \tl_use:N \g_latei_current_running_title_tl
+  }
+\NewDocumentCommand{\lateiDeclareGraphic}{m m}
+  {
+    \prop_gput:Nnn \g_latei_graphics_map_prop { #1 } { #2 }
+  }
+\NewDocumentCommand{\lateiDeclareRunningTitle}{m m}
+  {
+    \prop_gput:Nnn \g_latei_running_titles_map_prop { #1 } { #2 }
+  }
+\cs_new_protected:Npn \latei_markboth:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      {
+        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
+        \markboth{\tl_use:N \l_latei_running_title_tl}{\tl_use:N \l_latei_running_title_tl}
+      }
+      {
+        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
+        \markboth{#1}{#1}
+      }
+  }
+\NewDocumentCommand{\lateiMarkBoth}{m}
+  {
+    \latei_markboth:n { #1 }
+  }
+\RenewDocumentCommand{\chaptermark}{m}{\lateiMarkBoth{#1}}
+\cs_new_protected:Npn \latei_chapter:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      {
+        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
+        \chapter{#1}
+        \lateiMarkBoth{#1}
+      }
+      {
+        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
+        \chapter{#1}
+        \lateiMarkBoth{#1}
+      }
+  }
+\NewDocumentCommand{\lateiChapter}{m}
+  {
+    \latei_chapter:n { #1 }
+  }
+\keys_define:nn { latei / options }
+  {
+    type .tl_set:N = \l_latei_option_type_tl,
+    data-page-title .tl_set:N = \l_latei_option_page_title_tl,
+    target .tl_set:N = \l_latei_option_target_tl,
+    url .tl_set:N = \l_latei_option_url_tl,
+    n .tl_set:N = \l_latei_option_n_tl,
+    rend .tl_set:N = \l_latei_option_rend_tl,
+    unknown .code:n = {},
+  }
+\cs_new_protected:Npn \latei_extract_options:n #1
+  {
+    \tl_clear:N \l_latei_option_type_tl
+    \tl_clear:N \l_latei_option_page_title_tl
+    \tl_clear:N \l_latei_option_target_tl
+    \tl_clear:N \l_latei_option_url_tl
+    \tl_clear:N \l_latei_option_n_tl
+    \tl_clear:N \l_latei_option_rend_tl
+    \keys_set:nn { latei / options } { #1 }
+  }
+\cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
+  {
+    \tl_if_empty:NF \l_latei_option_page_title_tl
+      {
+        \chapter*{\tl_use:N \l_latei_option_page_title_tl}
+        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
+        \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
+      }
+  }
+\cs_new_protected:Npn \latei_add_numbered_chapter_from_title:
+  {
+    \tl_if_empty:NF \l_latei_option_page_title_tl
+      {
+        \chapter{\tl_use:N \l_latei_option_page_title_tl}
+        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
+      }
+  }
+\NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
+  {
+    \lateiEnsureFrontMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_unnumbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderChapterGroup}{O{} +m}
+  {
+    \lateiEnsureMainMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_numbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderPartGroup}{O{} +m}
+  {
+    \lateiEnsureMainMatter
+    \begingroup
+      \lateiSetHeadContext{part}
+      #2
+    \endgroup
+  }
+\NewDocumentCommand{\lateiRenderBackGroup}{O{} +m}
+  {
+    \lateiEnsureBackMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_unnumbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderRef}{O{} +m}
+  {
+    \latei_extract_options:n { #1 }
+    \tl_if_empty:NTF \l_latei_option_target_tl
+      { #2 }
+      { \href{\tl_use:N \l_latei_option_target_tl}{#2} }
+  }
+\cs_new_protected:Npn \latei_figure_fallback:
+  {
+    \fbox{\parbox{0.8\linewidth}{\centering\footnotesize Image absente ou non fournie}}
+  }
+\cs_new_protected:Npn \latei_include_graphic:n #1
+  {
+    \tl_if_blank:nTF { #1 }
+      { \latei_figure_fallback: }
+      {
+        \IfFileExists{\detokenize{#1}}
+          { \includegraphics[width=0.95\linewidth,keepaspectratio]{\detokenize{#1}} }
+          { \latei_figure_fallback: }
+      }
+  }
+\NewDocumentCommand{\lateiRenderGraphic}{O{}}
+  {
+    \latei_extract_options:n { #1 }
+    \tl_clear:N \l_latei_graphic_path_tl
+    \tl_if_empty:NF \l_latei_option_url_tl
+      { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_url_tl }
+    \tl_if_empty:NT \l_latei_graphic_path_tl
+      {
+        \tl_if_empty:NF \l_latei_option_target_tl
+          { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_target_tl }
+      }
+    \tl_if_empty:NT \l_latei_graphic_path_tl
+      {
+        \tl_if_empty:NF \l_latei_option_n_tl
+          { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_n_tl }
+      }
+    \prop_get:NVNTF \g_latei_graphics_map_prop \l_latei_graphic_path_tl \l_latei_graphic_local_path_tl
+      { \exp_args:NV \latei_include_graphic:n \l_latei_graphic_local_path_tl }
+      { \exp_args:NV \latei_include_graphic:n \l_latei_graphic_path_tl }
+  }
+\ExplSyntaxOff
+
+\NewDocumentCommand{\lateiBibliographyEntry}{+m}{%
+  \par\noindent\hangindent=1.5em\hangafter=1 #1\par
+}
+\NewDocumentCommand{\lateiBibliographyBlock}{+m}{%
+  \par
+  \begingroup
+    \lateiinbibliographytrue
+    \begin{PurhBibliography}
+    #1%
+    \end{PurhBibliography}
+  \endgroup
+  \par
+}
+
+% Heads are contextual in TEI: the same <head> can name a chapter, section,
+% figure, table, or list. The surrounding LaTEI environment sets this context.
+\newcommand{\lateiHeadContext}{fallback}
+\newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
+\NewDocumentCommand{\lateiRenderHead}{m}{%
+  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{part}{#1}}{%
+  \IfStrEq{\lateiHeadContext}{chapter}{\lateiChapter{#1}}{%
+    \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
+    \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
+      \IfStrEq{\lateiHeadContext}{subsection}{\subsection{#1}}{%
+        \IfStrEq{\lateiHeadContext}{subsubsection}{\subsubsection{#1}}{%
+          \IfStrEq{\lateiHeadContext}{figure}{\par\smallskip\noindent\textbf{#1}\par\smallskip}{%
+            \IfStrEq{\lateiHeadContext}{table}{\par\smallskip\noindent\textbf{#1}\par\smallskip}{%
+              \IfStrEq{\lateiHeadContext}{list}{\item[]\textbf{#1}}{%
+                \par\smallskip\noindent\textbf{#1}\par\smallskip% fallback head
+              }%
+            }%
+          }%
+        }%
+      }%
+    }%
+  }%
+  }%
+  }%
+}
+\NewDocumentCommand{\teiHead}{O{} +m}{\lateiRenderHead{#2}}
+
+% Apply rend values predictably, including combined values in any order. This
+% mirrors the stable renderer order: small caps / position / weight / italic.
+\NewDocumentCommand{\lateiIfRendSmallCaps}{m m m}{%
+  \IfSubStr{#1}{small-caps}{#2}{%
+    \IfSubStr{#1}{small_caps}{#2}{%
+      \IfSubStr{#1}{small caps}{#2}{#3}%
+    }%
+  }%
+}
+\NewDocumentCommand{\lateiIfRendBold}{m m m}{%
+  \IfSubStr{#1}{bold}{#2}{\IfSubStr{#1}{gras}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendSup}{m m m}{%
+  \IfSubStr{#1}{sup}{#2}{\IfSubStr{#1}{exposant}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendSub}{m m m}{%
+  \IfSubStr{#1}{sub}{#2}{\IfSubStr{#1}{indice}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiHiSmallCaps}{m +m}{%
+  \lateiIfRendSmallCaps{#1}{\textsc{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiPosition}{m +m}{%
+  \lateiIfRendSup{#1}{\textsuperscript{#2}}{%
+    \lateiIfRendSub{#1}{$_{#2}$}{#2}%
+  }%
+}
+\NewDocumentCommand{\lateiHiBold}{m +m}{%
+  \lateiIfRendBold{#1}{\textbf{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiItalic}{m +m}{%
+  \IfSubStr{#1}{italic}{\textit{#2}}{#2}%
+}
+\NewDocumentCommand{\teiHi}{O{} +m}{%
+  \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{#2}}}}%
+}
+
+\NewDocumentCommand{\teiForeign}{O{} +m}{\textit{#2}}
+\NewDocumentCommand{\teiTerm}{O{} +m}{#2}
+\NewDocumentCommand{\teiName}{O{} +m}{#2}
+\NewDocumentCommand{\teiPersName}{O{} +m}{#2}
+\NewDocumentCommand{\teiPlaceName}{O{} +m}{#2}
+\NewDocumentCommand{\teiOrgName}{O{} +m}{#2}
+\NewDocumentCommand{\teiDate}{O{} +m}{#2}
+\NewDocumentCommand{\teiNum}{O{} +m}{#2}
+\NewDocumentCommand{\teiLabel}{O{} +m}{#2}
+\NewDocumentCommand{\teiQ}{O{} +m}{\enquote{#2}}
+\NewDocumentCommand{\teiSaid}{O{} +m}{\enquote{#2}}
+\NewDocumentCommand{\teiAuthor}{O{} +m}{#2}
+\NewDocumentCommand{\teiEditor}{O{} +m}{#2}
+\NewDocumentCommand{\teiPublisher}{O{} +m}{#2}
+\NewDocumentCommand{\teiBiblScope}{O{} +m}{#2}
+\NewDocumentCommand{\teiIdno}{O{} +m}{#2}
+
+\NewDocumentCommand{\teiGraphic}{O{}}{\lateiRenderGraphic[#1]}
+\NewDocumentCommand{\teiPtr}{O{}}{}
+\NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
+\NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}
+
+\NewDocumentEnvironment{teiDiv}{O{} +b}{%
+  \IfSubStr{#1}{type={titlePage}}{}{%
+    \begingroup
+    \lateiSetHeadContext{fallback}%
+    \IfSubStr{#1}{type={chapter}}{\lateiSetHeadContext{chapter}}{}%
+    \IfSubStr{#1}{type={section}}{\lateiSetHeadContext{section}}{}%
+    \IfSubStr{#1}{type={section1}}{\lateiSetHeadContext{section}}{}%
+    \IfSubStr{#1}{type={section2}}{\lateiSetHeadContext{subsection}}{}%
+    \IfSubStr{#1}{type={subsection}}{\lateiSetHeadContext{subsection}}{}%
+    \IfSubStr{#1}{type={section3}}{\lateiSetHeadContext{subsubsection}}{}%
+    #2%
+    \endgroup
+  }%
+}{}
+\NewDocumentEnvironment{teiList}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{list}%
+  \IfSubStr{#1}{type={ordered}}{\begin{enumerate}}{\begin{itemize}}%
+  #2%
+  \IfSubStr{#1}{type={ordered}}{\end{enumerate}}{\end{itemize}}%
+  \endgroup
+}{}
+\NewDocumentCommand{\teiItem}{O{} +m}{\item #2}
+\NewDocumentEnvironment{teiQuote}{O{} +b}{\begin{PurhBlockQuote}#2\end{PurhBlockQuote}}{}
+\NewDocumentEnvironment{teiFigure}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{figure}%
+  \begin{center}#2\end{center}%
+  \endgroup
+}{}
+\NewDocumentEnvironment{teiCit}{O{} +b}{#2}{}
+\NewDocumentEnvironment{teiBibl}{O{} +b}{\lateiBibliographyEntry{#2}}{}
+\NewDocumentEnvironment{teiTable}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{table}%
+  \par\begin{center}#2\end{center}\par
+  \endgroup
+}{}
+\NewDocumentEnvironment{teiRow}{O{} +b}{#2\par}{}
+\NewDocumentEnvironment{teiCell}{O{} +b}{#2\quad}{}
+% teiHeader is metadata, not running text. Document wrappers pass through;
+% unknown non-header elements keep their content visible rather than vanish.
+\NewDocumentEnvironment{teiElement}{O{} +b}{%
+  \IfSubStr{#1}{name={teiHeader}}{}{%
+    \IfSubStr{#1}{name={group}}{%
+      \IfSubStr{#1}{type={section1}}{\lateiRenderPartGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={article}}{\lateiRenderChapterGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={chapter}}{\lateiRenderChapterGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={acknowledgments}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={abbreviations}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={introduction}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={foreword}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={preface}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={dedication}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={conclusion}}{\lateiRenderBackGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={bibliography}}{\lateiRenderBackGroup[#1]{#2}}{#2}%
+      }}}}}}}}}}%
+    }{%
+      \IfSubStr{#1}{name={back}}{\lateiEnsureBackMatter #2}{%
+      \IfSubStr{#1}{name={listBibl}}{\lateiBibliographyBlock{#2}}{%
+      \IfSubStr{#1}{name={biblStruct}}{\lateiBibliographyEntry{#2}}{#2}%
+      }}%
+    }%
+  }%
+}{}
+
+% lateiDocument marks the reversible editorial zone in a monofile.
+% Completely transparent at compilation — only serves as a delimiter for the parser.
+\newenvironment{lateiDocument}{}{}

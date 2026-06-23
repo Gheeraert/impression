@@ -1,0 +1,1721 @@
+LaTEI build log
+===============
+
+Message: LaTEI PDF compilation finished.
+Return code: 0
+Command:
+C:\texlive\2025\bin\windows\lualatex.EXE -interaction=nonstopmode -halt-on-error -file-line-error -jobname=heraldique_ii.book.normalized.latei -output-directory=C:/impression2/.audit_f1/latei C:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei_main.tex
+
+STDOUT:
+This is LuaHBTeX, Version 1.21.0 (TeX Live 2025) 
+ restricted system commands enabled.
+(c:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei_main.tex
+LaTeX2e <2024-11-01> patch level 2
+L3 programming layer <2025-01-18>
+ (c:/texlive/2025/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2024/06/29 v1.4n Standard LaTeX document class
+(c:/texlive/2025/texmf-dist/tex/latex/base/bk12.clo
+luaotfload | db : Font names database not found, generating new one.
+luaotfload | db : This can take several minutes; please be patient.))
+(c:/texlive/2025/texmf-dist/tex/latex/geometry/geometry.sty
+(c:/texlive/2025/texmf-dist/tex/latex/graphics/keyval.sty)
+(c:/texlive/2025/texmf-dist/tex/generic/iftex/ifvtex.sty
+(c:/texlive/2025/texmf-dist/tex/generic/iftex/iftex.sty)))
+(c:/texlive/2025/texmf-dist/tex/latex/fontspec/fontspec.sty
+(c:/texlive/2025/texmf-dist/tex/latex/l3packages/xparse/xparse.sty
+(c:/texlive/2025/texmf-dist/tex/latex/l3kernel/expl3.sty
+(c:/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-luatex.def)))
+(c:/texlive/2025/texmf-dist/tex/latex/fontspec/fontspec-luatex.sty
+(c:/texlive/2025/texmf-dist/tex/latex/base/fontenc.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/fontspec/fontspec.cfg)))
+(c:/texlive/2025/texmf-dist/tex/generic/babel/babel.sty
+(c:/texlive/2025/texmf-dist/tex/generic/babel/luababel.def)
+(c:/texlive/2025/texmf-dist/tex/generic/babel/luababel.def)
+(c:/texlive/2025/texmf-dist/tex/generic/babel-french/french.ldf
+(c:/texlive/2025/texmf-dist/tex/generic/hyph-utf8/loadhyph/loadhyph-fr.tex
+UTF-8 French hyphenation patterns
+(c:/texlive/2025/texmf-dist/tex/generic/hyph-utf8/patterns/tex/hyph-fr.tex)
+(c:/texlive/2025/texmf-dist/tex/generic/hyph-utf8/patterns/quote/hyph-quote-fr.
+tex))))
+(c:/texlive/2025/texmf-dist/tex/generic/babel/locale/fr/babel-french.tex)
+(c:/texlive/2025/texmf-dist/tex/latex/carlisle/scalefnt.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/csquotes/csquotes.sty
+(c:/texlive/2025/texmf-dist/tex/latex/etoolbox/etoolbox.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/csquotes/csquotes.def)
+(c:/texlive/2025/texmf-dist/tex/latex/csquotes/csquotes.cfg))
+(c:/texlive/2025/texmf-dist/tex/latex/microtype/microtype.sty
+(c:/texlive/2025/texmf-dist/tex/latex/microtype/microtype-luatex.def)
+(c:/texlive/2025/texmf-dist/tex/latex/microtype/microtype.cfg))
+(c:/texlive/2025/texmf-dist/tex/latex/tools/indentfirst.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/emptypage/emptypage.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/enumitem/enumitem.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/titlesec/titlesec.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/titlesec/titletoc.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/footmisc/footmisc.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty
+(c:/texlive/2025/texmf-dist/tex/latex/graphics/graphics.sty
+(c:/texlive/2025/texmf-dist/tex/latex/graphics/trig.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)
+(c:/texlive/2025/texmf-dist/tex/latex/graphics-def/luatex.def)))
+(c:/texlive/2025/texmf-dist/tex/latex/caption/caption.sty
+(c:/texlive/2025/texmf-dist/tex/latex/caption/caption3.sty))
+(c:/texlive/2025/texmf-dist/tex/latex/tools/array.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/tools/longtable.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/tools/tabularx.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/booktabs/booktabs.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/verse/verse.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/ragged2e/ragged2e.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/xurl/xurl.sty
+(c:/texlive/2025/texmf-dist/tex/latex/url/url.sty))
+(c:/texlive/2025/texmf-dist/tex/latex/hyperref/hyperref.sty
+(c:/texlive/2025/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty)
+(c:/texlive/2025/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty)
+(c:/texlive/2025/texmf-dist/tex/generic/pdfescape/pdfescape.sty
+(c:/texlive/2025/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)
+(c:/texlive/2025/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+(c:/texlive/2025/texmf-dist/tex/generic/infwarerr/infwarerr.sty)))
+(c:/texlive/2025/texmf-dist/tex/latex/hycolor/hycolor.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/hyperref/nameref.sty
+(c:/texlive/2025/texmf-dist/tex/latex/refcount/refcount.sty)
+(c:/texlive/2025/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
+(c:/texlive/2025/texmf-dist/tex/latex/kvoptions/kvoptions.sty)))
+(c:/texlive/2025/texmf-dist/tex/generic/stringenc/stringenc.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(c:/texlive/2025/texmf-dist/tex/generic/intcalc/intcalc.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/hyperref/puenc.def)
+(c:/texlive/2025/texmf-dist/tex/generic/bitset/bitset.sty
+(c:/texlive/2025/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty))
+(c:/texlive/2025/texmf-dist/tex/latex/base/atbegshi-ltx.sty))
+(c:/texlive/2025/texmf-dist/tex/latex/hyperref/hluatex.def
+(c:/texlive/2025/texmf-dist/tex/latex/base/atveryend-ltx.sty)
+(c:/texlive/2025/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
+(c:/texlive/2025/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty)))
+(c:/texlive/2025/texmf-dist/tex/latex/bookmark/bookmark.sty
+(c:/texlive/2025/texmf-dist/tex/latex/bookmark/bkm-pdftex.def))
+(c:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei_macros.tex
+(c:/texlive/2025/texmf-dist/tex/generic/xstring/xstring.sty
+(c:/texlive/2025/texmf-dist/tex/generic/xstring/xstring.tex))
+(c:/texlive/2025/texmf-dist/tex/latex/newunicodechar/newunicodechar.sty))
+(c:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei_graphics_ma
+p.tex)
+(c:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei_running_tit
+les_map.tex)
+No file heraldique_ii.book.normalized.latei.aux.
+*geometry* driver: auto-detecting
+*geometry* detected driver: luatex
+(c:/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (c:/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+(c:/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+(c:/texlive/2025/texmf-dist/tex/latex/caption/ltcaption.sty)
+[1{c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+(c:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei_body.tex
+[2]
+[1]
+[2]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.i'
+[1]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.ii'
+[2] (c:/texlive/2025/texmf-dist/tex/latex/microtype/mt-cmr.cfg)
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.i'
+[1]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.ii'
+[2]
+[3]
+[4]
+Underfull \hbox (badness 2600) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Tarn-et-Garonne) nous em-mène en-suite dans la col-
+lé-giale
+
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Saint-Jean-Baptiste/Saint-Louis de Castelnau-Breteno
+ux
+
+[5]
+[6]
+[7]
+[8]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.1'
+[1]
+Chapitre 1.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.2'
+[2]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[3]
+Underfull \hbox (badness 2401) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]Pierpont Mor-gan Li-brary, ms. H.6 ; Har-
+vard, Hough-ton Li-brary,
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[4]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[5]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[6]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[7]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[8]
+Underfull \hbox (badness 6348) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]New York Pu-blic Li-brary, ms Spen-cer 50
+, []https://di-gi-tal-col-lec-
+
+Underfull \hbox (badness 1342) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]Curt F. Büh-ler, « Stu-dies in the Earl
+y Edi-tions of the “Fiore Di
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[9]
+Underfull \hbox (badness 5022) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]BAV, Capp.Sist.160, []https://digi.vat-li
+b.it/view/MSS_Capp.Sist.160[]
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[10]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[11]
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]BAV, Capp.Sist.160, []https://digi.vat-
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[12]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[13]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[14]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[15]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[16]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[17]
+Chapitre 2.
+
+[18]
+
+LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <5.5> not available
+(Font)              size <5> substituted on input line 4438.
+
+
+LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <5.5> not available
+(Font)              size <5> substituted on input line 4438.
+
+
+LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <5.5> not available
+(Font)              size <5> substituted on input line 4438.
+
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[19]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[20]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[21]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[22]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[23]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[24]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[25]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[26]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[27]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[28]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[29]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[30]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[31]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[32]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[33]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[34]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[35]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[36]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[37]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[38]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[39]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[40]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[41]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[42]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[43]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+[44]
+Chapitre 3.
+
+[45]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[46]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[47]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[48]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[49]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[50]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[51]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[52]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[53]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[54]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[55]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[56]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[57]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[58]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[59]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[60]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[61]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[62]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[63]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[64]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[65]
+Overfull \vbox (0.74416pt too high) has occurred while \output is active
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[66]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[67]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[68]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[69]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[70]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[71]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[72]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[73]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[74]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[75]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[76]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[77]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 14.20879pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.20879pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-0.20879pt}.
+
+[78]
+Chapitre 4.
+
+[79]
+[80]
+[81]
+[82]
+[83]
+[84]
+[85]
+[86]
+[87]
+[88]
+[89]
+[90]
+[91]
+[92]
+[93]
+[94]
+[95]
+[96]
+[97]
+[98]
+[99]
+[100]
+[101]
+[102]
+[103]
+[104]
+[105]
+[106]
+[107]
+[108]
+[109]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[110]
+[111]
+[112]
+[113]
+[114]
+[115]
+[116]
+Chapitre 5.
+
+[117]
+[118]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[119]
+[120]
+[121]
+[122]
+[123]
+[124]
+[125]
+[126]
+[127]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[128]
+[129]
+[130]
+[131]
+[132]
+[133]
+[134]
+[135]
+[136]
+[137]
+[138]
+[139]
+[140]
+Chapitre 6.
+
+[141]
+[142]
+[143]
+[144]
+[145]
+[146]
+[147]
+[148]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[149]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[150]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[151]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+[152]
+[153]
+[154]
+[155]
+[156]
+[157]
+[158]
+[159]
+[160]
+[161]
+[162]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.1'
+[1]
+Chapitre 7.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.2'
+[2]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.3'
+[3]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.4'
+[4]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.5'
+[5]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.6'
+[6]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.7'
+[7]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.8'
+[8]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.9'
+[9]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.10'
+[10]
+Underfull \hbox (badness 1552) in paragraph at lines 4438--4438
+[]\TU/ChaparralPro(0)/m/n/12 L’his-to-rio-gra-phie de l’hé-ral-dique pon-t
+i-fi-cale rap-porte un
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.11'
+[11]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.12'
+[12]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.13'
+[13]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.14'
+[14]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.15'
+[15]
+Underfull \hbox (badness 1112) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]Arthur de Bois-lile, « Rap-port de M. de
+ Bois-lile sur une com-mu-
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.16'
+[16]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.17'
+[17]
+Overfull \vbox (1.53526pt too high) has occurred while \output is active
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.18'
+[18]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.19'
+[19]
+Chapitre 8.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.20'
+[20]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.21'
+[21]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.22'
+[22]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.23'
+[23]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.24'
+[24]
+Underfull \hbox (badness 2269) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]Jean-Baptiste Poul-brière, No-tice his-t
+o-rique et ar-chéo-lo-gique sur
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.25'
+[25]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.26'
+[26]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.27'
+[27]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.28'
+[28]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.29'
+[29]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.30'
+[30]
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 26.15533pt, for example:
+(fancyhdr)                \setlength{\headheight}{26.15533pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-12.15533pt}.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.31'
+[31]
+Chapitre 9.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.32'
+[32]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.33'
+[33]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.34'
+[34]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.35'
+[35]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.36'
+[36]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.37'
+[37]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.38'
+[38]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.39'
+[39]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.40'
+[40]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.41'
+[41]
+Underfull \hbox (badness 2846) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]Pierre Pan-sier « Les dé-buts de l’im
+-pri-me-rie à Avi-gnon (xve et
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.42'
+[42]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.43'
+[43]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.44'
+[44]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.45'
+[45]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.46'
+[46]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.47'
+[47]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.48'
+[48]
+Chapitre 10.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.49'
+[49]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.50'
+[50]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.51'
+[51]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.52'
+[52]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.53'
+[53]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.54'
+[54]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.55'
+[55]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.56'
+[56]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.57'
+[57]
+Underfull \hbox (badness 1527) in paragraph at lines 4438--4438
+[][][]\TU/ChaparralPro(0)/m/n/10 .[][]Voir Da-vide Au-re-lio Per-ini, Bi-blio-g
+ra-phia Au-gus-ti-niana, Flo-rence,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.58'
+[58]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.59'
+[59]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.60'
+[60]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.61'
+[61]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.62'
+[62]
+Chapitre 11.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.63'
+[63]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.64'
+[64]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.65'
+[65]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.66'
+[66]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.67'
+[67]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.68'
+[68]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.69'
+[69]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.70'
+[70]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.71'
+[71]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.72'
+[72]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.73'
+[73]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.74'
+[74]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.75'
+[75]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.76'
+[76]
+Chapitre 12.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.77'
+[77]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.78'
+[78]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.79'
+[79]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.80'
+[80]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.81'
+[81]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.82'
+[82]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.83'
+[83]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.84'
+[84]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.85'
+[85]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.86'
+[86]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.87'
+[87]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\teiHi' on input line 4438.
+
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.88'
+[88]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.89'
+[89]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.90'
+[90]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.91'
+[91]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.92'
+[92]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.93'
+[93]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.94'
+[94]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.95'
+[95]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.96'
+[96]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.97'
+[97]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.98'
+[98]
+Underfull \hbox (badness 1275) in paragraph at lines 4438--4438
+[]\TU/ChaparralPro(0)/m/n/12 La frag-men-ta-tion/dis-per-sion des meubles ar-mo
+-riaux est
+
+Underfull \hbox (badness 5741) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 den-tée dans de nou-veaux contextes si-gni-fiants. 
+D’autres
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.99'
+[99]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.100'
+
+[100]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.101'
+
+[101]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.102'
+
+[102]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.103'
+
+[103]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.104'
+
+[104]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.105'
+
+[105]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.106'
+
+[106]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.107'
+
+[107]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.108'
+
+[108]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.109'
+
+[109]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.110'
+
+[110]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.111'
+
+[111]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.112'
+
+[112]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.113'
+
+[113]
+Underfull \hbox (badness 2662) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Ro-mae, Ex-cu-de-bant Va-le-rius et Aloy-sius Do-ric
+i fratres
+
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Blé-gier An-toine, La Ma-gni-ficque et trium-phante
+ en-trée
+
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 de Car-pen-tras, faicte à tre-sillustre & tres-puis
+s-sant
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.114'
+
+[114]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.115'
+
+[115]
+Underfull \hbox (badness 1824) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Cel-lo-nese An-drea, Spec-chio sim-bo-lico delle arm
+i gen-ti-li-zie,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.116'
+
+[116]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.117'
+
+[117]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.118'
+
+[118]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.119'
+
+[119]
+Underfull \hbox (badness 1412) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 quinque, [Ro-mae, Apud Va-le-rium et Lu-doui-cum fra
+tres
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.120'
+
+[120]
+Underfull \hbox (badness 2351) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Thau-mas De La Thau-mas-sière Gas-pard, His-toire d
+e Berry,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.121'
+
+[121]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.122'
+
+[122]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.123'
+
+[123]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.124'
+
+[124]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.125'
+
+[125]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.126'
+
+[126]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.127'
+
+[127]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.128'
+
+[128]
+Underfull \hbox (badness 1127) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Leone Sté-pha-nie, The Pa-lazzo Pam-philj in Piazza
+ Na-vona :
+
+Underfull \hbox (badness 1565) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Construc-ting Iden-tity in Early Mo-dern Rome, Londr
+es,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.129'
+
+[129]
+Underfull \hbox (badness 1092) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Lévi-Strauss Claude, An-thro-po-lo-gie struc-tu-ral
+e, Pa-ris, Plon,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.130'
+
+[130]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.131'
+
+[131]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.132'
+
+[132]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.133'
+
+[133]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.134'
+
+[134]
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Vaillan-court Da-niel et Wag-ner Marie-France (dir.)
+,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.135'
+
+[135]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.136'
+
+[136]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.137'
+
+[137]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.138'
+
+[138]
+Underfull \hbox (badness 2103) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 « Chau-vi-gny de Brosse, armes des », dans la base
+ Si-gilla,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.139'
+
+[139]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.140'
+
+[140]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.141'
+
+[141]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.142'
+
+[142]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.143'
+
+[143]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.144'
+
+[144]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.145'
+
+[145]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.146'
+
+[146]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.147'
+
+[147]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.148'
+
+[148]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.149'
+
+[149]
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Bouyé Édouard, « Les ar-moi-ries pon-ti-fi-cales 
+à la fin
+
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 du xiiie siècle : construc-tion d’une cam-pagne d
+e
+
+Underfull \hbox (badness 2173) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 com-mu-ni-ca-tion », Mé-dié-vales, no 44, 2003, p
+. 177 et
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.150'
+
+[150]
+Underfull \hbox (badness 3158) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Dang Ben-ja-min, « Le bouf-fon, un hé-raut du vide
+ », Les
+
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 chan-tiers de la créa-tion. Re-vue plu-ri-dis-ci-pl
+i-naire en
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.151'
+
+[151]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.152'
+
+[152]
+Underfull \hbox (badness 7504) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Leone Sté-pha-nie, « Car-di-nal Pam-philj Builds a
+ Pa-lace :
+
+Underfull \hbox (badness 10000) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Self-Representation and Fa-mi-lial Am-bi-tion in
+
+Underfull \hbox (badness 5490) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Seventeenth-Century Rome », Jour-nal of the So-ciet
+y
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.153'
+
+[153]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.154'
+
+[154]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.155'
+
+[155]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.156'
+
+[156]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.157'
+
+[157]
+Underfull \hbox (badness 1960) in paragraph at lines 4438--4438
+[]\TU/ChaparralPro(0)/m/n/12 Fi-gure 7. Mo-tets, ate-lier de Pe-trus Ala-mire, 
+Rome, ms.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.158'
+
+[158]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.159'
+
+[159]
+Underfull \hbox (badness 1320) in paragraph at lines 4438--4438
+\TU/ChaparralPro(0)/m/n/12 Sueo-numque re-gi-bus, Rome, 1554. Mé-dia-thèque d
+’Or-léans,
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.160'
+
+[160]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.161'
+
+[161]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.162'
+
+[162]
+[163]
+[164]
+[165]
+[166]
+[167]
+[168]
+[169]
+[170]
+[171]
+[172]
+[173]
+[174]
+Chapitre 13.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.1'
+[1]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.2'
+[2]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.3'
+[3]
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.4'
+[4])
+No file heraldique_ii.book.normalized.latei.toc.
+
+
+warning  (pdf backend): ignoring duplicate destination with the name 'page.5'
+[5] (c:/impression2/.audit_f1/latei/heraldique_ii.book.normalized.latei.aux)
+
+LaTeX Font Warning: Size substitutions with differences
+(Font)              up to 0.5pt have occurred.
+
+)
+(see the transcript file for additional information)
+ 39545 words of node memory still in use:
+   5 hlist, 1 vlist, 1 rule, 1 local_par, 2390 glue, 4 kern, 2 penalty, 4 glyph
+, 9693 attribute, 81 glue_spec, 1386 attribute_list, 1 write, 10 pdf_action nod
+es
+   avail lists: 1:4,2:750,3:319,4:87,5:5192,6:64,7:11340,8:2,9:444,10:27,11:102
+2
+<c:/texlive/2025/texmf-dist/fonts/truetype/public/josefin/JosefinSans-Italic.tt
+f><c:/texlive/2025/texmf-dist/fonts/truetype/public/josefin/JosefinSans-Bold.tt
+f><c:/Users/Blais/AppData/Local/Microsoft/Windows/Fonts/ChaparralPro-Regular.ot
+f><c:/Users/Blais/AppData/Local/Microsoft/Windows/Fonts/ChaparralPro-Semibold.o
+tf><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on heraldique_ii.book.normalized.latei.pdf (355 pages, 1214030 b
+ytes).
+Transcript written on heraldique_ii.book.normalized.latei.log.
+
+
+STDERR:
+
