@@ -809,4 +809,90 @@ tests/test_latei_monofile_restore.py             →  9 passed (M2 intact)
 
 ---
 
+## Passe M5 réalisée
+
+**Date** : 2026-06-23
+
+### Doctrine produit formalisée
+
+| Artefact | Statut | Usage |
+|---|---|---|
+| `*.latei.tex` | **Principal** — `primary_latei_path` | Remis à l'éditrice ; corrigeable ; restaure le XML |
+| `*.latei_mono.pdf` | **Principal** — `primary_pdf_path` | PDF livrable issu du monofichier |
+| `*.latei_body.tex` | Debug — `debug_latei_paths[0]` | Corps réversible pur ; comparaison/validation |
+| `*.latei_main.tex` | Debug — `debug_latei_paths[1]` | Ancien driver fragmenté |
+| `*.latei_macros.tex` | Debug — `debug_latei_paths[2]` | Copie locale des macros |
+| `*.latei_graphics_map.tex` | Debug — `debug_latei_paths[3]` | Mapping graphique |
+| `*.latei_running_titles_map.tex` | Debug — `debug_latei_paths[4]` | Mapping titres courants |
+| `*.latei.pdf` | Debug | PDF issu du driver fragmenté (comparaison) |
+
+### Propriétés ajoutées à `ReversibleExportResult`
+
+```python
+@property
+def primary_latei_path(self) -> Path:
+    return self.latei_monofile_path
+
+@property
+def primary_pdf_path(self) -> Path:
+    return self.latei_monofile_pdf_path
+
+@property
+def debug_latei_paths(self) -> tuple[Path, ...]:
+    return (latei_body_path, latei_main_path, latei_macros_path,
+            latei_graphics_map_path, latei_running_titles_map_path)
+```
+
+### Champ ajouté à `ReversibleExportResult`
+
+`manifest_path: Path` — chemin vers `stem.latei_manifest.json`.
+
+### Manifeste JSON (`*.latei_manifest.json`)
+
+Écrit dans le dossier de sortie à chaque export (succès et échec). Structure :
+
+```json
+{
+  "version": 1,
+  "source_xml": "chemin relatif ou absolu vers le XML source",
+  "primary": { "latei": "stem.latei.tex", "pdf": "stem.latei_mono.pdf", "xml_restore_supported": true },
+  "debug": { "latei_body": "...", "latei_main": "...", "latei_macros": "...", "graphics_map": "...", "running_titles_map": "..." },
+  "roundtrip": { "xml": "...", "diagnostics": "...", "diagnostics_count": 0 },
+  "messages": { "latei_pdf": "...", "latei_monofile_pdf": "..." }
+}
+```
+
+En cas d'échec (early return), le champ `"error"` est ajouté et les messages PDF valent `"not produced"`.
+
+### Helpers internes ajoutés
+
+- `_rel_path(path, base)` — chemin relatif si possible, absolu sinon
+- `_write_manifest(manifest_path, data)` — écrit le JSON avec `ensure_ascii=False`
+- `_error_manifest(...)` — construit le dict manifeste pour les early returns
+
+### Ce que le GUI peut utiliser (prochaine passe)
+
+- `result.primary_latei_path` → fichier à proposer en téléchargement/ouverture
+- `result.manifest_path` → machine-readable pour tout outil tiers
+- `result.debug_latei_paths` → affichage optionnel en mode debug
+
+### Fichiers modifiés
+
+| Fichier | Nature de la modification |
+|---|---|
+| `purh_site/reversible_integration.py` | `manifest_path` field, 3 propriétés, écriture manifeste dans 4 chemins, `_rel_path`, `_write_manifest`, `_error_manifest`, `import json`, `_output_paths` + 1 chemin, `main()` affiche le manifeste |
+| `tests/test_latei_output_manifest.py` | Nouveau fichier — 13 tests |
+| `AUDIT_LATEI_MONOFILE_TARGET.md` | Section « Passe M5 réalisée » |
+
+### Tests lancés
+
+```
+tests/test_latei_output_manifest.py              → 13 passed (7.46 s)
+tests/test_latei_monofile.py                     → 16 passed (M1 intact)
+tests/test_latei_monofile_restore.py             →  9 passed (M2 intact)
+tests/test_latei_monofile_editorial_workflow.py  →  8 passed (M3/M4 intact)
+```
+
+---
+
 *Audit rédigé depuis l'inspection directe du code. Aucun fichier modifié.*

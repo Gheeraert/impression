@@ -8,6 +8,7 @@ LaTeX, round-trip TEI, and a human-readable diagnostics report for one XML file.
 """
 
 import argparse
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -47,8 +48,30 @@ class ReversibleExportResult:
     roundtrip_xml_path: Path
     diagnostics_path: Path
     diagnostics_count: int
+    manifest_path: Path
     success: bool
     message: str
+
+    @property
+    def primary_latei_path(self) -> Path:
+        """Artefact LaTEI principal remis à l'éditrice."""
+        return self.latei_monofile_path
+
+    @property
+    def primary_pdf_path(self) -> Path:
+        """PDF principal issu du monofichier."""
+        return self.latei_monofile_pdf_path
+
+    @property
+    def debug_latei_paths(self) -> tuple[Path, ...]:
+        """Fragments LaTEI conservés à titre de debug."""
+        return (
+            self.latei_body_path,
+            self.latei_main_path,
+            self.latei_macros_path,
+            self.latei_graphics_map_path,
+            self.latei_running_titles_map_path,
+        )
 
 
 def run_reversible_export_for_file(
@@ -77,11 +100,19 @@ def run_reversible_export_for_file(
         latei_monofile_path,
         latei_monofile_pdf_path,
         latei_monofile_log_path,
+        manifest_path,
     ) = _output_paths(source_path, resolved_output_dir)
 
     if not source_path.exists():
         message = f"XML file does not exist: {source_path}"
         _write_error_report(diagnostics_path, message)
+        _write_manifest(manifest_path, _error_manifest(
+            source_path, resolved_output_dir,
+            latei_monofile_path, latei_monofile_pdf_path,
+            latei_body_path, latei_main_path, latei_macros_path,
+            latei_graphics_map_path, latei_running_titles_map_path,
+            roundtrip_xml_path, diagnostics_path, message,
+        ))
         return ReversibleExportResult(
             source_path=source_path,
             output_dir=resolved_output_dir,
@@ -107,12 +138,20 @@ def run_reversible_export_for_file(
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
+            manifest_path=manifest_path,
             success=False,
             message=message,
         )
     if not source_path.is_file():
         message = f"XML path is not a file: {source_path}"
         _write_error_report(diagnostics_path, message)
+        _write_manifest(manifest_path, _error_manifest(
+            source_path, resolved_output_dir,
+            latei_monofile_path, latei_monofile_pdf_path,
+            latei_body_path, latei_main_path, latei_macros_path,
+            latei_graphics_map_path, latei_running_titles_map_path,
+            roundtrip_xml_path, diagnostics_path, message,
+        ))
         return ReversibleExportResult(
             source_path=source_path,
             output_dir=resolved_output_dir,
@@ -138,6 +177,7 @@ def run_reversible_export_for_file(
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
+            manifest_path=manifest_path,
             success=False,
             message=message,
         )
@@ -147,6 +187,13 @@ def run_reversible_export_for_file(
     except etree.XMLSyntaxError as exc:
         message = f"Malformed XML in {source_path}: {exc}"
         _write_error_report(diagnostics_path, message)
+        _write_manifest(manifest_path, _error_manifest(
+            source_path, resolved_output_dir,
+            latei_monofile_path, latei_monofile_pdf_path,
+            latei_body_path, latei_main_path, latei_macros_path,
+            latei_graphics_map_path, latei_running_titles_map_path,
+            roundtrip_xml_path, diagnostics_path, message,
+        ))
         return ReversibleExportResult(
             source_path=source_path,
             output_dir=resolved_output_dir,
@@ -172,6 +219,7 @@ def run_reversible_export_for_file(
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
+            manifest_path=manifest_path,
             success=False,
             message=message,
         )
@@ -236,6 +284,32 @@ def run_reversible_export_for_file(
     else:
         message = f"Reversible export completed with {diagnostics_count} diagnostic(s)."
 
+    _write_manifest(manifest_path, {
+        "version": 1,
+        "source_xml": _rel_path(source_path, resolved_output_dir),
+        "primary": {
+            "latei": _rel_path(latei_monofile_path, resolved_output_dir),
+            "pdf": _rel_path(latei_monofile_pdf_path, resolved_output_dir),
+            "xml_restore_supported": True,
+        },
+        "debug": {
+            "latei_body": _rel_path(latei_body_path, resolved_output_dir),
+            "latei_main": _rel_path(latei_main_path, resolved_output_dir),
+            "latei_macros": _rel_path(latei_macros_path, resolved_output_dir),
+            "graphics_map": _rel_path(latei_graphics_map_path, resolved_output_dir),
+            "running_titles_map": _rel_path(latei_running_titles_map_path, resolved_output_dir),
+        },
+        "roundtrip": {
+            "xml": _rel_path(roundtrip_xml_path, resolved_output_dir),
+            "diagnostics": _rel_path(diagnostics_path, resolved_output_dir),
+            "diagnostics_count": diagnostics_count,
+        },
+        "messages": {
+            "latei_pdf": pdf_result.message,
+            "latei_monofile_pdf": monofile_pdf_result.message,
+        },
+    })
+
     return ReversibleExportResult(
         source_path=source_path,
         output_dir=resolved_output_dir,
@@ -261,6 +335,7 @@ def run_reversible_export_for_file(
         roundtrip_xml_path=roundtrip_xml_path,
         diagnostics_path=diagnostics_path,
         diagnostics_count=diagnostics_count,
+        manifest_path=manifest_path,
         success=success,
         message=message,
     )
@@ -324,7 +399,9 @@ def _resolve_output_dir(source_path: Path, output_dir: Path | None) -> Path:
     return resolved
 
 
-def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
+def _output_paths(
+    source_path: Path, output_dir: Path
+) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
     stem = source_path.stem
     return (
         output_dir / f"{stem}.reversible.tex",
@@ -341,7 +418,65 @@ def _output_paths(source_path: Path, output_dir: Path) -> tuple[Path, Path, Path
         output_dir / f"{stem}.latei.tex",
         output_dir / f"{stem}.latei_mono.pdf",
         output_dir / f"{stem}.latei_mono_build.log",
+        output_dir / f"{stem}.latei_manifest.json",
     )
+
+
+def _rel_path(path: Path, base: Path) -> str:
+    try:
+        return path.relative_to(base).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def _write_manifest(manifest_path: Path, data: dict) -> None:
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _error_manifest(
+    source_path: Path,
+    output_dir: Path,
+    latei_monofile_path: Path,
+    latei_monofile_pdf_path: Path,
+    latei_body_path: Path,
+    latei_main_path: Path,
+    latei_macros_path: Path,
+    latei_graphics_map_path: Path,
+    latei_running_titles_map_path: Path,
+    roundtrip_xml_path: Path,
+    diagnostics_path: Path,
+    error_message: str,
+) -> dict:
+    return {
+        "version": 1,
+        "source_xml": _rel_path(source_path, output_dir),
+        "primary": {
+            "latei": _rel_path(latei_monofile_path, output_dir),
+            "pdf": _rel_path(latei_monofile_pdf_path, output_dir),
+            "xml_restore_supported": False,
+        },
+        "debug": {
+            "latei_body": _rel_path(latei_body_path, output_dir),
+            "latei_main": _rel_path(latei_main_path, output_dir),
+            "latei_macros": _rel_path(latei_macros_path, output_dir),
+            "graphics_map": _rel_path(latei_graphics_map_path, output_dir),
+            "running_titles_map": _rel_path(latei_running_titles_map_path, output_dir),
+        },
+        "roundtrip": {
+            "xml": _rel_path(roundtrip_xml_path, output_dir),
+            "diagnostics": _rel_path(diagnostics_path, output_dir),
+            "diagnostics_count": 1,
+        },
+        "messages": {
+            "latei_pdf": "not produced",
+            "latei_monofile_pdf": "not produced",
+        },
+        "error": error_message,
+    }
 
 
 def _format_diagnostics(diagnostics: list[Diagnostic]) -> str:
@@ -398,6 +533,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"LaTEI log: {result.latei_log_path}")
     print(f"Round-trip XML: {result.roundtrip_xml_path}")
     print(f"Diagnostics: {result.diagnostics_path}")
+    print(f"Manifest: {result.manifest_path}")
     return 0 if result.success else 1
 
 
