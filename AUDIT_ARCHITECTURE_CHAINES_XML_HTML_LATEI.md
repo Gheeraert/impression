@@ -624,3 +624,38 @@ Date : 2026-06-23
 
 - `test_latei_gui_preflight.py` : 5 passed (2 anciens + 3 nouveaux)
 - `test_latei_monofile_restore.py`, `test_latei_monofile_editorial_workflow.py` : 17 passed
+
+---
+
+## Passe D réalisée
+
+Date : 2026-06-23
+
+**Nouveau module créé : `purh_site/stable_pdf_export.py`**
+
+Adaptateur transitoire qui encapsule l'appel à `PdfBuilder` et `LatexRenderOptions`.
+Exporte `build_stable_pdf_artifacts(xml_input_path, output_dir, *, compile_pdf, latex_engine)` et re-exporte `PdfBuildResult` pour que `site_builder.py` n'ait plus à importer directement les modules stable/legacy.
+
+**Modifications dans `purh_site/site_builder.py` :**
+
+- Suppression des imports `from .latex_renderer import LatexRenderOptions` et `from .pdf_builder import PdfBuildResult, PdfBuilder`.
+- Ajout de `from .stable_pdf_export import PdfBuildResult, build_stable_pdf_artifacts`.
+- `_build_pdf_site_artifacts` délègue maintenant à `build_stable_pdf_artifacts(...)` au lieu d'instancier `PdfBuilder` directement.
+
+**Ce qui n'a pas changé :**
+
+- Le comportement des modes `"none"`, `"latex"`, `"latex_pdf"` est strictement identique.
+- Ce n'est pas encore une migration vers LaTEI — l'ancienne chaîne PDF stable reste active.
+- `PdfBuilder`, `LatexRenderOptions`, `semantic_model`, `tei_to_model` restent en place.
+
+**Nouveau test : `tests/test_stable_pdf_export_adapter.py`** (4 tests rapides)
+
+- Vérifie par inspection de source que `site_builder.py` n'importe plus directement `PdfBuilder` ni `LatexRenderOptions`.
+- Vérifie que `stable_pdf_export.py` est le seul point d'entrée vers `PdfBuilder` pour le site.
+- Vérifie l'importabilité et la cohérence des exports.
+
+**Tests lancés :**
+
+- `test_stable_pdf_export_adapter.py` : 4 passed
+- `test_smoke.py`, `test_site_quality_report.py` : 29 passed
+- `test_pdf_latex.py`, `test_pdf_structure.py` : 57 passed

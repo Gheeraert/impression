@@ -11,10 +11,9 @@ from urllib.parse import unquote, urldefrag, urljoin, urlparse
 from lxml import etree, html as lxml_html
 
 from .config import BuildConfig
-from .latex_renderer import LatexRenderOptions
 from .normalizer import NormalizeReport, TeiNormalizer
-from .pdf_builder import PdfBuildResult, PdfBuilder
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
+from .stable_pdf_export import PdfBuildResult, build_stable_pdf_artifacts
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
 
@@ -393,11 +392,12 @@ class SiteBuilder:
                 pretty_print=True,
             )
 
-        result = PdfBuilder(
-            latex_options=LatexRenderOptions(style="purh"),
+        result = build_stable_pdf_artifacts(
+            pdf_input_path,
+            generated_dir,
             compile_pdf=(mode == "latex_pdf"),
             latex_engine=config.latex_engine,
-        ).build_from_normalized_tei(pdf_input_path, generated_dir)
+        )
 
         return PdfSiteArtifacts(
             latex_href="assets/generated/book.tex" if result.tex_path.exists() else None,
