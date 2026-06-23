@@ -691,4 +691,70 @@ tests/test_reversible_roundtrip.py     → 12 passed  (noyau réversible non cas
 
 ---
 
+## Passe M3 réalisée
+
+**Date** : 2026-06-22
+
+### Objectif validé
+
+Le fichier LaTEI monofichier peut désormais servir de fichier éditorial corrigible. Une correction faite dans la zone `lateiDocument` est reflétée dans le XML restauré. Les modifications hors zone sont ignorées par le parser.
+
+### Ce que prouvent les tests
+
+| Test | Résultat prouvé |
+|---|---|
+| `test_text_correction_in_zone_reflected_in_restored_xml` | Correction de texte brut dans la zone → XML restauré contient la correction |
+| `test_uncorrected_monofile_preserves_original_text` | Sans correction, le XML restauré est identique à l'original |
+| `test_inline_structural_correction_reflected_in_restored_xml` | Correction inline structurée (`\teiHi[rend={italic}]`) → `<hi rend="italic">` dans le XML |
+| `test_inline_note_correction_reflected_in_restored_xml` | Ajout d'une note (`\teiNote{}`) dans la zone → `<note>` dans le XML |
+| `test_technical_zone_modification_ignored_by_xml_restore` | Modification du commentaire et de la page de titre (zone technique) → `compare_tei_elements == []` |
+| `test_modification_outside_editorial_zone_leaves_xml_unchanged` | Ajout après `\end{lateiDocument}` → `compare_tei_elements == []`, texte technique absent du XML |
+
+### Invariants confirmés
+
+- **Seule la zone `lateiDocument` rétroagit vers le XML.** Les modifications dans le préambule, les macros, la page de titre ou tout contenu après `\end{lateiDocument}` sont invisibles au parser.
+- **Le préambule reste régénérable.** Il n'est jamais lu par le parser de retour XML.
+- **Le parser strict reste inchangé.** Aucune modification de `read_latex_document`.
+
+### Architecture des tests M3
+
+Les tests M3 travaillent entièrement en mémoire (0.03 s) via :
+- `write_latex(read_tei_element(element))` → corps LaTEI brut
+- `make_monofile(latex_body)` — helper local qui encadre le corps d'une zone technique fictive
+- `replace_inside_latei_document(monofile_text, old, new)` — helper local qui remplace uniquement dans la zone réversible
+- `restore_from_monofile_text(monofile_text)` — extrait + parse + écrit en un appel
+
+Aucun appel à `run_reversible_export_for_file` dans M3 (pas de compilation PDF, pas de I/O disque superflu).
+
+### Fichiers modifiés
+
+| Fichier | Nature de la modification |
+|---|---|
+| `tests/test_latei_monofile_editorial_workflow.py` | Nouveau fichier — 6 tests |
+| `AUDIT_LATEI_MONOFILE_TARGET.md` | Section « Passe M3 réalisée » |
+
+### Test d'intégration sur vrai monofichier généré (M3-bis)
+
+`test_editorial_correction_on_real_generated_monofile` valide le flux complet sur un fichier produit par le moteur réel :
+
+1. Mini XML TEI écrit sur disque dans `tmp_path`
+2. `run_reversible_export_for_file` → génère `*.latei.tex` réel
+3. `replace_inside_latei_document` → corrige uniquement la zone réversible
+4. Monofichier corrigé écrit sous `edited.latei.tex`
+5. `restore_xml_from_latei_monofile` → XML restauré
+6. Assertions sur le texte corrigé présent et l'original absent
+
+Ce test garantit que le pipeline de production (pas seulement les helpers en mémoire) supporte le flux éditorial.
+
+### Tests lancés
+
+```
+tests/test_latei_monofile_editorial_workflow.py  →  7 passed (8.45 s, dont 1 test d'intégration réel)
+tests/test_latei_monofile.py                     → 16 passed (M1 intact)
+tests/test_latei_monofile_restore.py             →  9 passed (M2 intact)
+tests/test_reversible_roundtrip.py               → 12 passed (noyau intact)
+```
+
+---
+
 *Audit rédigé depuis l'inspection directe du code. Aucun fichier modifié.*
