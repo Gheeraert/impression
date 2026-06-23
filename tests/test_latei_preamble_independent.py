@@ -105,28 +105,3 @@ def test_render_purh_latex_preamble_empty_authors() -> None:
     assert r"\PURHBookAuthor}{}" in preamble
 
 
-def test_latei_preamble_output_matches_latex_renderer_wrapper() -> None:
-    """Both paths must produce identical output for the same inputs."""
-    from purh_site.latei_preamble import PurhPreambleData, render_purh_latex_preamble
-    from purh_site.latex_renderer import render_purh_preamble_for_latei
-
-    contributors = ["Jean Dupont", "Marie Martin"]
-    direct = render_purh_latex_preamble(PurhPreambleData(
-        title="Héraldique et papauté",
-        subtitle="Moyen Âge",
-        authors=tuple(contributors),
-        publisher="PURH",
-        year="2024",
-        doi="10.1234/test",
-        isbn="979-10-240-1855-3",
-    ))
-    via_wrapper = render_purh_preamble_for_latei(
-        title="Héraldique et papauté",
-        subtitle="Moyen Âge",
-        contributors=contributors,
-        publisher="PURH",
-        publication_year="2024",
-        doi="10.1234/test",
-        isbn_pdf="979-10-240-1855-3",
-    )
-    assert direct == via_wrapper

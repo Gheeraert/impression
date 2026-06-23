@@ -14,7 +14,6 @@ from .config import BuildConfig
 from .normalizer import NormalizeReport, TeiNormalizer
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
-from .stable_pdf_export import PdfBuildResult, build_stable_pdf_artifacts
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
 
@@ -38,7 +37,7 @@ class ThemeAssets:
 class PdfSiteArtifacts:
     latex_href: str | None = None
     generated_pdf_href: str | None = None
-    build_result: PdfBuildResult | SiteLateiPdfExportResult | None = None
+    build_result: SiteLateiPdfExportResult | None = None
     disabled_by_editor_pdf: bool = False
 
 @dataclass(frozen=True, slots=True)
@@ -393,42 +392,35 @@ class SiteBuilder:
                 pretty_print=True,
             )
 
-        if mode in {"latei", "latei_pdf"}:
+        # Compatibility aliases: legacy mode names now route to the LaTEI PDF chain.
+        if mode in {"latei", "latex"}:
             latei_result = build_site_latei_pdf_artifacts(
                 pdf_input_path,
                 generated_dir,
-                compile_pdf=(mode == "latei_pdf"),
+                compile_pdf=False,
                 latex_engine=config.latex_engine,
             )
-            return PdfSiteArtifacts(
-                latex_href=(
-                    "assets/generated/book.tex" if latei_result.tex_path.exists() else None
-                ),
-                generated_pdf_href=(
-                    "assets/generated/book.pdf" if latei_result.pdf_path.exists() else None
-                ),
-                build_result=latei_result,
+        else:
+            latei_result = build_site_latei_pdf_artifacts(
+                pdf_input_path,
+                generated_dir,
+                compile_pdf=True,
+                latex_engine=config.latex_engine,
             )
 
-        result = build_stable_pdf_artifacts(
-            pdf_input_path,
-            generated_dir,
-            compile_pdf=(mode == "latex_pdf"),
-            latex_engine=config.latex_engine,
-        )
-
         return PdfSiteArtifacts(
-            latex_href="assets/generated/book.tex" if result.tex_path.exists() else None,
-            generated_pdf_href=(
-                "assets/generated/book.pdf"
-                if result.success and result.pdf_path.exists()
-                else None
+            latex_href=(
+                "assets/generated/book.tex" if latei_result.tex_path.exists() else None
             ),
-            build_result=result,
+            generated_pdf_href=(
+                "assets/generated/book.pdf" if latei_result.pdf_path.exists() else None
+            ),
+            build_result=latei_result,
         )
 
     def _normalized_pdf_export_mode(self, value: str) -> str:
         mode = (value or "none").strip().lower()
+        # Compatibility aliases: legacy mode names now route to the LaTEI PDF chain.
         return mode if mode in {"none", "latex", "latex_pdf", "latei", "latei_pdf"} else "none"
 
     def _pdf_site_report_lines(
