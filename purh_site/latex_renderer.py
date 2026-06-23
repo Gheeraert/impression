@@ -64,7 +64,7 @@ from .semantic_model import (
 )
 
 
-from .latei_typography import RUNNING_TITLE_STOPWORDS, _short_running_title  # re-exports
+from .latei_typography import _short_running_title as _compute_short_running_title
 
 
 # ---------------------------------------------------------------------------
@@ -396,7 +396,7 @@ class LatexRenderer:
             return ""
 
         escaped_title = self._escape_text(title)
-        running_title = self._escape_text(_short_running_title(title))
+        running_title = self._escape_text(_compute_short_running_title(title))
         running_mark = rf"\markboth{{{running_title}}}{{{running_title}}}"
 
         if division.div_type == DivisionType.PART:

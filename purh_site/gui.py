@@ -8,7 +8,11 @@ from tkinter import filedialog, messagebox, ttk
 
 from .config import BuildConfig
 from .local_server import PreviewServer
-from .reversible_integration import restore_xml_from_latei_body, run_reversible_export_for_file
+from .reversible_integration import (
+    restore_xml_from_latei_body,
+    restore_xml_from_latei_monofile,
+    run_reversible_export_for_file,
+)
 from .site_builder import SiteBuilder, has_editor_pdf
 
 
@@ -42,7 +46,10 @@ Fragments techniques (debug) — à ne pas corriger directement :
 *.latei_graphics_map.tex — mappings d’images
 latei_assets/        — images copiées
 
-Pour restaurer depuis un corps LaTEI fragmenté (format legacy) :
+Pour restaurer un XML Métopes après corrections :
+Outils → Restaurer un XML Métopes depuis un monofichier LaTEI…
+
+Ancien format fragmenté (debug/legacy) :
 Outils → Restaurer un XML Métopes depuis un corps LaTEI…"""
 
 
@@ -154,6 +161,10 @@ class App(ttk.Frame):
         tools_menu.add_command(
             label="Exporter un paquet LaTEI depuis un XML…",
             command=self._run_reversible_export,
+        )
+        tools_menu.add_command(
+            label="Restaurer un XML Métopes depuis un monofichier LaTEI…",
+            command=self._restore_xml_from_latei_monofile,
         )
         tools_menu.add_command(
             label="Restaurer un XML Métopes depuis un corps LaTEI…",
@@ -269,6 +280,47 @@ class App(ttk.Frame):
         for line in details.splitlines():
             self._log(line)
         messagebox.showinfo("Restauration XML depuis LaTEI", details)
+
+    def _restore_xml_from_latei_monofile(self) -> None:
+        path = filedialog.askopenfilename(
+            title="Choisir un monofichier LaTEI",
+            filetypes=[
+                ("Monofichier LaTEI", "*.latei.tex"),
+                ("Fichiers TeX", "*.tex"),
+                ("Tous les fichiers", "*.*"),
+            ],
+        )
+        if not path:
+            return
+
+        mono_path = Path(path)
+        default_output = mono_path.with_name(f"{latei_monofile_restored_stem(mono_path)}.restored.xml")
+        output = filedialog.asksaveasfilename(
+            title="Écrire l’XML Métopes restauré",
+            defaultextension=".xml",
+            filetypes=[("Fichiers XML", "*.xml"), ("Tous les fichiers", "*.*")],
+            initialdir=str(default_output.parent),
+            initialfile=default_output.name,
+        )
+        if not output:
+            return
+
+        try:
+            restored_path = restore_xml_from_latei_monofile(mono_path, Path(output))
+        except Exception as exc:
+            self._log(f"Erreur restauration XML depuis monofichier LaTEI : {exc}")
+            self._log(traceback.format_exc())
+            messagebox.showerror("Restauration XML depuis monofichier LaTEI", str(exc))
+            return
+
+        details = (
+            "XML Métopes restauré depuis le monofichier LaTEI.\n"
+            f"Monofichier LaTEI : {mono_path}\n"
+            f"XML restauré : {restored_path}"
+        )
+        for line in details.splitlines():
+            self._log(line)
+        messagebox.showinfo("Restauration XML depuis monofichier LaTEI", details)
 
     def _show_latei_usage_help(self) -> None:
         messagebox.showinfo("Mode d’emploi LaTEI", LATEI_USAGE_HELP)
@@ -684,7 +736,7 @@ def format_latei_export_summary(result, *, missing_artifacts: list[Path] | None 
         f"Macros locales : {result.latei_macros_path}",
         f"Mapping images : {result.latei_graphics_map_path}",
         f"Mapping titres courants : {result.latei_running_titles_map_path}",
-        f"Titres courants abrÃ©gÃ©s : {result.latei_short_running_titles_count}",
+        f"Titres courants abrégés : {result.latei_short_running_titles_count}",
         f"Assets LaTEI : {result.latei_assets_dir}",
         f"Images copiées : {result.latei_copied_images_count}",
         f"Warnings images : {len(result.latei_asset_warnings)}",
@@ -710,6 +762,15 @@ def latei_body_restored_stem(path: Path) -> str:
     """Return the source stem used for a restored XML file from a LaTEI body."""
     stem = Path(path).stem
     suffix = ".latei_body"
+    if stem.endswith(suffix):
+        return stem[: -len(suffix)]
+    return stem
+
+
+def latei_monofile_restored_stem(path: Path) -> str:
+    """Return the source stem used for a restored XML file from a LaTEI monofile."""
+    stem = Path(path).stem
+    suffix = ".latei"
     if stem.endswith(suffix):
         return stem[: -len(suffix)]
     return stem

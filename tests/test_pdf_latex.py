@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions, _short_running_title
+from purh_site.latex_renderer import LatexRenderer, LatexRenderOptions
+from purh_site.latei_typography import _short_running_title
 from purh_site.pdf_builder import PdfBuilder
 from purh_site.semantic_model import BibliographyBlock, FigureBlock, Italic, NoteRef, Paragraph, TableBlock, TextRun
 from purh_site.tei_to_model import parse_normalized_tei

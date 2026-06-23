@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 from purh_site.gui import (
     format_latei_export_summary,
+    latei_monofile_restored_stem,
     missing_latei_package_artifacts,
 )
 
@@ -39,6 +40,34 @@ def test_gui_labels_use_latei_vocabulary() -> None:
     assert 'add_cascade(label="Outils"' in source
     assert source.index("Exporter un paquet LaTEI depuis un XML") < source.index('add_cascade(label="Outils"')
     assert source.index("Restaurer un XML Métopes depuis un corps LaTEI") < source.index('add_cascade(label="Outils"')
+
+
+def test_gui_exposes_monofile_restore_action() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+
+    assert "Restaurer un XML Métopes depuis un monofichier LaTEI" in source
+    assert "restore_xml_from_latei_monofile" in source
+    assert "*.latei.tex" in source
+    assert source.index("Restaurer un XML Métopes depuis un monofichier LaTEI") < source.index(
+        "Restaurer un XML Métopes depuis un corps LaTEI"
+    )
+    assert source.index("Restaurer un XML Métopes depuis un monofichier LaTEI") < source.index(
+        'add_cascade(label="Outils"'
+    )
+
+
+def test_latei_usage_help_documents_monofile_restore() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+
+    assert "Restaurer un XML Métopes depuis un monofichier LaTEI" in source
+    assert "Ancien format fragmenté (debug/legacy)" in source
+    assert "Pour restaurer un XML Métopes après corrections" in source
+
+
+def test_latei_monofile_restored_stem_strips_latei_suffix() -> None:
+    assert latei_monofile_restored_stem(Path("book.latei.tex")) == "book"
+    assert latei_monofile_restored_stem(Path("mon_livre.latei.tex")) == "mon_livre"
+    assert latei_monofile_restored_stem(Path("notes.tex")) == "notes"
 
 
 def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path: Path) -> None:
@@ -97,7 +126,7 @@ def test_latei_package_preflight_and_summary_report_expected_artifacts(tmp_path:
     assert f"Macros locales : {result.latei_macros_path}" in summary
     assert f"Mapping images : {result.latei_graphics_map_path}" in summary
     assert f"Mapping titres courants : {result.latei_running_titles_map_path}" in summary
-    assert "Titres courants abrÃ©gÃ©s : 3" in summary
+    assert "Titres courants abrégés : 3" in summary
     assert "Images copiées : 2" in summary
     assert "Warnings images : 1" in summary
     assert "PDF LaTEI (debug) : non produit (LaTeX engine not found: lualatex)" in summary

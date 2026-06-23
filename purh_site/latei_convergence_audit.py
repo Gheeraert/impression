@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-"""Differential audit between the stable PURH PDF path and direct LaTEI PDF."""
+"""Outil debug / transition — compare la chaîne LaTEI et l'ancienne chaîne PDF stable.
+
+Non utilisé comme chemin de production. Sert uniquement à valider la convergence des
+deux pipelines pendant la migration. Candidat à déplacer dans un répertoire debug/legacy
+une fois la chaîne LaTEI monofichier stabilisée.
+"""
 
 from dataclasses import dataclass
 from pathlib import Path
