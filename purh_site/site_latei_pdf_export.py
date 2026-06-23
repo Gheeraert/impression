@@ -59,13 +59,15 @@ def build_site_latei_pdf_artifacts(
 
     Les artefacts natifs LaTEI ({stem}.latei.tex, latei_assets/, etc.) ne sont pas supprimés.
 
-    Note : latex_engine est accepté pour symétrie d'API avec stable_pdf_export, mais n'est
-    pas encore transmis à run_reversible_export_for_file (qui gère son propre moteur).
     """
     xml_input_path = Path(xml_input_path)
     output_dir = Path(output_dir)
 
-    result = run_reversible_export_for_file(xml_input_path, output_dir)
+    result = run_reversible_export_for_file(
+        xml_input_path,
+        output_dir,
+        latex_engine=latex_engine,
+    )
 
     tex_path = output_dir / "book.tex"
     pdf_path = output_dir / "book.pdf"

@@ -77,6 +77,8 @@ class ReversibleExportResult:
 def run_reversible_export_for_file(
     xml_path: Path,
     output_dir: Path | None = None,
+    *,
+    latex_engine: str = "lualatex",
 ) -> ReversibleExportResult:
     """Run the experimental TEI -> controlled LaTeX -> TEI export for one file.
 
@@ -252,6 +254,7 @@ def run_reversible_export_for_file(
         latei_main_path,
         latei_pdf_path,
         log_path=latei_log_path,
+        latex_engine=latex_engine,
     )
 
     graphics_map_content = latei_graphics_map_path.read_text(encoding="utf-8") if latei_graphics_map_path.exists() else None
@@ -267,6 +270,7 @@ def run_reversible_export_for_file(
         latei_monofile_path,
         latei_monofile_pdf_path,
         log_path=latei_monofile_log_path,
+        latex_engine=latex_engine,
     )
 
     etree.ElementTree(result.emitted).write(

@@ -432,7 +432,7 @@ Date : 2026-06-23
 
 - Test 1 : mode `latei` produit `book.tex`, `book.latei_manifest.json`, `pdf_build_report.txt` ; lien HTML correct ; rapport de build correct
 - Test 2 : `book.tex` est un monofichier LaTEI (`\begin{lateiDocument}`, pas de `\input{`)
-- Test 3 : mode `latei_pdf` — adaptatif selon disponibilité de LuaLaTeX ; invariants communs toujours vérifiés
+- Test 3 : mode `latei_pdf` — adaptatif selon disponibilité de LuaLaTeX ; invariants communs toujours vérifiés *(remplacé en E2-bis — voir ci-dessous)*
 - Test 4a : mode stable `latex` toujours fonctionnel
 - Test 4b : mode stable `none` toujours fonctionnel
 - Test 5 : PDF éditeur court-circuite les modes LaTEI comme les modes stables
@@ -443,3 +443,30 @@ Date : 2026-06-23
 - `test_stable_pdf_export_adapter.py` + `test_site_latei_pdf_export_adapter.py` : 12 passed
 - `test_smoke.py` : 22 passed
 - `test_site_quality_report.py` : 7 passed
+
+---
+
+## Passe E2-bis réalisée
+
+Date : 2026-06-23
+
+**Contexte :** La limite documentée en E2 — `latex_engine` accepté mais non transmis à `run_reversible_export_for_file` — est corrigée. La chaîne LaTEI honore désormais `BuildConfig.latex_engine` de bout en bout.
+
+**Modifications apportées :**
+
+- `purh_site/reversible_integration.py` :
+  - Signature de `run_reversible_export_for_file` étendue avec `*, latex_engine: str = "lualatex"` (paramètre keyword-only optionnel, rétrocompatible).
+  - Les deux appels à `compile_latei_pdf` transmettent désormais `latex_engine=latex_engine` : compilation debug du driver fragmenté et compilation principale du monofichier.
+- `purh_site/site_latei_pdf_export.py` :
+  - L'appel à `run_reversible_export_for_file` transmet `latex_engine=latex_engine`.
+  - Commentaire "non transmis" supprimé.
+- `tests/test_site_latei_pdf_mode.py` :
+  - Test adaptatif (Test 3) remplacé par deux tests déterministes :
+    - `test_latei_pdf_mode_is_robust_without_lualatex` : utilise `latex_engine="moteur-latei-inexistant"`, vérifie `book.tex` présent, `book.pdf` absent, WARNING dans le rapport.
+    - `test_latei_pdf_mode_produces_pdf_when_lualatex_available` : conditionnel (`pytest.skip` si lualatex absent), vérifie `book.pdf` présent et non vide.
+
+**Tests lancés :**
+
+- `test_site_latei_pdf_mode.py` : 7 passed (dont le nouveau test déterministe + le conditionnel lualatex)
+- `test_site_latei_pdf_export_adapter.py` + `test_reversible_integration.py` : 20 passed
+- `test_latei_monofile.py` + `test_latei_monofile_restore.py` : 25 passed

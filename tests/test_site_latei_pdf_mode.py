@@ -87,17 +87,39 @@ def test_latei_mode_book_tex_is_monofile(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 3 — mode latei_pdf robuste avec ou sans LuaLaTeX
+# Test 3 — mode latei_pdf sans LuaLaTeX (déterministe via faux moteur)
 # ---------------------------------------------------------------------------
 
-def test_latei_pdf_mode_is_robust_with_or_without_lualatex(tmp_path: Path) -> None:
-    """Vérifie le comportement de latei_pdf selon que LuaLaTeX est présent ou non.
+def test_latei_pdf_mode_is_robust_without_lualatex(tmp_path: Path) -> None:
+    xml_path = tmp_path / "book.xml"
+    xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
 
-    Contrairement à la chaîne stable, la chaîne LaTEI gère son propre moteur
-    LaTeX et n'honore pas encore le paramètre latex_engine de BuildConfig.
-    Ce test est donc adaptatif : il observe ce que la chaîne a produit et
-    vérifie les invariants correspondant au résultat réel.
-    """
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / "site",
+            pdf_export_mode="latei_pdf",
+            latex_engine="moteur-latei-inexistant",
+        ),
+    )
+
+    generated = tmp_path / "site" / "assets" / "generated"
+    build_report = result.report_path.read_text(encoding="utf-8")
+
+    assert result.html_path.exists(), "le site HTML doit être produit même sans LuaLaTeX"
+    assert (generated / "book.tex").exists(), "book.tex doit exister même sans LuaLaTeX"
+    assert (generated / "pdf_build_report.txt").exists()
+    assert not (generated / "book.pdf").exists(), "book.pdf ne doit pas exister si le moteur est absent"
+    assert "[WARNING] PDF non généré" in build_report
+    assert "Voir : assets/generated/pdf_build_report.txt" in build_report
+
+
+def test_latei_pdf_mode_produces_pdf_when_lualatex_available(tmp_path: Path) -> None:
+    import shutil as _shutil
+    if _shutil.which("lualatex") is None:
+        import pytest
+        pytest.skip("lualatex absent sur cette machine")
+
     xml_path = tmp_path / "book.xml"
     xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
 
@@ -107,22 +129,13 @@ def test_latei_pdf_mode_is_robust_with_or_without_lualatex(tmp_path: Path) -> No
     )
 
     generated = tmp_path / "site" / "assets" / "generated"
-    build_report = result.report_path.read_text(encoding="utf-8")
     book_pdf = generated / "book.pdf"
+    build_report = result.report_path.read_text(encoding="utf-8")
 
-    # Invariants communs, quelle que soit la disponibilité de LuaLaTeX
-    assert result.html_path.exists(), "le site HTML doit être produit"
-    assert (generated / "book.tex").exists(), "book.tex doit exister"
-    assert (generated / "pdf_build_report.txt").exists(), "pdf_build_report.txt doit exister"
-
-    if book_pdf.exists():
-        # LuaLaTeX était disponible
-        assert "PDF généré : assets/generated/book.pdf" in build_report
-        assert book_pdf.stat().st_size > 0, "book.pdf ne doit pas être vide"
-    else:
-        # LuaLaTeX était absent
-        assert "[WARNING] PDF non généré" in build_report
-        assert "Voir : assets/generated/pdf_build_report.txt" in build_report
+    assert (generated / "book.tex").exists()
+    assert book_pdf.exists(), "book.pdf doit exister si lualatex est disponible"
+    assert book_pdf.stat().st_size > 0
+    assert "PDF généré : assets/generated/book.pdf" in build_report
 
 
 # ---------------------------------------------------------------------------
