@@ -2,6 +2,7 @@ from __future__ import annotations
 
 """Build non-reversible running-title mappings for the direct LaTEI driver."""
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -81,8 +82,15 @@ def _structural_title(element: etree._Element) -> str:
     return _normalize_space(level_head)
 
 
+_REGULAR_WS = re.compile(r"[ \t\r\n\f\v]+")
+
+
 def _normalize_space(value: str) -> str:
-    return " ".join(value.split())
+    # Normalize only regular whitespace; preserve U+00A0 (non-breaking space) so
+    # that running-title map keys contain the same character as the body attributes.
+    # LaTeX's \newunicodechar{ }{~} then converts U+00A0 → ~ identically in both
+    # the map key and the runtime lookup, allowing \prop_get to find the entry.
+    return _REGULAR_WS.sub(" ", value).strip(" \t\r\n\f\v")
 
 
 def _write_running_titles_map(package: LateiRunningTitlePackage) -> None:

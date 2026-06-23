@@ -160,6 +160,28 @@ def test_real_metopes_fixture_full_export_uses_real_metadata(export_result: Reve
     assert metadata.doi == ""
 
 
+def test_real_metopes_running_titles_map_preserves_nbsp_in_keys(export_result: ReversibleExportResult) -> None:
+    """Running-title map keys for titles containing U+00A0 must preserve NBSP.
+    Audit F2 identified 6 chapters where the lookup failed because _normalize_space
+    converted NBSP to a regular space while LaTeX's \\newunicodechar{ }{~} produced
+    ~ from the body-attribute U+00A0.  After F3, the map keys must carry NBSP so
+    that \\newunicodechar converts both sides of the prop lookup identically."""
+    running_map = export_result.latei_running_titles_map_path.read_text(encoding="utf-8")
+
+    # Four of the six problematic chapters — all contain U+00A0 between first name
+    # and Roman numeral and exceed 58 chars, so they need a map entry.
+    for fragment in [
+        "L\xe9on\xa0X",
+        "Jules\xa0III",
+        "Urbain\xa0VIII",
+        "Cl\xe9ment\xa0XIII",
+    ]:
+        assert fragment in running_map, (
+            f"NBSP-preserved fragment {fragment!r} not found in running-title map.\n"
+            "This means _normalize_space is still converting U+00A0 to a regular space."
+        )
+
+
 def test_real_metopes_fixture_latei_compilation_status_is_explicit(export_result: ReversibleExportResult) -> None:
     log_path = export_result.latei_log_path
 

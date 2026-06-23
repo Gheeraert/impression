@@ -292,4 +292,68 @@ Compilation (latei_mono.log)
 
 ---
 
-*Aucun fichier de production modifié. Rapport généré dans la branche `integrate-reversible-core`.*
+---
+
+## Passe F3 réalisée
+
+**Date :** 2026-06-23  
+**Branche :** integrate-reversible-core
+
+### Correction apportée
+
+Fichier modifié : `purh_site/latei_running_titles.py` — fonction `_normalize_space`.
+
+**Avant :**
+```python
+def _normalize_space(value: str) -> str:
+    return " ".join(value.split())
+```
+`str.split()` sans argument normalise *tous* les espaces Unicode (y compris U+00A0) en espace ordinaire → clé de carte avec espace ordinaire → lookup TeX échoue.
+
+**Après :**
+```python
+_REGULAR_WS = re.compile(r"[ \t\r\n\f\v]+")
+
+def _normalize_space(value: str) -> str:
+    return _REGULAR_WS.sub(" ", value).strip(" \t\r\n\f\v")
+```
+Seuls les blancs ordinaires sont normalisés. U+00A0 traverse inchangé jusqu'au fichier de carte (UTF-8). À la compilation, `\newunicodechar{ }{~}` (ligne 11 de `latei_macros.tex`) convertit U+00A0 → `~` **identiquement** dans la clé de carte et dans l'attribut de corps au runtime → le `\prop_get` réussit → titre court utilisé.
+
+### Résultat
+
+Les 6 chapitres dont le titre dépasse 58 caractères et contient U+00A0 trouvent désormais leur entrée dans la carte :
+
+| Fragment NBSP dans la clé | Ancien état (carte) | Nouvel état (carte) |
+|---|---|---|
+| `Léon\xa0X` | `Léon X` (espace ordinaire) | `Léon X` (**NBSP préservé**) |
+| `Jules\xa0III` | `Jules III` | `Jules III` |
+| `Urbain\xa0VIII` | `Urbain VIII` | `Urbain VIII` |
+| `Clément\xa0XIII` | `Clément XIII` | `Clément XIII` |
+| `papes\xa0:` | `papes :` | `papes :` |
+| `Bretenoux\xa0:` | `Bretenoux :` | `Bretenoux :` |
+
+### Ce qui n'a pas été modifié
+
+- Styles inline (italiques, petites capitales, exposants) : **non modifiés** ✓  
+- Auteurs de contribution : **non modifiés** ✓  
+- Pagination liminaire (E2) : **non modifiée** ✓  
+- En-têtes verso (E3) : **non modifiées** ✓  
+- `latei_macros.tex`, `latei_preamble.py`, chaîne stable : **non modifiés** ✓  
+- Troncature (`_short_running_title`) : inchangée — `re.sub(r"\s+", " ", ...)` normalise toujours U+00A0 lors du calcul de longueur, le comportement de troncature est identique.
+
+### Tests lancés
+
+```
+tests/test_latei_direct_running_titles.py   6 passed  (dont 3 nouveaux tests F3)
+tests/test_latei_running_titles_minimal.py  2 passed
+tests/test_latei_real_metopes_fixture.py    9 passed  (dont 1 nouveau test F3 sur fixture Héraldique)
+tests/test_site_latei_pdf_mode.py          11 passed  (régression)
+tests/test_site_latei_pdf_assets.py         0 passed  (inclus dans le 11 ci-dessus)
+```
+
+Tous les tests passent. Aucune régression détectée.
+
+---
+
+*Rapport initial : aucun fichier de production modifié.*  
+*Passe F3 réalisée dans la branche `integrate-reversible-core`.*
