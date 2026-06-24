@@ -56,6 +56,13 @@ site_builder → LaTEI uniquement
 branches/tags Git V1 → archive de l'ancienne chaîne stable
 ```
 
-## Passe ultérieure
+## Modes PDF actifs
 
-Le GUI sera adapté dans une passe séparée pour rendre les libellés cohérents avec l'architecture nouvelle (`latex` → `latei`, `latex_pdf` → `latei_pdf`).
+Depuis la passe E6, les seuls modes PDF/LaTeX acceptés sont :
+
+- `none` : aucun export PDF/LaTeX ;
+- `latei` : export du monofichier LaTEI ;
+- `latei_pdf` : export du monofichier LaTEI et compilation PDF.
+
+Les anciens modes `latex` et `latex_pdf` ne sont plus supportés.
+Ils appartiennent à l'ancienne chaîne stable, conservée uniquement dans l'historique Git / branches V1.

@@ -6,7 +6,7 @@ Checks:
 1. site_builder.py contains no imports from the removed stable-PDF modules.
 2. No module under purh_site/ imports the removed stable-PDF modules.
 3. Modes latei and latei_pdf are accepted by the site builder.
-4. Alias modes latex and latex_pdf are also accepted and route to LaTEI.
+4. Legacy modes latex and latex_pdf are no longer accepted (fall back to none).
 """
 
 from pathlib import Path
@@ -89,11 +89,11 @@ def test_latei_modes_are_accepted() -> None:
     assert builder._normalized_pdf_export_mode("latei_pdf") == "latei_pdf"
 
 
-def test_alias_modes_are_accepted() -> None:
+def test_legacy_modes_fall_back_to_none() -> None:
     from purh_site.site_builder import SiteBuilder
     builder = SiteBuilder()
-    assert builder._normalized_pdf_export_mode("latex") == "latex"
-    assert builder._normalized_pdf_export_mode("latex_pdf") == "latex_pdf"
+    assert builder._normalized_pdf_export_mode("latex") == "none"
+    assert builder._normalized_pdf_export_mode("latex_pdf") == "none"
 
 
 def test_none_mode_is_accepted() -> None:

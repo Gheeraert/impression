@@ -313,7 +313,7 @@ def test_editor_pdf_disables_generated_latex_and_pdf_even_when_requested(tmp_pat
         BuildConfig(
             output_dir=tmp_path / 'site',
             assets_dir=assets_dir,
-            pdf_export_mode='latex_pdf',
+            pdf_export_mode='latei_pdf',
             latex_engine='moteur-inutile',
         ),
     )
@@ -341,7 +341,7 @@ def test_citation_pdf_url_prefers_editor_pdf(tmp_path: Path) -> None:
         BuildConfig(
             output_dir=tmp_path / 'site',
             assets_dir=assets_dir,
-            pdf_export_mode='latex_pdf',
+            pdf_export_mode='latei_pdf',
             latex_engine='moteur-inutile',
         ),
     )
@@ -354,13 +354,13 @@ def test_citation_pdf_url_prefers_editor_pdf(tmp_path: Path) -> None:
     assert 'href="assets/generated/book.pdf"' not in index_html
 
 
-def test_latex_is_generated_when_no_editor_pdf_exists_and_mode_latex(tmp_path: Path) -> None:
+def test_latei_is_generated_when_no_editor_pdf_exists_and_mode_latei(tmp_path: Path) -> None:
     xml_path = tmp_path / 'book.xml'
     xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
 
     result = SiteBuilder().build_from_master(
         xml_path,
-        BuildConfig(output_dir=tmp_path / 'site', pdf_export_mode='latex'),
+        BuildConfig(output_dir=tmp_path / 'site', pdf_export_mode='latei'),
     )
 
     index_html = result.html_path.read_text(encoding='utf-8')
@@ -379,7 +379,7 @@ def test_citation_pdf_url_absent_without_available_pdf(tmp_path: Path) -> None:
 
     result = SiteBuilder().build_from_master(
         xml_path,
-        BuildConfig(output_dir=tmp_path / 'site', pdf_export_mode='latex'),
+        BuildConfig(output_dir=tmp_path / 'site', pdf_export_mode='latei'),
     )
 
     index_html = result.html_path.read_text(encoding='utf-8')
@@ -398,7 +398,7 @@ def test_pdf_generation_failure_does_not_break_html_build(tmp_path: Path) -> Non
         xml_path,
         BuildConfig(
             output_dir=tmp_path / 'site',
-            pdf_export_mode='latex_pdf',
+            pdf_export_mode='latei_pdf',
             latex_engine='moteur-inexistant-impressions',
         ),
     )
@@ -415,7 +415,7 @@ def test_pdf_generation_failure_does_not_break_html_build(tmp_path: Path) -> Non
     assert 'Voir : assets/generated/pdf_build_report.txt' in report
 
 
-def test_latex_generation_with_hidden_normalized_tei_keeps_xml_download_disabled(tmp_path: Path) -> None:
+def test_latei_generation_with_hidden_normalized_tei_keeps_xml_download_disabled(tmp_path: Path) -> None:
     xml_path = tmp_path / 'book.xml'
     xml_path.write_text(TEI_SAMPLE, encoding='utf-8')
 
@@ -424,7 +424,7 @@ def test_latex_generation_with_hidden_normalized_tei_keeps_xml_download_disabled
         BuildConfig(
             output_dir=tmp_path / 'site',
             write_normalized_tei=False,
-            pdf_export_mode='latex',
+            pdf_export_mode='latei',
         ),
     )
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 """Tests d'intégration pour les modes pdf_export_mode="latei" et "latei_pdf" dans SiteBuilder.
 
-Passe E2 — ces tests vérifient que les nouveaux modes LaTEI sont branchés dans
-site_builder.py sans régresser les modes stables existants.
+Passe E6 — LaTEI est l'unique chaîne PDF/LaTeX active.
+Les seuls modes valides sont : none, latei, latei_pdf.
 """
 
 from pathlib import Path
@@ -139,10 +139,10 @@ def test_latei_pdf_mode_produces_pdf_when_lualatex_available(tmp_path: Path) -> 
 
 
 # ---------------------------------------------------------------------------
-# Test 4 — modes stables inchangés après E2
+# Test 4 — modes legacy ignorés après E6
 # ---------------------------------------------------------------------------
 
-def test_stable_latex_mode_still_works(tmp_path: Path) -> None:
+def test_legacy_latex_mode_falls_back_to_none(tmp_path: Path) -> None:
     xml_path = tmp_path / "book.xml"
     xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
 
@@ -152,16 +152,29 @@ def test_stable_latex_mode_still_works(tmp_path: Path) -> None:
     )
 
     generated = tmp_path / "site" / "assets" / "generated"
-    assert (generated / "book.tex").exists()
-    assert 'href="assets/generated/book.tex"' in result.html_path.read_text(encoding="utf-8")
-    assert "LaTeX généré : assets/generated/book.tex" in result.report_path.read_text(encoding="utf-8")
+    assert not (generated / "book.tex").exists(), "latex mode doit être traité comme none (E6)"
+    assert not (generated / "book.pdf").exists()
 
 
-def test_stable_none_mode_still_works(tmp_path: Path) -> None:
+def test_legacy_latex_pdf_mode_falls_back_to_none(tmp_path: Path) -> None:
     xml_path = tmp_path / "book.xml"
     xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
 
     result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(output_dir=tmp_path / "site", pdf_export_mode="latex_pdf"),
+    )
+
+    generated = tmp_path / "site" / "assets" / "generated"
+    assert not (generated / "book.tex").exists(), "latex_pdf mode doit être traité comme none (E6)"
+    assert not (generated / "book.pdf").exists()
+
+
+def test_none_mode_produces_no_artifacts(tmp_path: Path) -> None:
+    xml_path = tmp_path / "book.xml"
+    xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
+
+    SiteBuilder().build_from_master(
         xml_path,
         BuildConfig(output_dir=tmp_path / "site", pdf_export_mode="none"),
     )

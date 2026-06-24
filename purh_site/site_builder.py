@@ -392,21 +392,12 @@ class SiteBuilder:
                 pretty_print=True,
             )
 
-        # Compatibility aliases: legacy mode names now route to the LaTEI PDF chain.
-        if mode in {"latei", "latex"}:
-            latei_result = build_site_latei_pdf_artifacts(
-                pdf_input_path,
-                generated_dir,
-                compile_pdf=False,
-                latex_engine=config.latex_engine,
-            )
-        else:
-            latei_result = build_site_latei_pdf_artifacts(
-                pdf_input_path,
-                generated_dir,
-                compile_pdf=True,
-                latex_engine=config.latex_engine,
-            )
+        latei_result = build_site_latei_pdf_artifacts(
+            pdf_input_path,
+            generated_dir,
+            compile_pdf=(mode == "latei_pdf"),
+            latex_engine=config.latex_engine,
+        )
 
         return PdfSiteArtifacts(
             latex_href=(
@@ -420,8 +411,7 @@ class SiteBuilder:
 
     def _normalized_pdf_export_mode(self, value: str) -> str:
         mode = (value or "none").strip().lower()
-        # Compatibility aliases: legacy mode names now route to the LaTEI PDF chain.
-        return mode if mode in {"none", "latex", "latex_pdf", "latei", "latei_pdf"} else "none"
+        return mode if mode in {"none", "latei", "latei_pdf"} else "none"
 
     def _pdf_site_report_lines(
         self,

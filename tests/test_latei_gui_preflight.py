@@ -15,9 +15,9 @@ def test_gui_labels_use_latei_vocabulary() -> None:
     source = Path("purh_site/gui.py").read_text(encoding="utf-8")
 
     assert "Export LaTEI / PDF PURH" in source
-    assert "Ne pas générer de paquet LaTEI" in source
-    assert "Exporter le paquet LaTEI seul" in source
-    assert "Exporter le paquet LaTEI + compiler le PDF" in source
+    assert "Aucun export PDF/LaTeX" in source
+    assert "LaTEI monofichier (.tex)" in source
+    assert "LaTEI monofichier + PDF" in source
     assert "Exporter un paquet LaTEI depuis un XML" in source
     assert "Restaurer un XML Métopes depuis un corps LaTEI" in source
     assert "Le paquet LaTEI contient le corps réversible" in source
@@ -146,10 +146,20 @@ def test_gui_exposes_latei_pdf_mode_values() -> None:
     assert '"latei_pdf"' in source, 'la valeur "latei_pdf" doit être dans le source du GUI'
 
 
-def test_gui_all_five_pdf_modes_present() -> None:
+def test_gui_only_three_pdf_modes_present() -> None:
     source = Path("purh_site/gui.py").read_text(encoding="utf-8")
-    for mode in ('"none"', '"latex"', '"latex_pdf"', '"latei"', '"latei_pdf"'):
+    for mode in ('"none"', '"latei"', '"latei_pdf"'):
         assert mode in source, f"le mode {mode} doit apparaître dans le source du GUI"
+    assert '"latex"' not in source, 'le mode "latex" ne doit plus apparaître dans le GUI (passe E6)'
+    assert '"latex_pdf"' not in source, 'le mode "latex_pdf" ne doit plus apparaître dans le GUI (passe E6)'
+
+
+def test_gui_old_modes_not_offered() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    assert "Chaîne stable (legacy)" not in source
+    assert "Chaîne LaTEI monofichier" not in source
+    assert "PDF stable" not in source
+    assert "ancienne chaîne" not in source
 
 
 def test_build_config_accepts_latei_mode() -> None:
