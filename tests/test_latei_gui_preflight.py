@@ -162,6 +162,17 @@ def test_gui_old_modes_not_offered() -> None:
     assert "ancienne chaîne" not in source
 
 
+def test_gui_editorial_help_content() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    assert "Mode d’emploi \xe9ditorial" in source
+    assert "Structure attendue du dossier assets" in source
+    assert "Les informations d\xe9j\xe0 pr\xe9sentes dans le XML sont toujours prioritaires" in source
+    assert "Le dossier assets contient les images et les fichiers appel\xe9s par le XML" in source
+    assert "Aucun export PDF/LaTeX" in source
+    assert "LaTEI monofichier (.tex)" in source
+    assert "LaTEI monofichier + PDF" in source
+
+
 def test_build_config_accepts_latei_mode() -> None:
     config = BuildConfig(output_dir=Path("."), pdf_export_mode="latei")
     assert config.pdf_export_mode == "latei"

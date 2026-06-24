@@ -52,6 +52,101 @@ Outils → Restaurer un XML Métopes depuis un monofichier LaTEI…
 Ancien format fragmenté (debug/legacy) :
 Outils → Restaurer un XML Métopes depuis un corps LaTEI…"""
 
+ASSETS_STRUCTURE_HELP = """Structure attendue du dossier assets
+
+Le dossier assets doit contenir les fichiers appelés par le XML : images, figures, fac-similés ou autres documents liés.
+
+Les chemins doivent correspondre exactement aux chemins indiqués dans le XML.
+
+Exemple :
+si le XML contient :
+
+  <graphic url="images/figure-01.jpg"/>
+
+alors le dossier assets doit contenir :
+
+  images/
+    figure-01.jpg
+
+Si le XML contient :
+
+  <graphic url="figures/chapitre-2/schema.png"/>
+
+alors le dossier assets doit contenir :
+
+  figures/
+    chapitre-2/
+      schema.png
+
+En pratique, le dossier assets peut par exemple avoir cette structure :
+
+  assets/
+    images/
+      figure-01.jpg
+      figure-02.jpg
+    figures/
+      chapitre-1/
+        carte-01.png
+    documents/
+      annexe.pdf
+
+Il est conseillé d’éviter les noms de fichiers trop complexes : préférer des noms courts, sans espaces, sans accents, et stables."""
+
+EDITORIAL_USAGE_HELP = """Mode d’emploi éditorial
+
+1. Choisir le fichier XML maître
+
+Sélectionnez le fichier XML principal du livre. Dans la plupart des cas, il s’agit du fichier complet ou normalisé fourni à partir de Métopes.
+
+2. Ajouter des fichiers XML indépendants si nécessaire
+
+Ce champ sert uniquement lorsque le livre est constitué de plusieurs fichiers XML séparés. Si vous disposez d’un seul fichier XML complet, laissez cette zone vide.
+
+3. Choisir le dossier assets
+
+Le dossier assets contient les images et les fichiers appelés par le XML.
+
+Il doit conserver la même organisation que les chemins indiqués dans le XML.
+
+Exemple :
+si le XML appelle images/figure-01.jpg, le dossier assets doit contenir un sous-dossier images avec le fichier figure-01.jpg.
+
+Structure possible :
+
+  assets/
+    images/
+      figure-01.jpg
+      figure-02.jpg
+    figures/
+      chapitre-1/
+        carte-01.png
+    documents/
+      annexe.pdf
+
+4. Ajouter une quatrième de couverture si nécessaire
+
+Si le XML contient déjà une quatrième de couverture, elle sera utilisée en priorité. Le fichier externe ne sert que de repli.
+
+Formats acceptés : .md, .markdown, .html, .txt.
+
+5. Compléter les informations de collection
+
+Les champs collection, numéro et ISSN ne sont utilisés que si ces informations ne sont pas déjà présentes dans le XML.
+
+6. Choisir l’export LaTEI / PDF
+
+Aucun export PDF/LaTeX : construit seulement le site web.
+LaTEI monofichier (.tex) : produit le fichier de composition du livre.
+LaTEI monofichier + PDF : produit le fichier de composition et tente de compiler le PDF.
+
+7. Construire le site
+
+Choisissez le dossier de sortie, puis cliquez sur « Construire le site ».
+Le site généré peut ensuite être prévisualisé dans le navigateur.
+
+Les informations déjà présentes dans le XML sont toujours prioritaires.
+Les champs optionnels ne servent qu’à compléter ou remplacer une information manquante."""
+
 
 class App(ttk.Frame):
     """Interface graphique pour lancer les builds TEI -> site multi-pages."""
@@ -93,65 +188,87 @@ class App(ttk.Frame):
         title.grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 12))
 
         self._add_path_selector(1, "Fichier XML maître", self.master_xml_var, self._choose_master_xml, "Choisir…")
+        ttk.Label(
+            self,
+            text="Choisir le fichier XML principal du livre. Dans le cas le plus courant, c’est le fichier complet ou normalisé du livre.",
+            foreground="gray",
+        ).grid(row=2, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
         files_label = ttk.Label(self, text="Fichiers XML indépendants (optionnel)")
-        files_label.grid(row=2, column=0, sticky="nw", pady=(0, 6))
+        files_label.grid(row=3, column=0, sticky="nw", pady=(0, 6))
         self.files_list = tk.Listbox(self, height=6)
-        self.files_list.grid(row=2, column=1, sticky="nsew", pady=(0, 6))
+        self.files_list.grid(row=3, column=1, sticky="nsew", pady=(0, 6))
         files_buttons = ttk.Frame(self)
-        files_buttons.grid(row=2, column=2, sticky="n")
+        files_buttons.grid(row=3, column=2, sticky="n")
         ttk.Button(files_buttons, text="Ajouter…", command=self._choose_xml_files).grid(row=0, column=0, sticky="ew")
         ttk.Button(files_buttons, text="Vider", command=self._clear_xml_files).grid(row=1, column=0, sticky="ew", pady=(6, 0))
+        ttk.Label(
+            self,
+            text="À utiliser seulement si le livre est fourni en plusieurs fichiers XML séparés. Sinon, laisser vide.",
+            foreground="gray",
+        ).grid(row=4, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
-        self._add_path_selector(3, "Dossier assets", self.assets_dir_var, self._choose_assets_dir, "Choisir…")
-        self._add_path_selector(4, "Quatrième de couverture (optionnel : .md, .markdown, .html, .txt)", self.back_cover_var, self._choose_back_cover, "Choisir…")
-        self._add_entry_row(5, "Nom de la collection (optionnel)", self.collection_title_var)
-        self._add_entry_row(6, "Numéro dans la collection (optionnel)", self.collection_number_var)
-        self._add_entry_row(7, "ISSN de la collection (optionnel)", self.collection_issn_var)
-        self._add_path_selector(8, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
+        self._add_path_selector(5, "Dossier assets", self.assets_dir_var, self._choose_assets_dir, "Choisir…")
+        ttk.Label(
+            self,
+            text="Choisir le dossier qui contient les images et fichiers liés au livre. Il sera copié dans le site de sortie sous le nom assets.",
+            foreground="gray",
+        ).grid(row=6, column=1, sticky="w", pady=(0, 6))
+        ttk.Button(
+            self,
+            text="Structure attendue du dossier assets…",
+            command=self._show_assets_structure_help,
+        ).grid(row=6, column=2, sticky="ew", pady=(0, 6))
 
-        self._add_pdf_export_controls(9)
+        self._add_path_selector(7, "Quatrième de couverture (optionnel)", self.back_cover_var, self._choose_back_cover, "Choisir…")
+        ttk.Label(
+            self,
+            text="Si le XML contient déjà une quatrième de couverture, elle sera utilisée en priorité. Ce champ sert seulement à fournir un fichier de repli.\nFormats acceptés : .md, .markdown, .html, .txt.",
+            foreground="gray",
+        ).grid(row=8, column=1, columnspan=2, sticky="w", pady=(0, 6))
+
+        self._add_entry_row(9, "Nom de la collection (optionnel)", self.collection_title_var)
+        self._add_entry_row(10, "Numéro dans la collection (optionnel)", self.collection_number_var)
+        self._add_entry_row(11, "ISSN de la collection (optionnel)", self.collection_issn_var)
+        ttk.Label(
+            self,
+            text="Ces champs ne sont utilisés que si l’information n’est pas déjà présente dans le XML.",
+            foreground="gray",
+        ).grid(row=12, column=1, columnspan=2, sticky="w", pady=(0, 6))
+
+        self._add_path_selector(13, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
+
+        self._add_pdf_export_controls(14)
+        ttk.Label(
+            self,
+            text="LaTEI est le fichier de composition du livre. Il peut être relu, corrigé et compilé en PDF.",
+            foreground="gray",
+        ).grid(row=15, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
         preview_bar = ttk.Frame(self)
-        preview_bar.grid(row=10, column=0, columnspan=3, sticky="w", pady=(0, 8))
+        preview_bar.grid(row=16, column=0, columnspan=3, sticky="w", pady=(0, 8))
         ttk.Label(preview_bar, text="Ports de prévisualisation").grid(row=0, column=0, sticky="w")
         ttk.Entry(preview_bar, textvariable=self.port_var, width=18).grid(row=0, column=1, sticky="w", padx=(8, 16))
         ttk.Checkbutton(preview_bar, text="Lancer le serveur local et ouvrir le navigateur après build", variable=self.auto_preview_var).grid(row=0, column=2, sticky="w")
 
-        helper = ttk.Label(
-            self,
-            text=(
-                "Le dossier choisi sera copié tel quel dans la sortie sous assets/. "
-                "La collection est lue d’abord dans le TEI ; les champs ci-dessus ne servent que de repli. "
-                "Même logique pour la quatrième : XML d’abord, puis fichier externe si nécessaire. "
-                f"{LATEI_PACKAGE_HELP}"
-            ),
-            wraplength=920,
-        )
-        helper.grid(row=11, column=0, columnspan=3, sticky="w", pady=(0, 8))
-
         button_bar = ttk.Frame(self)
-        button_bar.grid(row=12, column=0, columnspan=3, sticky="w", pady=(8, 12))
+        button_bar.grid(row=17, column=0, columnspan=3, sticky="w", pady=(8, 12))
         ttk.Button(button_bar, text="Charger config…", command=self._load_config).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(button_bar, text="Enregistrer config…", command=self._save_config).grid(row=0, column=1, padx=(0, 8))
         self.build_button = ttk.Button(button_bar, text="Construire le site", command=self._build)
         self.build_button.grid(row=0, column=2, padx=(0, 8))
-        ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0,
-                                                                                                              column=3,
-                                                                                                              padx=(
-                                                                                                              0, 8))
-        ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=4,
-                                                                                                       padx=(0, 8))
+        ttk.Button(button_bar, text="Relancer la prévisualisation", command=self._preview_existing_site).grid(row=0, column=3, padx=(0, 8))
+        ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=4, padx=(0, 8))
         ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=5)
 
         log_label = ttk.Label(self, text="Journal")
-        log_label.grid(row=13, column=0, sticky="w")
+        log_label.grid(row=18, column=0, sticky="w")
         self.log = tk.Text(self, wrap="word", height=24)
-        self.log.grid(row=14, column=0, columnspan=3, sticky="nsew")
+        self.log.grid(row=19, column=0, columnspan=3, sticky="nsew")
         self.log.configure(state="disabled")
 
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(14, weight=1)
+        self.rowconfigure(19, weight=1)
         self._refresh_pdf_export_controls()
         self._log("Interface prête.")
 
@@ -173,8 +290,8 @@ class App(ttk.Frame):
         menubar.add_cascade(label="Outils", menu=tools_menu)
         help_menu = tk.Menu(menubar, tearoff=False)
         help_menu.add_command(
-            label="Mode d’emploi LaTEI…",
-            command=self._show_latei_usage_help,
+            label="Mode d’emploi éditorial…",
+            command=self._show_editorial_usage_help,
         )
         menubar.add_cascade(label="Aide", menu=help_menu)
         self.master.config(menu=menubar)
@@ -326,6 +443,12 @@ class App(ttk.Frame):
 
     def _show_latei_usage_help(self) -> None:
         messagebox.showinfo("Mode d’emploi LaTEI", LATEI_USAGE_HELP)
+
+    def _show_editorial_usage_help(self) -> None:
+        messagebox.showinfo("Mode d’emploi éditorial", EDITORIAL_USAGE_HELP)
+
+    def _show_assets_structure_help(self) -> None:
+        messagebox.showinfo("Structure attendue du dossier assets", ASSETS_STRUCTURE_HELP)
 
     def _choose_xml_files(self) -> None:
         paths = filedialog.askopenfilenames(title="Choisir un ou plusieurs fichiers XML", filetypes=[("Fichiers XML", "*.xml")])
