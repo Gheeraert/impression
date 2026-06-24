@@ -1,54 +1,95 @@
 # Commandes LaTEI de mise en page (`\latei...`)
 
-## Principe
+## Doctrine des trois couches
 
-Les commandes `\latei...` sont des corrections de mise en page PDF **non exportées vers le XML**.
+Le LaTEI repose sur trois couches strictement séparées :
 
-- Les commandes `\tei...` encodent du contenu éditorial réversible (elles produisent des éléments TEI lors de la restauration XML).
-- Les commandes `\latei...` enveloppent du contenu `\tei...` pour corriger l'apparence du PDF sans modifier la structure sémantique. Lors de la restauration XML, leur enveloppe est ignorée et leur contenu est parsé normalement.
-
-Ce mécanisme permet d'apporter des corrections typographiques locales dans le fichier `.latei.tex` sans risquer de corrompre la restauration XML.
-
-## Commandes disponibles
-
-### `\lateiNoIndent{...}`
-
-Supprime le retrait de première ligne du contenu enveloppé.
-
-**Usage typique :** corriger l'indentation d'un paragraphe qui suit immédiatement un titre, une citation en retrait, un élément flottant ou un environnement spécial, lorsque LaTeX réintroduit un retrait non souhaité.
-
-**Syntaxe :**
-
-```latex
-\lateiNoIndent{\teiP{Texte du paragraphe sans retrait.}}
+```
+\tei...     = contenu éditorial réversible → restauré vers XML/Métopes
+\latei...   = corrections locales de mise en page PDF → ignorées au retour XML
+LaTeX brut  = réservé au moteur, interdit dans la zone lateiDocument
 ```
 
-**Comportement PDF :** équivalent à `{\parindent=0pt \teiP{...}}` — le groupe local annule le retrait pour le contenu enveloppé.
+**Règle absolue :** aucune commande LaTeX brute (`\noindent`, `\vspace`, `\newpage`, `\clearpage`, `\nopagebreak`, etc.) n'est autorisée dans la zone `lateiDocument`. Toute commande inconnue du parseur lève `LatexParseError`.
 
-**Comportement lors de la restauration XML :** l'enveloppe `\lateiNoIndent{...}` est ignorée ; les nœuds intérieurs (`\teiP`, `\teiHi`, etc.) sont parsés et exportés normalement vers le XML.
+## Comportement du parseur
 
-**Ce que cette commande ne fait pas :**
-- Elle ne modifie pas le XML source.
-- Elle ne supprime pas les retraits globalement (ce serait une modification de style, pas une correction locale).
-- Elle ne doit pas être utilisée pour reformater un paragraphe entier ; elle est réservée aux corrections ponctuelles.
+- **`LAYOUT_WRAPPER_MACROS`** : lit le groupe `{...}`, le parse récursivement, insère les nœuds résultants directement. Aucun élément TEI créé pour l'enveloppe.
+- **`LAYOUT_PARAM_WRAPPER_MACROS`** : lit `{size}` (valide : `small`, `medium`, `large`), lit `{...}`, parse et insère les nœuds. Le paramètre est ignoré pour le XML.
+- **`LAYOUT_STANDALONE_MACROS`** : consomme la commande, n'ajoute rien au XML.
+- **`LAYOUT_PARAM_STANDALONE_MACROS`** : lit `{size}` (valide : `small`, `medium`, `large`), n'ajoute rien au XML.
 
-## Implémentation
+Les valeurs `12pt`, `1em`, `huge`, etc. sont rejetées avec `LatexParseError`.
 
-### `purh_site/resources/latei_macros.tex`
+## Tableau complet des commandes
+
+| Commande | Type | Effet PDF | Retour XML |
+|---|---|---|---|
+| `\lateiNoIndent{...}` | enveloppante | supprime l'alinéa de première ligne | conserve le contenu |
+| `\lateiIndent{...}` | enveloppante | force l'alinéa de première ligne | conserve le contenu |
+| `\lateiSpaceBefore{size}{...}` | enveloppante paramétrée | blanc vertical avant | conserve le contenu |
+| `\lateiSpaceAfter{size}{...}` | enveloppante paramétrée | blanc vertical après | conserve le contenu |
+| `\lateiPageBreakBefore{...}` | enveloppante | saut de page avant | conserve le contenu |
+| `\lateiPageBreakAfter{...}` | enveloppante | saut de page après | conserve le contenu |
+| `\lateiClearPageBefore{...}` | enveloppante | nouvelle page + flottants avant | conserve le contenu |
+| `\lateiClearPageAfter{...}` | enveloppante | nouvelle page + flottants après | conserve le contenu |
+| `\lateiKeepWithNext{...}` | enveloppante | interdit coupure après | conserve le contenu |
+| `\lateiKeepTogether{...}` | enveloppante | maintient sur une page | conserve le contenu |
+| `\lateiNoPageBreakBefore{...}` | enveloppante | interdit coupure avant | conserve le contenu |
+| `\lateiNoPageBreakAfter{...}` | enveloppante | interdit coupure après | conserve le contenu |
+| `\lateiVSpace{size}` | autonome paramétrée | blanc vertical | ignorée |
+| `\lateiPageBreak` | autonome | saut de page | ignorée |
+| `\lateiClearPage` | autonome | nouvelle page + flottants | ignorée |
+
+Tailles valides pour `{size}` : `small` (~0,5 ligne), `medium` (~1 ligne), `large` (~2 lignes).
+
+## Implémentation PDF — `purh_site/resources/latei_macros.tex`
+
+La macro interne `\lateiApplyVSpace{size}` traduit les tailles normalisées :
+
+```latex
+\NewDocumentCommand{\lateiApplyVSpace}{m}{%
+  \IfStrEqCase{#1}{%
+    {small}{\addvspace{0.5\baselineskip}}%
+    {medium}{\addvspace{\baselineskip}}%
+    {large}{\addvspace{2\baselineskip}}%
+  }[...]%
+}
+```
+
+`\lateiNoIndent` utilise un groupe local pour confiner la modification de `\parindent` :
 
 ```latex
 \NewDocumentCommand{\lateiNoIndent}{+m}{{\parindent=0pt #1}}
 ```
 
-Le groupe interne `{{ }}` confine la modification de `\parindent` au seul contenu passé en argument.
+`\lateiIndent` sauvegarde le `\parindent` du document à `\AtBeginDocument` :
 
-### `purh_site/reversible/latex_reader.py`
+```latex
+\newlength{\lateiParindent}
+\AtBeginDocument{\setlength{\lateiParindent}{\parindent}}
+\NewDocumentCommand{\lateiIndent}{+m}{{\setlength{\parindent}{\lateiParindent}#1}}
+```
 
-Les commandes `\latei...` sont déclarées dans `LAYOUT_WRAPPER_MACROS`. Le parseur les reconnaît dans `_controlled_macro_at_pos()` et les traite via `_parse_layout_wrapper()` : le contenu du groupe `{...}` est parsé récursivement et les nœuds résultants sont insérés directement dans la liste parente, sans créer d'élément TEI intermédiaire.
+## Implémentation parseur — `purh_site/reversible/latex_reader.py`
 
-## Ajouter une nouvelle commande `\latei...`
+Quatre sets distincts dans le module :
 
-1. Déclarer la macro dans `purh_site/resources/latei_macros.tex` avec `\NewDocumentCommand`.
-2. Ajouter le nom (sans `\`) à `LAYOUT_WRAPPER_MACROS` dans `purh_site/reversible/latex_reader.py`.
-3. Documenter la commande dans ce fichier.
-4. Ajouter des tests dans `tests/test_latei_layout_commands.py`.
+```python
+LAYOUT_WRAPPER_MACROS          # enveloppantes sans paramètre
+LAYOUT_PARAM_WRAPPER_MACROS    # enveloppantes avec size
+LAYOUT_STANDALONE_MACROS       # autonomes sans paramètre
+LAYOUT_PARAM_STANDALONE_MACROS # autonomes avec size
+```
+
+`_controlled_macro_at_pos()` inclut tous ces sets. `parse_nodes()` dispatche selon le set.
+
+## Procédure pour ajouter une nouvelle commande `\latei...`
+
+1. **Choisir le type** parmi les quatre familles ci-dessus.
+2. **Déclarer la macro PDF** dans `purh_site/resources/latei_macros.tex` avec `\NewDocumentCommand`.
+3. **Ajouter le nom** (sans `\`) dans le set correspondant de `latex_reader.py`.
+4. **Ajouter des tests** dans `tests/test_latei_layout_commands.py` (le test parametrisé `test_macro_defined_in_latei_macros_tex` s'exécutera automatiquement).
+5. **Documenter** la commande dans ce fichier et dans `MODE_EMPLOI_LATEI_EDITRICES.md`.
+
+**Règle : ne jamais ajouter du LaTeX arbitraire.** Chaque commande `\latei...` doit correspondre à un geste éditorial identifiable, pas à une valeur de dimension libre.

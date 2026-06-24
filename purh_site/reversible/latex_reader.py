@@ -65,7 +65,32 @@ ENVIRONMENT_TO_ELEMENT = {
 
 LAYOUT_WRAPPER_MACROS = {
     "lateiNoIndent",
+    "lateiIndent",
+    "lateiPageBreakBefore",
+    "lateiPageBreakAfter",
+    "lateiClearPageBefore",
+    "lateiClearPageAfter",
+    "lateiKeepWithNext",
+    "lateiKeepTogether",
+    "lateiNoPageBreakBefore",
+    "lateiNoPageBreakAfter",
 }
+
+LAYOUT_PARAM_WRAPPER_MACROS = {
+    "lateiSpaceBefore",
+    "lateiSpaceAfter",
+}
+
+LAYOUT_STANDALONE_MACROS = {
+    "lateiPageBreak",
+    "lateiClearPage",
+}
+
+LAYOUT_PARAM_STANDALONE_MACROS = {
+    "lateiVSpace",
+}
+
+_VALID_SPACE_SIZES = {"small", "medium", "large"}
 
 KNOWN_TEXT_ESCAPES = {
     r"\textbackslash{}": "\\",
@@ -118,6 +143,12 @@ class _Parser:
                 self._flush_text(nodes, text_start, self.pos)
                 if macro_name in LAYOUT_WRAPPER_MACROS:
                     nodes.extend(self._parse_layout_wrapper(macro_name))
+                elif macro_name in LAYOUT_PARAM_WRAPPER_MACROS:
+                    nodes.extend(self._parse_layout_param_wrapper(macro_name))
+                elif macro_name in LAYOUT_STANDALONE_MACROS:
+                    self._consume_layout_standalone(macro_name)
+                elif macro_name in LAYOUT_PARAM_STANDALONE_MACROS:
+                    self._consume_layout_param_standalone(macro_name)
                 else:
                     nodes.append(self._parse_macro(macro_name))
                 text_start = self.pos
@@ -222,8 +253,38 @@ class _Parser:
         content = self._read_group()
         return _Parser(content).parse_nodes()
 
+    def _parse_layout_param_wrapper(self, macro_name: str) -> list[Node]:
+        self.pos += len(macro_name) + 1
+        size = self._read_group()
+        if size not in _VALID_SPACE_SIZES:
+            raise LatexParseError(
+                f"Invalid size '{size}' for \\{macro_name}. Expected: small, medium, large."
+            )
+        if self.pos >= len(self.latex) or self.latex[self.pos] != "{":
+            raise LatexParseError(f"Expected braced content after size for \\{macro_name}.")
+        content = self._read_group()
+        return _Parser(content).parse_nodes()
+
+    def _consume_layout_standalone(self, macro_name: str) -> None:
+        self.pos += len(macro_name) + 1
+
+    def _consume_layout_param_standalone(self, macro_name: str) -> None:
+        self.pos += len(macro_name) + 1
+        size = self._read_group()
+        if size not in _VALID_SPACE_SIZES:
+            raise LatexParseError(
+                f"Invalid size '{size}' for \\{macro_name}. Expected: small, medium, large."
+            )
+
     def _controlled_macro_at_pos(self) -> str | None:
-        macro_names = [*MACRO_TO_ELEMENT, *EMPTY_MACRO_TO_ELEMENT, *LAYOUT_WRAPPER_MACROS]
+        macro_names = [
+            *MACRO_TO_ELEMENT,
+            *EMPTY_MACRO_TO_ELEMENT,
+            *LAYOUT_WRAPPER_MACROS,
+            *LAYOUT_PARAM_WRAPPER_MACROS,
+            *LAYOUT_STANDALONE_MACROS,
+            *LAYOUT_PARAM_STANDALONE_MACROS,
+        ]
         for macro_name in sorted(macro_names, key=len, reverse=True):
             if self.latex.startswith(f"\\{macro_name}", self.pos):
                 return macro_name

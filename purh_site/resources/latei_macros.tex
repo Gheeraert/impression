@@ -421,14 +421,86 @@
 
 % ---------------------------------------------------------------------------
 % Commandes \latei... — corrections de mise en page PDF uniquement.
-% Ces commandes sont transparentes lors de la restauration XML :
-% le lecteur LaTEI parcourt leur contenu sans créer d'élément TEI.
+% Ces commandes ne sont pas restaurées vers XML lors du retour Métopes.
+% Le parseur LaTEI parcourt leur contenu sans créer d'élément TEI.
 % ---------------------------------------------------------------------------
 
+% Macro interne — traduit les tailles normalisées en dimension PDF.
+% Valeurs acceptées : small (~0,5 ligne), medium (~1 ligne), large (~2 lignes).
+\NewDocumentCommand{\lateiApplyVSpace}{m}{%
+  \IfStrEqCase{#1}{%
+    {small}{\addvspace{0.5\baselineskip}}%
+    {medium}{\addvspace{\baselineskip}}%
+    {large}{\addvspace{2\baselineskip}}%
+  }[\PackageError{latei}{%
+    Valeur inconnue : #1. Valeurs acceptees : small, medium, large.%
+  }{}]%
+}
+
+% Indentation — alinéas
+% --------------------------------------------------------------------------
+
 % \lateiNoIndent{...} — supprime le retrait de première ligne du contenu.
-% Usage : corriger l'indentation d'un paragraphe après un élément flottant,
-% un titre ou une citation, sans modifier le XML source.
 \NewDocumentCommand{\lateiNoIndent}{+m}{{\parindent=0pt #1}}
+
+% \lateiIndent{...} — force le retrait de première ligne même si LaTeX le supprime.
+\newlength{\lateiParindent}
+\AtBeginDocument{\setlength{\lateiParindent}{\parindent}}
+\NewDocumentCommand{\lateiIndent}{+m}{{\setlength{\parindent}{\lateiParindent}#1}}
+
+% Espacement vertical autonome
+% --------------------------------------------------------------------------
+
+% \lateiVSpace{small|medium|large} — insère un blanc vertical entre deux éléments.
+\NewDocumentCommand{\lateiVSpace}{m}{\par\lateiApplyVSpace{#1}}
+
+% Espacement vertical enveloppant
+% --------------------------------------------------------------------------
+
+% \lateiSpaceBefore{small|medium|large}{...} — ajoute un blanc avant le contenu.
+\NewDocumentCommand{\lateiSpaceBefore}{m +m}{\par\lateiApplyVSpace{#1}#2}
+
+% \lateiSpaceAfter{small|medium|large}{...} — ajoute un blanc après le contenu.
+\NewDocumentCommand{\lateiSpaceAfter}{m +m}{#2\par\lateiApplyVSpace{#1}}
+
+% Sauts de page autonomes
+% --------------------------------------------------------------------------
+
+% \lateiPageBreak — force un saut de page.
+\NewDocumentCommand{\lateiPageBreak}{}{\newpage}
+
+% \lateiClearPage — force une nouvelle page en vidant les flottants.
+\NewDocumentCommand{\lateiClearPage}{}{\clearpage}
+
+% Sauts de page enveloppants
+% --------------------------------------------------------------------------
+
+% \lateiPageBreakBefore{...} — force un saut de page avant le contenu.
+\NewDocumentCommand{\lateiPageBreakBefore}{+m}{\newpage#1}
+
+% \lateiPageBreakAfter{...} — force un saut de page après le contenu.
+\NewDocumentCommand{\lateiPageBreakAfter}{+m}{#1\newpage}
+
+% \lateiClearPageBefore{...} — vide les flottants et force une nouvelle page avant.
+\NewDocumentCommand{\lateiClearPageBefore}{+m}{\clearpage#1}
+
+% \lateiClearPageAfter{...} — force une nouvelle page avec vidage des flottants après.
+\NewDocumentCommand{\lateiClearPageAfter}{+m}{#1\clearpage}
+
+% Contrôle des coupures de page
+% --------------------------------------------------------------------------
+
+% \lateiKeepWithNext{...} — interdit une coupure de page immédiatement après.
+\NewDocumentCommand{\lateiKeepWithNext}{+m}{#1\nopagebreak[4]}
+
+% \lateiKeepTogether{...} — maintient le contenu entier sur une même page.
+\NewDocumentCommand{\lateiKeepTogether}{+m}{\begin{samepage}#1\end{samepage}}
+
+% \lateiNoPageBreakBefore{...} — interdit une coupure de page immédiatement avant.
+\NewDocumentCommand{\lateiNoPageBreakBefore}{+m}{\nopagebreak[4]#1}
+
+% \lateiNoPageBreakAfter{...} — interdit une coupure de page immédiatement après.
+\NewDocumentCommand{\lateiNoPageBreakAfter}{+m}{#1\nopagebreak[4]}
 
 % lateiDocument marks the reversible editorial zone in a monofile.
 % Completely transparent at compilation — only serves as a delimiter for the parser.
