@@ -11,13 +11,14 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{parskip}
+\usepackage{array}
 
 \geometry{margin=2.5cm}
 
 \hypersetup{
-  colorlinks=true,
-  linkcolor=blue!70!black,
-  urlcolor=blue!70!black,
+	colorlinks=true,
+	linkcolor=blue!70!black,
+	urlcolor=blue!70!black,
 }
 
 \definecolor{codebg}{gray}{0.96}
@@ -25,420 +26,427 @@
 \definecolor{commentfg}{rgb}{0.4,0.4,0.4}
 
 \lstset{
-  language=[LaTeX]TeX,
-  basicstyle=\ttfamily\small,
-  keywordstyle=\color{codefg}\bfseries,
-  commentstyle=\color{commentfg}\itshape,
-  backgroundcolor=\color{codebg},
-  frame=single,
-  framerule=0.4pt,
-  rulecolor=\color{gray!50},
-  xleftmargin=1em,
-  xrightmargin=1em,
-  aboveskip=0.8em,
-  belowskip=0.8em,
-  columns=fullflexible,
-  keepspaces=true,
-  showstringspaces=false,
-  breaklines=true,
-  morekeywords={
-    teiP,teiHi,teiHead,teiNote,teiRef,teiQ,teiTitle,teiName,
-    teiPersName,teiPlaceName,teiDate,teiNum,teiOrgName,teiTerm,
-    teiSaid,teiGraphic,teiLb,teiPb,teiPtr,teiLabel,teiItem,
-    teiAuthor,teiBiblScope,teiEditor,teiForeign,teiIdno,
-    teiPublisher,
-    lateiNoIndent,lateiIndent,
-    lateiVSpace,lateiSpaceBefore,lateiSpaceAfter,
-    lateiPageBreak,lateiClearPage,
-    lateiPageBreakBefore,lateiPageBreakAfter,
-    lateiClearPageBefore,lateiClearPageAfter,
-    lateiKeepWithNext,lateiKeepTogether,
-    lateiNoPageBreakBefore,lateiNoPageBreakAfter,
-  },
+	language=[LaTeX]TeX,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{codefg}\bfseries,
+	commentstyle=\color{commentfg}\itshape,
+	backgroundcolor=\color{codebg},
+	frame=single,
+	framerule=0.4pt,
+	rulecolor=\color{gray!50},
+	xleftmargin=1em,
+	xrightmargin=1em,
+	aboveskip=0.8em,
+	belowskip=0.8em,
+	columns=fullflexible,
+	keepspaces=true,
+	showstringspaces=false,
+	breaklines=true,
+	morekeywords={
+		teiP,teiHi,teiHead,teiNote,teiRef,teiQ,teiTitle,teiName,
+		teiPersName,teiPlaceName,teiDate,teiNum,teiOrgName,teiTerm,
+		teiSaid,teiGraphic,teiLb,teiPb,teiPtr,teiLabel,teiItem,
+		teiAuthor,teiBiblScope,teiEditor,teiForeign,teiIdno,
+		teiPublisher,
+		lateiNoIndent,lateiIndent,
+		lateiVSpace,lateiSpaceBefore,lateiSpaceAfter,
+		lateiPageBreak,lateiClearPage,
+		lateiPageBreakBefore,lateiPageBreakAfter,
+		lateiClearPageBefore,lateiClearPageAfter,
+		lateiKeepWithNext,lateiKeepTogether,
+		lateiNoPageBreakBefore,lateiNoPageBreakAfter,
+	},
 }
 
 % Commande pour afficher un terme technique
 \newcommand{\cmd}[1]{\texttt{\textbackslash #1}}
 \newcommand{\attrib}[1]{\texttt{#1}}
-
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 % ============================================================
 \title{%
-  \textbf{LaTEI : guide des corrections éditoriales de mise en page}\\[0.4em]
+	\textbf{LaTEI : guide des corrections éditoriales de mise en page}\\[0.4em]
 }
-\author{PURH — Usage interne — Impressions}
+\author{PURH — Usage interne — Impression}
 \date{}
 % ============================================================
 
 \begin{document}
-
-\maketitle
-\tableofcontents
-\newpage
-
-% ============================================================
-\section{Principe général}
-% ============================================================
-
-Un fichier \texttt{.latei.tex} contient deux types de commandes qu'il est
-important de distinguer.
-
-\subsection{Les trois couches du LaTEI}
-
-\begin{description}
-  \item[\cmd{tei...}] Commandes éditoriales réversibles. Elles encodent le
-    contenu du livre~: textes, titres, notes, figures, liens, tableaux.
-    Lors de la restauration XML/Métopes, \emph{ces commandes sont
-    retranscrites telles quelles} vers le XML d'origine.
-
-  \item[\cmd{latei...}] Corrections locales de mise en page PDF. Elles
-    servent uniquement à améliorer l'apparence du PDF~: supprimer un
-    alinéa, ajouter un blanc vertical, forcer un saut de page, éviter
-    une coupure indésirable. Lors de la restauration XML, \emph{ces
-    commandes disparaissent complètement}~; seul leur contenu éditorial
-    est conservé.
-
-  \item[LaTeX brut] Commandes LaTeX ordinaires comme \cmd{noindent},
-    \cmd{vspace}, \cmd{newpage}, \cmd{clearpage}. Elles sont
-    \textbf{interdites dans la zone éditoriale}. Si vous en écrivez,
-    la restauration XML sera bloquée avec une erreur.
-\end{description}
-
-\subsection{La règle à retenir}
-
-\begin{itemize}
-  \item Les commandes \cmd{tei...} portent le \emph{contenu}~: texte,
-    structure, métadonnées.
-  \item Les commandes \cmd{latei...} portent uniquement la \emph{mise en
-    page PDF}~; elles n'existent pas dans le XML.
-  \item Toute commande non documentée dans ce guide est interdite dans la
-    zone éditoriale.
-\end{itemize}
-
-% ============================================================
-\section{Ce qu'on peut modifier}
-% ============================================================
-
-\subsection{Modifications autorisées}
-
-Les éditrices et éditeurs peuvent librement~:
-
-\begin{itemize}
-  \item corriger une coquille ou une faute de frappe dans le texte~;
-  \item ajouter ou supprimer un mot~;
-  \item modifier la ponctuation, une espace, une apostrophe, une
-    majuscule~;
-  \item corriger une espace insécable ou un tiret~;
-  \item ajouter une commande \cmd{latei...} documentée pour corriger la
-    mise en page du PDF.
-\end{itemize}
-
-\textbf{Exemple autorisé} — corriger un mot dans le texte~:
-
-\begin{lstlisting}
-% Avant correction :
-\teiP[xmlid={p-111}]{C'est effectivement ce qui s'etait pratique.}
-
-% Apres correction :
-\teiP[xmlid={p-111}]{C'est bien ce qui s'etait pratique.}
-\end{lstlisting}
-
-\subsection{Modifications interdites}
-
-Il ne faut pas~:
-
-\begin{itemize}
-  \item renommer ou abréger une commande \cmd{tei...}~;
-  \item supprimer ou déplacer une accolade~;
-  \item déplacer une commande \cmd{tei...} dans la structure~;
-  \item supprimer ou modifier un attribut comme \attrib{xmlid=\{...\}}~;
-  \item écrire du LaTeX brut non documenté~;
-  \item transformer une correction de contenu en correction de mise en page.
-\end{itemize}
-
-\textbf{Exemples interdits}~:
-
-\begin{lstlisting}
-% Interdit - commande tei renommee :
-\p[xmlid={p-111}]{Texte.}
-
-% Interdit - LaTeX brut :
-\noindent\teiP[xmlid={p-111}]{Texte.}
-
-% Interdit - dimension libre :
-\lateiVSpace{12pt}
-\end{lstlisting}
-
-% ============================================================
-\section{Liste officielle des commandes de mise en page}
-% ============================================================
-
-Toutes les commandes ci-dessous sont transparentes lors de la restauration
-XML~: elles modifient le rendu du PDF, mais le XML restauré ne les connaît
-pas.
-
-\subsection{Alinéas}
-
-\begin{lstlisting}
-\lateiNoIndent{...}   % supprime le retrait de premiere ligne
-\lateiIndent{...}     % force le retrait de premiere ligne
-\end{lstlisting}
-
-\subsection{Espacements verticaux}
-
-Les valeurs autorisées pour la taille sont~: \texttt{small} (environ un
-demi-interligne), \texttt{medium} (environ un interligne), \texttt{large}
-(environ deux interlignes). Toute autre valeur est refusée.
-
-\begin{lstlisting}
-% Blanc vertical autonome (entre deux elements) :
-\lateiVSpace{small}
-\lateiVSpace{medium}
-\lateiVSpace{large}
-
-% Blanc avant le contenu :
-\lateiSpaceBefore{small}{...}
-\lateiSpaceBefore{medium}{...}
-\lateiSpaceBefore{large}{...}
-
-% Blanc apres le contenu :
-\lateiSpaceAfter{small}{...}
-\lateiSpaceAfter{medium}{...}
-\lateiSpaceAfter{large}{...}
-\end{lstlisting}
-
-\subsection{Sauts de page}
-
-\begin{lstlisting}
-% Commandes autonomes (entre deux elements) :
-\lateiPageBreak        % saut de page simple
-\lateiClearPage        % saut de page + vidage des figures en attente
-
-% Commandes enveloppantes :
-\lateiPageBreakBefore{...}    % saut avant le contenu
-\lateiPageBreakAfter{...}     % saut apres le contenu
-\lateiClearPageBefore{...}    % clearpage avant le contenu
-\lateiClearPageAfter{...}     % clearpage apres le contenu
-\end{lstlisting}
-
-\subsection{Contrôle des coupures de page}
-
-\begin{lstlisting}
-\lateiKeepWithNext{...}       % interdit la coupure apres ce contenu
-\lateiKeepTogether{...}       % maintient tout le contenu sur une page
-\lateiNoPageBreakBefore{...}  % interdit la coupure avant ce contenu
-\lateiNoPageBreakAfter{...}   % interdit la coupure apres ce contenu
-\end{lstlisting}
-
-% ============================================================
-\section{Exemples pratiques}
-% ============================================================
-
-\subsection{Ajouter un espace entre deux paragraphes}
-
-\begin{lstlisting}
-\teiP[xmlid={p-111}]{Premier paragraphe.}
-
-\lateiVSpace{small}
-
-\teiP[xmlid={p-112}]{Second paragraphe avec un peu d'espace au-dessus.}
-\end{lstlisting}
-
-\subsection{Supprimer un alinéa}
-
-\begin{lstlisting}
-\lateiNoIndent{
-  \teiP[xmlid={p-112}]{Ce paragraphe n'a pas d'alinea.}
-}
-\end{lstlisting}
-
-\subsection{Ajouter un blanc avant un paragraphe}
-
-\begin{lstlisting}
-\lateiSpaceBefore{medium}{
-  \teiP[xmlid={p-112}]{Ce paragraphe a un blanc avant lui.}
-}
-\end{lstlisting}
-
-\subsection{Forcer un saut de page}
-
-\begin{lstlisting}
-\teiP[xmlid={p-200}]{Fin d'une section.}
-
-\lateiPageBreak
-
-\teiP[xmlid={p-201}]{Debut de la page suivante.}
-\end{lstlisting}
-
-\subsection{Garder un titre avec le paragraphe suivant}
-
-\begin{lstlisting}
-\lateiKeepTogether{
-  \teiHead{Un titre a ne pas isoler}
-  \teiP[xmlid={p-300}]{Premier paragraphe sous le titre.}
-}
-\end{lstlisting}
-
-\subsection{Combiner plusieurs corrections}
-
-Il est possible d'imbriquer les commandes \cmd{latei...}. Par exemple,
-ajouter un blanc avant un paragraphe sans alinéa~:
-
-\begin{lstlisting}
-\lateiSpaceBefore{small}{
-  \lateiNoIndent{
-    \teiP[xmlid={p-112}]{Paragraphe sans alinea, avec un blanc avant.}
-  }
-}
-\end{lstlisting}
-
-Le XML restauré ne contient que le paragraphe~:
-
-\begin{lstlisting}[language=XML]
-<p xml:id="p-112">Paragraphe sans alinea, avec un blanc avant.</p>
-\end{lstlisting}
-
-% ============================================================
-\section{Que devient le XML après correction ?}
-% ============================================================
-
-Les commandes \cmd{latei...} n'existent pas dans le XML. Lors de la
-restauration, elles sont ignorées~; seul leur contenu est restauré.
-
-\textbf{Exemple} — dans le fichier \texttt{.latei.tex}~:
-
-\begin{lstlisting}
-\lateiSpaceBefore{small}{
-  \teiP[xmlid={p-112}]{Texte corrige.}
-}
-\end{lstlisting}
-
-\textbf{XML restauré}~:
-
-\begin{lstlisting}[language=XML]
-<p xml:id="p-112">Texte corrige.</p>
-\end{lstlisting}
-
-La commande \texttt{\textbackslash lateiSpaceBefore\{small\}\{...\}} a
-disparu. L'attribut \texttt{xml:id} et le texte sont intacts.
-
-\medskip
-\textbf{Ce qui ne change jamais dans le XML~:}
-\begin{itemize}
-  \item le texte et sa structure~;
-  \item les attributs (\attrib{xmlid}, \attrib{rend}, \attrib{type}, etc.)~;
-  \item la hiérarchie des éléments (divisions, paragraphes, listes, etc.)~;
-  \item les notes, les références, les images.
-\end{itemize}
-
-% ============================================================
-\section{Tableau récapitulatif}
-% ============================================================
-
-\begin{longtable}{@{}llll@{}}
-\toprule
-\textbf{Commande} & \textbf{Usage} & \textbf{Où la placer} & \textbf{Effet sur le XML} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{4}{r}{\small Suite page suivante\ldots} \\
-\endfoot
-\bottomrule
-\endlastfoot
-
-\cmd{lateiNoIndent\{...\}}
-  & Supprimer l'alinéa
-  & Envelopper le paragraphe
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiIndent\{...\}}
-  & Forcer l'alinéa
-  & Envelopper le paragraphe
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiVSpace\{size\}}
-  & Blanc vertical
-  & Entre deux éléments
-  & Ignorée \\[0.4em]
-
-\cmd{lateiSpaceBefore\{size\}\{...\}}
-  & Blanc avant
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiSpaceAfter\{size\}\{...\}}
-  & Blanc après
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiPageBreak}
-  & Saut de page
-  & Entre deux éléments
-  & Ignorée \\[0.4em]
-
-\cmd{lateiClearPage}
-  & Nouvelle page + flottants
-  & Entre deux éléments
-  & Ignorée \\[0.4em]
-
-\cmd{lateiPageBreakBefore\{...\}}
-  & Saut avant
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiPageBreakAfter\{...\}}
-  & Saut après
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiClearPageBefore\{...\}}
-  & Clearpage avant
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiClearPageAfter\{...\}}
-  & Clearpage après
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiKeepWithNext\{...\}}
-  & Éviter coupure après
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiKeepTogether\{...\}}
-  & Bloc sur une page
-  & Envelopper le bloc
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiNoPageBreakBefore\{...\}}
-  & Éviter coupure avant
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\[0.4em]
-
-\cmd{lateiNoPageBreakAfter\{...\}}
-  & Éviter coupure après
-  & Envelopper l'élément
-  & Aucun (contenu conservé) \\
-
-\end{longtable}
-
-\noindent\textbf{Tailles valides} pour \texttt{size}~: \texttt{small},
-\texttt{medium}, \texttt{large}. Toute autre valeur est refusée.
-
-% ============================================================
-\section{Document évolutif}
-% ============================================================
-
-Ce guide décrit les commandes actuellement disponibles. De nouvelles
-commandes pourront être ajoutées si des besoins récurrents apparaissent
-en correction d'épreuves.
-
-\textbf{Seules les commandes documentées ici doivent être utilisées.}
-Toute commande LaTeX non documentée dans ce guide sera refusée lors de
-la restauration XML.
-
-Si un besoin de correction récurrent n'est pas couvert par les commandes
-ci-dessus, il convient de le signaler pour qu'une commande dédiée soit
-ajoutée officiellement, plutôt que d'écrire du LaTeX brut.
-
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	% ============================================================
+	\section{Principe général}
+	% ============================================================
+	
+	Le logiciel Impression est un générateur de livres savants qui produit du html statique ou du PDF à partir de fichiers XML Métopes. Il est téléchargeable sous licence libre ici: https://github.com/Gheeraert/impression
+	
+	Impression produit un LaTeX modifiable afin d'être réengistré au format d'origine XML Métopes - Common Publishing. Pour y parvenir, il mobilise une syntaxe particulière à base de commandes LaTeX, le LaTEI.
+	
+	Un fichier \texttt{.latei.tex} contient deux types de commandes qu'il est
+	important de distinguer.
+	
+	\subsection{Les trois couches du LaTEI}
+	
+	\begin{description}
+		\item[\cmd{tei...}] Commandes éditoriales réversibles. Elles encodent le
+		contenu du livre~: textes, titres, notes, figures, liens, tableaux.
+		Lors de la restauration XML/Métopes, \emph{ces commandes sont
+			retranscrites telles quelles} vers le XML d'origine.
+		
+		\item[\cmd{latei...}] Corrections locales de mise en page PDF. Elles
+		servent uniquement à améliorer l'apparence du PDF~: supprimer un
+		alinéa, ajouter un blanc vertical, forcer un saut de page, éviter
+		une coupure indésirable. Lors de la restauration XML, \emph{ces
+			commandes disparaissent complètement}~; seul leur contenu éditorial
+		est conservé.
+		
+		\item[LaTeX brut] Commandes LaTeX ordinaires comme \cmd{noindent},
+		\cmd{vspace}, \cmd{newpage}, \cmd{clearpage}. Elles sont
+		\textbf{interdites dans la zone éditoriale}. Si vous en écrivez,
+		la restauration XML sera bloquée avec une erreur.
+	\end{description}
+	
+	\subsection{La règle à retenir}
+	
+	\begin{itemize}
+		\item Les commandes \cmd{tei...} portent le \emph{contenu}~: texte,
+		structure, métadonnées.
+		\item Les commandes \cmd{latei...} portent uniquement la \emph{mise en
+			page PDF}~; elles n'existent pas dans le XML.
+		\item Toute commande non documentée dans ce guide est interdite dans la
+		zone éditoriale.
+	\end{itemize}
+	
+	% ============================================================
+	\section{Ce qu'on peut modifier}
+	% ============================================================
+	
+	\subsection{Modifications autorisées}
+	
+	Les éditrices et éditeurs peuvent librement~:
+	
+	\begin{itemize}
+		\item corriger une coquille ou une faute de frappe dans le texte~;
+		\item ajouter ou supprimer un mot~;
+		\item modifier la ponctuation, une espace, une apostrophe, une
+		majuscule~;
+		\item corriger une espace insécable ou un tiret~;
+		\item ajouter une commande \cmd{latei...} documentée pour corriger la
+		mise en page du PDF.
+	\end{itemize}
+	
+	\textbf{Exemple autorisé} — corriger un mot dans le texte~:
+	
+	\begin{lstlisting}
+		% Avant correction :
+		\teiP[xmlid={p-111}]{C'est effectivement ce qui s'était pratiqué.}
+		
+		% Apres correction :
+		\teiP[xmlid={p-111}]{C'est bien ce qui s'était pratiqué.}
+	\end{lstlisting}
+	
+	\subsection{Modifications interdites}
+	
+	Il ne faut pas~:
+	
+	\begin{itemize}
+		\item renommer ou abréger une commande \cmd{tei...}~;
+		\item supprimer ou déplacer une accolade~;
+		\item déplacer une commande \cmd{tei...} dans la structure~;
+		\item supprimer ou modifier un attribut comme \attrib{xmlid=\{...\}}~;
+		\item écrire du LaTeX brut non documenté~;
+		\item transformer une correction de contenu en correction de mise en page.
+	\end{itemize}
+	
+	\textbf{Exemples interdits}~:
+	
+	\begin{lstlisting}
+		% Interdit - commande tei renommee :
+		\p[xmlid={p-111}]{Texte.}
+		
+		% Interdit - LaTeX brut :
+		\noindent\teiP[xmlid={p-111}]{Texte.}
+		
+		% Interdit - dimension libre :
+		\lateiVSpace{12pt}
+	\end{lstlisting}
+	
+	% ============================================================
+	\section{Liste officielle des commandes de mise en page}
+	% ============================================================
+	
+	Toutes les commandes ci-dessous sont transparentes lors de la restauration
+	XML~: elles modifient le rendu du PDF, mais le XML restauré ne les connaît
+	pas.
+	
+	\subsection{Alinéas}
+	
+	\begin{lstlisting}
+		\lateiNoIndent{...}   % supprime le retrait de premiere ligne
+		\lateiIndent{...}     % force le retrait de premiere ligne
+	\end{lstlisting}
+	
+	\subsection{Espacements verticaux}
+	
+	Les valeurs autorisées pour la taille sont~: \texttt{small} (environ un
+	demi-interligne), \texttt{medium} (environ un interligne), \texttt{large}
+	(environ deux interlignes). Toute autre valeur est refusée.
+	
+	\begin{lstlisting}
+		% Blanc vertical autonome (entre deux elements) :
+		\lateiVSpace{small}
+		\lateiVSpace{medium}
+		\lateiVSpace{large}
+		
+		% Blanc avant le contenu :
+		\lateiSpaceBefore{small}{...}
+		\lateiSpaceBefore{medium}{...}
+		\lateiSpaceBefore{large}{...}
+		
+		% Blanc apres le contenu :
+		\lateiSpaceAfter{small}{...}
+		\lateiSpaceAfter{medium}{...}
+		\lateiSpaceAfter{large}{...}
+	\end{lstlisting}
+	
+	\subsection{Sauts de page}
+	
+	\begin{lstlisting}
+		% Commandes autonomes (entre deux elements) :
+		\lateiPageBreak        % saut de page simple
+		\lateiClearPage        % saut de page + vidage des figures en attente
+		
+		% Commandes enveloppantes :
+		\lateiPageBreakBefore{...}    % saut avant le contenu
+		\lateiPageBreakAfter{...}     % saut apres le contenu
+		\lateiClearPageBefore{...}    % clearpage avant le contenu
+		\lateiClearPageAfter{...}     % clearpage apres le contenu
+	\end{lstlisting}
+	
+	\subsection{Contrôle des coupures de page}
+	
+	\begin{lstlisting}
+		\lateiKeepWithNext{...}       % interdit la coupure apres ce contenu
+		\lateiKeepTogether{...}       % maintient tout le contenu sur une page
+		\lateiNoPageBreakBefore{...}  % interdit la coupure avant ce contenu
+		\lateiNoPageBreakAfter{...}   % interdit la coupure apres ce contenu
+	\end{lstlisting}
+	
+	% ============================================================
+	\section{Exemples pratiques}
+	% ============================================================
+	
+	\subsection{Ajouter un espace entre deux paragraphes}
+	
+	\begin{lstlisting}
+		\teiP[xmlid={p-111}]{Premier paragraphe.}
+		
+		\lateiVSpace{small}
+		
+		\teiP[xmlid={p-112}]{Second paragraphe avec un peu d'espace au-dessus.}
+	\end{lstlisting}
+	
+	\subsection{Supprimer un alinéa}
+	
+	\begin{lstlisting}
+		\lateiNoIndent{
+			\teiP[xmlid={p-112}]{Ce paragraphe n'a pas d'alinea.}
+		}
+	\end{lstlisting}
+	
+	\subsection{Ajouter un blanc avant un paragraphe}
+	
+	\begin{lstlisting}
+		\lateiSpaceBefore{medium}{
+			\teiP[xmlid={p-112}]{Ce paragraphe a un blanc avant lui.}
+		}
+	\end{lstlisting}
+	
+	\subsection{Forcer un saut de page}
+	
+	\begin{lstlisting}
+		\teiP[xmlid={p-200}]{Fin d'une section.}
+		
+		\lateiPageBreak
+		
+		\teiP[xmlid={p-201}]{Debut de la page suivante.}
+	\end{lstlisting}
+	
+	\subsection{Garder un titre avec le paragraphe suivant}
+	
+	\begin{lstlisting}
+		\lateiKeepTogether{
+			\teiHead{Un titre a ne pas isoler}
+			\teiP[xmlid={p-300}]{Premier paragraphe sous le titre.}
+		}
+	\end{lstlisting}
+	
+	\subsection{Combiner plusieurs corrections}
+	
+	Il est possible d'imbriquer les commandes \cmd{latei...}. Par exemple,
+	ajouter un blanc avant un paragraphe sans alinéa~:
+	
+	\begin{lstlisting}
+		\lateiSpaceBefore{small}{
+			\lateiNoIndent{
+				\teiP[xmlid={p-112}]{Paragraphe sans alinea, avec un blanc avant.}
+			}
+		}
+	\end{lstlisting}
+	
+	Le XML restauré ne contient que le paragraphe~:
+	
+	\begin{lstlisting}[language=XML]
+		<p xml:id="p-112">Paragraphe sans alinea, avec un blanc avant.</p>
+	\end{lstlisting}
+	
+	% ============================================================
+	\section{Que devient le XML après correction ?}
+	% ============================================================
+	
+	Les commandes \cmd{latei...} n'existent pas dans le XML. Lors de la
+	restauration, elles sont ignorées~; seul leur contenu est restauré.
+	
+	\textbf{Exemple} — dans le fichier \texttt{.latei.tex}~:
+	
+	\begin{lstlisting}
+		\lateiSpaceBefore{small}{
+			\teiP[xmlid={p-112}]{Texte corrige.}
+		}
+	\end{lstlisting}
+	
+	\textbf{XML restauré}~:
+	
+	\begin{lstlisting}[language=XML]
+		<p xml:id="p-112">Texte corrige.</p>
+	\end{lstlisting}
+	
+	La commande \texttt{\textbackslash lateiSpaceBefore\{small\}\{...\}} a
+	disparu. L'attribut \texttt{xml:id} et le texte sont intacts.
+	
+	\medskip
+	\textbf{Ce qui ne change jamais dans le XML~:}
+	\begin{itemize}
+		\item le texte et sa structure~;
+		\item les attributs (\attrib{xmlid}, \attrib{rend}, \attrib{type}, etc.)~;
+		\item la hiérarchie des éléments (divisions, paragraphes, listes, etc.)~;
+		\item les notes, les références, les images.
+	\end{itemize}
+	
+	% ============================================================
+	\section{Tableau récapitulatif}
+	% ============================================================
+	
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\begin{longtable}{@{}L{0.30\textwidth}L{0.22\textwidth}L{0.22\textwidth}L{0.18\textwidth}@{}}
+		\toprule
+		\textbf{Commande} & \textbf{Usage} & \textbf{Où la placer} & \textbf{Effet sur le XML} \\
+		\midrule
+		\endhead
+		\midrule
+		\multicolumn{4}{r}{\small Suite page suivante\ldots} \\
+		\endfoot
+		\bottomrule
+		\endlastfoot
+		
+		\cmd{lateiNoIndent\{...\}}
+		& Supprimer l'alinéa
+		& Envelopper le paragraphe
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiIndent\{...\}}
+		& Forcer l'alinéa
+		& Envelopper le paragraphe
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiVSpace\{size\}}
+		& Blanc vertical
+		& Entre deux éléments
+		& Ignorée \\[0.4em]
+		
+		\cmd{lateiSpaceBefore\{size\}\{...\}}
+		& Blanc avant
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiSpaceAfter\{size\}\{...\}}
+		& Blanc après
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiPageBreak}
+		& Saut de page
+		& Entre deux éléments
+		& Ignorée \\[0.4em]
+		
+		\cmd{lateiClearPage}
+		& Nouvelle page + flottants
+		& Entre deux éléments
+		& Ignorée \\[0.4em]
+		
+		\cmd{lateiPageBreakBefore\{...\}}
+		& Saut avant
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiPageBreakAfter\{...\}}
+		& Saut après
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiClearPageBefore\{...\}}
+		& Clearpage avant
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiClearPageAfter\{...\}}
+		& Clearpage après
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiKeepWithNext\{...\}}
+		& Éviter coupure après
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiKeepTogether\{...\}}
+		& Bloc sur une page
+		& Envelopper le bloc
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiNoPageBreakBefore\{...\}}
+		& Éviter coupure avant
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\[0.4em]
+		
+		\cmd{lateiNoPageBreakAfter\{...\}}
+		& Éviter coupure après
+		& Envelopper l'élément
+		& Aucun (contenu conservé) \\
+		
+	\end{longtable}
+	\normalsize
+	
+	\noindent\textbf{Tailles valides} pour \texttt{size}~: \texttt{small},
+	\texttt{medium}, \texttt{large}. Toute autre valeur est refusée.
+	
+	% ============================================================
+	\section{Document évolutif}
+	% ============================================================
+	
+	Ce guide décrit les commandes actuellement disponibles. De nouvelles
+	commandes pourront être ajoutées si des besoins récurrents apparaissent
+	en correction d'épreuves.
+	
+	\textbf{Seules les commandes documentées ici doivent être utilisées.}
+	Toute commande LaTeX non documentée dans ce guide sera refusée lors de
+	la restauration XML.
+	
+	Si un besoin de correction récurrent n'est pas couvert par les commandes
+	ci-dessus, il convient de le signaler pour qu'une commande dédiée soit
+	ajoutée officiellement, plutôt que d'écrire du LaTeX brut.
+	
 \end{document}

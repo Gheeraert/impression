@@ -4,19 +4,19 @@
 \contentsline {subsection}{\numberline {1.2}La règle à retenir}{2}{subsection.1.2}%
 \contentsline {section}{\numberline {2}Ce qu'on peut modifier}{2}{section.2}%
 \contentsline {subsection}{\numberline {2.1}Modifications autorisées}{2}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Modifications interdites}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.2}Modifications interdites}{3}{subsection.2.2}%
 \contentsline {section}{\numberline {3}Liste officielle des commandes de mise en page}{3}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Alinéas}{3}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Espacements verticaux}{3}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Sauts de page}{3}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.3}Sauts de page}{4}{subsection.3.3}%
 \contentsline {subsection}{\numberline {3.4}Contrôle des coupures de page}{4}{subsection.3.4}%
 \contentsline {section}{\numberline {4}Exemples pratiques}{4}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Ajouter un espace entre deux paragraphes}{4}{subsection.4.1}%
 \contentsline {subsection}{\numberline {4.2}Supprimer un alinéa}{4}{subsection.4.2}%
 \contentsline {subsection}{\numberline {4.3}Ajouter un blanc avant un paragraphe}{4}{subsection.4.3}%
-\contentsline {subsection}{\numberline {4.4}Forcer un saut de page}{4}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}Garder un titre avec le paragraphe suivant}{4}{subsection.4.5}%
-\contentsline {subsection}{\numberline {4.6}Combiner plusieurs corrections}{4}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.4}Forcer un saut de page}{5}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Garder un titre avec le paragraphe suivant}{5}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Combiner plusieurs corrections}{5}{subsection.4.6}%
 \contentsline {section}{\numberline {5}Que devient le XML après correction ?}{5}{section.5}%
-\contentsline {section}{\numberline {6}Tableau récapitulatif}{5}{section.6}%
+\contentsline {section}{\numberline {6}Tableau récapitulatif}{6}{section.6}%
 \contentsline {section}{\numberline {7}Document évolutif}{6}{section.7}%
