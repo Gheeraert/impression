@@ -63,6 +63,10 @@ ENVIRONMENT_TO_ELEMENT = {
     "teiTable": "table",
 }
 
+LAYOUT_WRAPPER_MACROS = {
+    "lateiNoIndent",
+}
+
 KNOWN_TEXT_ESCAPES = {
     r"\textbackslash{}": "\\",
     r"\textasciicircum{}": "^",
@@ -112,7 +116,10 @@ class _Parser:
             macro_name = self._controlled_macro_at_pos()
             if macro_name:
                 self._flush_text(nodes, text_start, self.pos)
-                nodes.append(self._parse_macro(macro_name))
+                if macro_name in LAYOUT_WRAPPER_MACROS:
+                    nodes.extend(self._parse_layout_wrapper(macro_name))
+                else:
+                    nodes.append(self._parse_macro(macro_name))
                 text_start = self.pos
                 continue
 
@@ -208,8 +215,15 @@ class _Parser:
             self.pos += 1
         raise LatexParseError("Unclosed braced group.")
 
+    def _parse_layout_wrapper(self, macro_name: str) -> list[Node]:
+        self.pos += len(macro_name) + 1
+        if self.pos >= len(self.latex) or self.latex[self.pos] != "{":
+            raise LatexParseError(f"Expected braced content for \\{macro_name}.")
+        content = self._read_group()
+        return _Parser(content).parse_nodes()
+
     def _controlled_macro_at_pos(self) -> str | None:
-        macro_names = [*MACRO_TO_ELEMENT, *EMPTY_MACRO_TO_ELEMENT]
+        macro_names = [*MACRO_TO_ELEMENT, *EMPTY_MACRO_TO_ELEMENT, *LAYOUT_WRAPPER_MACROS]
         for macro_name in sorted(macro_names, key=len, reverse=True):
             if self.latex.startswith(f"\\{macro_name}", self.pos):
                 return macro_name
