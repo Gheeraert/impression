@@ -627,12 +627,16 @@ class App(ttk.Frame):
             messagebox.showwarning("Sortie manquante", "Veuillez choisir un dossier de sortie.")
             return
 
+        self._refresh_pdf_export_controls()
+        wait_dialog = self._show_build_wait_dialog()
+        self.master.after(100, lambda: self._run_build_after_dialog_is_drawn(wait_dialog))
+
+    def _run_build_after_dialog_is_drawn(self, wait_dialog: tk.Toplevel) -> None:
+        output_dir_text = self.output_dir_var.get().strip()
         output_dir = Path(output_dir_text)
         assets_dir = Path(self.assets_dir_var.get()).resolve() if self.assets_dir_var.get().strip() else None
         master_xml_text = self.master_xml_var.get().strip()
-        self._refresh_pdf_export_controls()
 
-        wait_dialog = self._show_build_wait_dialog()
         try:
             if master_xml_text:
                 master_xml = Path(master_xml_text).resolve()
@@ -688,18 +692,24 @@ class App(ttk.Frame):
         ).grid(row=0, column=0, sticky="w")
         ttk.Label(
             frame,
-            text="Veuillez patienter pendant la génération.",
-        ).grid(row=1, column=0, sticky="w", pady=(6, 12))
+            text="Tout va bien : IMPRESSIONS travaille.",
+        ).grid(row=1, column=0, sticky="w", pady=(2, 0))
+        ttk.Label(
+            frame,
+            text="Merci de patienter jusqu'à l'ouverture du rapport de génération.",
+        ).grid(row=2, column=0, sticky="w", pady=(0, 12))
         progress = ttk.Progressbar(frame, mode="indeterminate", length=280)
-        progress.grid(row=2, column=0, sticky="ew")
+        progress.grid(row=3, column=0, sticky="ew")
         progress.start(12)
 
         dialog.update_idletasks()
+        dialog.update()
         x = self.master.winfo_rootx() + max((self.master.winfo_width() - dialog.winfo_width()) // 2, 0)
         y = self.master.winfo_rooty() + max((self.master.winfo_height() - dialog.winfo_height()) // 2, 0)
         dialog.geometry(f"+{x}+{y}")
         dialog.lift(self.master)
         self.update_idletasks()
+        self.update()
         return dialog
 
     def _close_build_wait_dialog(self, dialog: tk.Toplevel | None) -> None:
