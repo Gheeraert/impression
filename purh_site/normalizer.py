@@ -43,6 +43,12 @@ LOCAL_POINTER_ATTRIBUTES = frozenset({
 # Un xml:id doit être un NCName : pas de début en chiffre ni en tiret.
 _NCNAME_START_RE = re.compile(r"^[A-Za-z_]")
 
+# Forme d'un fragment de pointeur local plausible ("#fragment") : un NCName.
+# "[^\W\d]" = lettre (Unicode) ou underscore ; exclut chiffres, "#", ":", etc.
+# Un token comme "##" ou "#" isolé n'est pas un pointeur : c'est typiquement
+# une valeur de gabarit Métopes restée non remplie.
+_NCNAME_RE = re.compile(r"[^\W\d][\w.\-]*\Z")
+
 
 def _readable_path(element: etree._Element) -> str:
     """XPath lisible fondé sur les noms locaux, pour les messages d'erreur."""
@@ -79,6 +85,7 @@ class NormalizeReport:
     figure_media_resolved: int = 0
     adjacent_hi_merged: int = 0
     unresolved_references: int = 0
+    invalid_pointers: int = 0
     warnings: list[str] = field(default_factory=list)
 
     def as_lines(self) -> list[str]:
@@ -87,6 +94,7 @@ class NormalizeReport:
             f"Figures/médias explicitement résolus : {self.figure_media_resolved}",
             f"Segments typographiques fusionnés : {self.adjacent_hi_merged}",
             f"Références locales non résolues : {self.unresolved_references}",
+            f"Pointeurs invalides (valeurs de gabarit ?) : {self.invalid_pointers}",
             *[f"Avertissement : {warning}" for warning in self.warnings],
         ]
 
@@ -278,6 +286,17 @@ class TeiNormalizer:
                         continue
                     fragment = token[1:]
                     if fragment and fragment in known_ids:
+                        continue
+                    if not _NCNAME_RE.match(fragment):
+                        # "#", "##"… : pas un pointeur local de forme "#identifiant",
+                        # mais une valeur de gabarit incomplète ou invalide. Signalée
+                        # à part, sans être comptée comme référence orpheline.
+                        report.invalid_pointers += 1
+                        report.warnings.append(
+                            "Pointeur local invalide (valeur de gabarit non remplie ?) : "
+                            f"{local_name}=\"{token}\" sur <{etree.QName(element).localname}> "
+                            f"({_readable_path(element)})"
+                        )
                         continue
                     report.unresolved_references += 1
                     report.warnings.append(

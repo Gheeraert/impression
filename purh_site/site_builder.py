@@ -708,11 +708,13 @@ class SiteBuilder:
                 parent.remove(title_page)
 
     def _renumber_fragment_notes(self, root: etree._Element) -> None:
-        # Numérotation d'affichage par page, appliquée uniquement au clone rendu :
-        # le @n éditorial du XML normalisé n'est jamais modifié. Les ancres HTML
-        # reposent sur le xml:id des notes, pas sur ce libellé.
+        # Le @n source est un libellé éditorial : il est affiché tel quel (« 12 »,
+        # « * »…). Seule une note sans @n reçoit un numéro d'affichage, calculé
+        # uniquement dans ce clone de rendu — le XML normalisé n'est jamais
+        # modifié. Les ancres HTML reposent sur le xml:id des notes, pas sur @n.
         for index, note in enumerate(root.xpath('.//tei:note', namespaces=NSMAP), start=1):
-            note.set('n', str(index))
+            if not (note.get('n') or '').strip():
+                note.set('n', str(index))
 
     def _render_sidebar(self, nav: list[NavItem], current_file_name: str | None) -> str:
         nav_items = self.structure_builder.build_nav_for_page(nav, current_file_name)
