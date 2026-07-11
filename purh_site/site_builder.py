@@ -708,6 +708,9 @@ class SiteBuilder:
                 parent.remove(title_page)
 
     def _renumber_fragment_notes(self, root: etree._Element) -> None:
+        # Numérotation d'affichage par page, appliquée uniquement au clone rendu :
+        # le @n éditorial du XML normalisé n'est jamais modifié. Les ancres HTML
+        # reposent sur le xml:id des notes, pas sur ce libellé.
         for index, note in enumerate(root.xpath('.//tei:note', namespaces=NSMAP), start=1):
             note.set('n', str(index))
 

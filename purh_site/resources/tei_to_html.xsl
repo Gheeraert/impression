@@ -16,6 +16,15 @@
     </div>
   </xsl:template>
 
+  <!-- Ancre technique d'une note : son xml:id stable (jamais son @n, qui est
+       un libellé éditorial potentiellement répété ou non conforme aux id HTML). -->
+  <xsl:template name="note-anchor">
+    <xsl:choose>
+      <xsl:when test="normalize-space(@xml:id) != ''"><xsl:value-of select="@xml:id"/></xsl:when>
+      <xsl:otherwise><xsl:value-of select="generate-id()"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template match="tei:group | tei:text | tei:front | tei:body | tei:back">
     <xsl:apply-templates/>
     <xsl:if test="self::tei:group and .//tei:note">
@@ -23,10 +32,13 @@
         <h2>Notes</h2>
         <ol>
           <xsl:for-each select=".//tei:note">
-            <li id="note-{@n}">
+            <xsl:variable name="note-anchor">
+              <xsl:call-template name="note-anchor"/>
+            </xsl:variable>
+            <li id="{$note-anchor}">
               <xsl:apply-templates select="node()"/>
               <xsl:text> </xsl:text>
-              <a href="#noteref-{@n}">↩</a>
+              <a href="#noteref-{$note-anchor}">↩</a>
             </li>
           </xsl:for-each>
         </ol>
@@ -260,7 +272,15 @@
   </xsl:template>
 
   <xsl:template match="tei:note">
-    <sup class="note-ref" id="noteref-{@n}"><a href="#note-{@n}"><xsl:value-of select="@n"/></a></sup>
+    <xsl:variable name="note-anchor">
+      <xsl:call-template name="note-anchor"/>
+    </xsl:variable>
+    <sup class="note-ref" id="noteref-{$note-anchor}"><a href="#{$note-anchor}">
+      <xsl:choose>
+        <xsl:when test="normalize-space(@n) != ''"><xsl:value-of select="@n"/></xsl:when>
+        <xsl:otherwise><xsl:number level="any" count="tei:note"/></xsl:otherwise>
+      </xsl:choose>
+    </a></sup>
   </xsl:template>
 
   <xsl:template match="tei:ref">

@@ -187,8 +187,15 @@ def test_note_links_are_not_rewritten(tmp_path: Path) -> None:
     first_page = content_pages(output_dir)[0]
     doc = parse_page(first_page)
 
-    assert doc.xpath("//sup[contains(@class, 'note-ref')]/a/@href") == ["#note-1"]
-    assert doc.xpath("//section[contains(@class, 'endnotes')]//a[@href='#noteref-1']")
+    call_hrefs = doc.xpath("//sup[contains(@class, 'note-ref')]/a/@href")
+    assert len(call_hrefs) == 1
+    # L'ancre technique est le xml:id stable de la note, jamais son @n.
+    note_anchor = call_hrefs[0]
+    assert note_anchor.startswith("#") and "/" not in note_anchor and ".html" not in note_anchor
+    note_id = note_anchor[1:]
+    assert doc.xpath(f"//section[contains(@class, 'endnotes')]//li[@id='{note_id}']")
+    assert doc.xpath(f"//section[contains(@class, 'endnotes')]//a[@href='#noteref-{note_id}']")
+    assert doc.xpath(f"//sup[contains(@class, 'note-ref') and @id='noteref-{note_id}']")
 
 
 def test_internal_ref_to_other_page_group_id_uses_page_href_without_fragment(tmp_path: Path) -> None:
