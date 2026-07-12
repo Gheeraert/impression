@@ -18,3 +18,10 @@ Thumbs.db
 
 # Micro-tests de diagnostic LaTEI (artefacts temporaires, non commités)
 .audit_f1/latei/micro_test_*
+
+# Sorties temporaires d’audit et de génération
+_audit_runtime/
+_pass_normalizer/
+
+# Sorties locales de compilation Nuitka
+build_nuitka/
