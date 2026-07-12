@@ -16,7 +16,7 @@ from typing import Sequence
 from lxml import etree
 
 from .latei_assets import package_latei_graphics
-from .latei_driver import build_latei_driver, build_latei_monofile, compile_latei_pdf
+from .latei_driver import LateiPdfResult, build_latei_driver, build_latei_monofile, compile_latei_pdf
 from .latei_metadata import extract_latei_metadata
 from .latei_running_titles import package_latei_running_titles
 from .reversible import Diagnostic, extract_latei_document_zone, read_latex_document, run_tei_latex_tei_roundtrip, write_tei_element
@@ -79,11 +79,13 @@ def run_reversible_export_for_file(
     output_dir: Path | None = None,
     *,
     latex_engine: str = "lualatex",
+    compile_pdf: bool = True,
 ) -> ReversibleExportResult:
     """Run the experimental TEI -> controlled LaTeX -> TEI export for one file.
 
     Existing output files with the experimental suffixes are overwritten
-    explicitly. The source XML file is never overwritten.
+    explicitly. The source XML file is never overwritten. PDF compilation stays
+    enabled by default for compatibility with direct callers.
     """
     source_path = Path(xml_path).expanduser()
     resolved_output_dir = _resolve_output_dir(source_path, output_dir)
@@ -104,6 +106,14 @@ def run_reversible_export_for_file(
         latei_monofile_log_path,
         manifest_path,
     ) = _output_paths(source_path, resolved_output_dir)
+
+    if not compile_pdf:
+        _unlink_latei_pdf_artifacts(
+            latei_pdf_path,
+            latei_log_path,
+            latei_monofile_pdf_path,
+            latei_monofile_log_path,
+        )
 
     if not source_path.exists():
         message = f"XML file does not exist: {source_path}"
@@ -250,12 +260,15 @@ def run_reversible_export_for_file(
         running_titles_map_tex_path=latei_running_titles_map_path,
         metadata=metadata,
     )
-    pdf_result = compile_latei_pdf(
-        latei_main_path,
-        latei_pdf_path,
-        log_path=latei_log_path,
-        latex_engine=latex_engine,
-    )
+    if compile_pdf:
+        pdf_result = compile_latei_pdf(
+            latei_main_path,
+            latei_pdf_path,
+            log_path=latei_log_path,
+            latex_engine=latex_engine,
+        )
+    else:
+        pdf_result = _skipped_pdf_result(latei_pdf_path)
 
     graphics_map_content = latei_graphics_map_path.read_text(encoding="utf-8") if latei_graphics_map_path.exists() else None
     running_titles_map_content = latei_running_titles_map_path.read_text(encoding="utf-8") if latei_running_titles_map_path.exists() else None
@@ -266,12 +279,15 @@ def run_reversible_export_for_file(
         running_titles_map_content=running_titles_map_content,
         metadata=metadata,
     )
-    monofile_pdf_result = compile_latei_pdf(
-        latei_monofile_path,
-        latei_monofile_pdf_path,
-        log_path=latei_monofile_log_path,
-        latex_engine=latex_engine,
-    )
+    if compile_pdf:
+        monofile_pdf_result = compile_latei_pdf(
+            latei_monofile_path,
+            latei_monofile_pdf_path,
+            log_path=latei_monofile_log_path,
+            latex_engine=latex_engine,
+        )
+    else:
+        monofile_pdf_result = _skipped_pdf_result(latei_monofile_pdf_path)
 
     etree.ElementTree(result.emitted).write(
         str(roundtrip_xml_path),
@@ -343,6 +359,20 @@ def run_reversible_export_for_file(
         success=success,
         message=message,
     )
+
+
+def _skipped_pdf_result(pdf_path: Path) -> LateiPdfResult:
+    return LateiPdfResult(
+        pdf_path=pdf_path,
+        log_path=None,
+        success=False,
+        message="LaTEI PDF not produced because PDF compilation was disabled.",
+    )
+
+
+def _unlink_latei_pdf_artifacts(*paths: Path) -> None:
+    for path in paths:
+        path.unlink(missing_ok=True)
 
 
 def restore_xml_from_latei_body(latei_body_path: Path, output_xml_path: Path) -> Path:

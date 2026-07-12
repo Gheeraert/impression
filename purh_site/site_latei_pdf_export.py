@@ -2,8 +2,8 @@ from __future__ import annotations
 
 """Adaptateur LaTEI compatible avec les attentes du site statique.
 
-Ce module prépare la migration du mode PDF du site vers la chaîne LaTEI.
-Il n'est pas encore branché dans site_builder.py.
+Ce module expose la chaîne LaTEI utilisée par site_builder.py pour les modes
+latei et latei_pdf.
 
 Il traduit les artefacts natifs LaTEI :
 - {stem}.latei.tex
@@ -67,12 +67,16 @@ def build_site_latei_pdf_artifacts(
         xml_input_path,
         output_dir,
         latex_engine=latex_engine,
+        compile_pdf=compile_pdf,
     )
 
     tex_path = output_dir / "book.tex"
     pdf_path = output_dir / "book.pdf"
     manifest_path = output_dir / "book.latei_manifest.json"
     report_path = output_dir / "pdf_build_report.txt"
+
+    if not compile_pdf:
+        pdf_path.unlink(missing_ok=True)
 
     if result.primary_latei_path.exists():
         shutil.copy2(result.primary_latei_path, tex_path)

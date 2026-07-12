@@ -7,6 +7,7 @@ from lxml import etree
 import pytest
 
 import purh_site.latei_driver as latei_driver
+import purh_site.reversible_integration as reversible_integration
 from purh_site.latei_driver import compile_latei_pdf
 from purh_site.reversible import compare_tei_elements, read_latex_document, write_tei_element
 from purh_site.reversible_integration import run_reversible_export_for_file
@@ -304,6 +305,88 @@ def test_reversible_export_overwrites_only_expected_output_files(tmp_path: Path)
     assert r"\documentclass" in second.latei_main_path.read_text(encoding="utf-8")
     assert r"\NewDocumentCommand{\teiP}" in second.latei_macros_path.read_text(encoding="utf-8")
     assert unrelated.read_text(encoding="utf-8") == "keep me"
+
+
+def test_reversible_export_compile_pdf_false_skips_pdf_compilation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    xml_path = write_xml(
+        tmp_path / "book.xml",
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte</p>',
+    )
+
+    def forbidden_compile(*args, **kwargs):
+        raise AssertionError("compile_latei_pdf must not be called when compile_pdf=False")
+
+    monkeypatch.setattr(reversible_integration, "compile_latei_pdf", forbidden_compile)
+
+    result = run_reversible_export_for_file(
+        xml_path,
+        tmp_path / "out",
+        latex_engine="moteur-latei-introuvable",
+        compile_pdf=False,
+    )
+
+    assert result.success is True
+    assert result.primary_latei_path.exists()
+    assert result.latei_body_path.exists()
+    assert result.latei_main_path.exists()
+    assert result.manifest_path.exists()
+    assert result.roundtrip_xml_path.exists()
+    assert result.diagnostics_path.exists()
+    assert result.latei_log_path is None
+    assert result.latei_monofile_log_path is None
+    assert result.latei_pdf_success is False
+    assert result.latei_monofile_pdf_success is False
+    assert "disabled" in result.latei_pdf_message
+    assert "disabled" in result.latei_monofile_pdf_message
+    assert not result.latei_pdf_path.exists()
+    assert not result.latei_monofile_pdf_path.exists()
+    assert not list(result.output_dir.glob("*.pdf"))
+    assert not list(result.output_dir.glob("*_build.log"))
+
+
+def test_reversible_export_compile_pdf_true_invokes_pdf_compilation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    xml_path = write_xml(
+        tmp_path / "book.xml",
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte</p>',
+    )
+    calls: list[tuple[Path, Path, Path | None, str]] = []
+
+    def fake_compile(main_tex_path, pdf_path, *, log_path=None, latex_engine="lualatex", **kwargs):
+        pdf_path = Path(pdf_path)
+        log_path = Path(log_path) if log_path is not None else pdf_path.with_name(f"{pdf_path.stem}_build.log")
+        calls.append((Path(main_tex_path), pdf_path, log_path, latex_engine))
+        pdf_path.write_bytes(b"%PDF fake")
+        log_path.write_text("fake compile", encoding="utf-8")
+        return latei_driver.LateiPdfResult(
+            pdf_path=pdf_path,
+            log_path=log_path,
+            success=True,
+            message="fake compiled",
+        )
+
+    monkeypatch.setattr(reversible_integration, "compile_latei_pdf", fake_compile)
+
+    result = run_reversible_export_for_file(
+        xml_path,
+        tmp_path / "out",
+        latex_engine="fake-lualatex",
+        compile_pdf=True,
+    )
+
+    assert len(calls) == 2
+    assert calls[0][0] == result.latei_main_path
+    assert calls[1][0] == result.latei_monofile_path
+    assert all(call[3] == "fake-lualatex" for call in calls)
+    assert result.latei_pdf_path.exists()
+    assert result.latei_monofile_pdf_path.exists()
+    assert result.latei_log_path is not None and result.latei_log_path.exists()
+    assert result.latei_monofile_log_path is not None and result.latei_monofile_log_path.exists()
 
 
 def test_latei_compile_missing_engine_writes_non_blocking_log(tmp_path: Path) -> None:

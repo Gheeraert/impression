@@ -23,7 +23,7 @@ LATEI_MACROS_PATH = Path(__file__).resolve().parent / "resources" / "latei_macro
 @dataclass(slots=True)
 class LateiPdfResult:
     pdf_path: Path
-    log_path: Path
+    log_path: Path | None
     success: bool
     message: str
 
