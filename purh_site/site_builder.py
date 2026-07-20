@@ -341,6 +341,7 @@ class SiteBuilder:
             f"Pages générées : {1 + len(pages)}",
         ]
         report_lines.extend(f"- {page.file_name} ← {page.title}" for page in pages)
+        report_lines.extend(self.structure_builder.last_diagnostics)
         if theme_assets.cover_href:
             report_lines.append(f"Couverture détectée : {theme_assets.cover_href}")
         if theme_assets.university_logo_href:

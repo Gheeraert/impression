@@ -233,7 +233,8 @@ class TeiNormalizer:
             if value
         }
         candidates = tree.xpath(
-            "//tei:group | //tei:div | //tei:head | //tei:p | //tei:figure | //tei:note | //tei:listBibl | //tei:bibl",
+            "//tei:group | //tei:div | //tei:head | //tei:p | //tei:figure | //tei:note"
+            " | //tei:listBibl | //tei:bibl | //tei:body",
             namespaces=NSMAP,
         )
         for element in candidates:

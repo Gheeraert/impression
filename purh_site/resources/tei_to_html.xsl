@@ -27,7 +27,7 @@
 
   <xsl:template match="tei:group | tei:text | tei:front | tei:body | tei:back">
     <xsl:apply-templates/>
-    <xsl:if test="self::tei:group and .//tei:note">
+    <xsl:if test="(self::tei:group or (self::tei:body and not(parent::*))) and .//tei:note">
       <section class="endnotes">
         <h2>Notes</h2>
         <ol>

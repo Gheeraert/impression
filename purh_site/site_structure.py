@@ -73,11 +73,20 @@ class NavItem:
 class SiteStructureBuilder:
     """Construit l'arborescence du livre et les pages à générer."""
 
+    def __init__(self) -> None:
+        # Diagnostics textuels du dernier `build()`, à reverser dans le rapport
+        # de génération du site (ex. détection d'une unité TEI autonome).
+        self.last_diagnostics: list[str] = []
+
     def build(self, tree: etree._ElementTree) -> tuple[SiteMeta, list[PageDef], list[NavItem]]:
         site_meta = self._extract_site_meta(tree)
+        self.last_diagnostics = []
         root_group = self._find_root_group(tree)
         if root_group is None:
-            return site_meta, [], []
+            pages, nav = self._build_standalone_body_page(tree, site_meta)
+            if not pages:
+                self.last_diagnostics.append("Aucun group de livre ni body TEI exploitable trouvé.")
+            return site_meta, pages, nav
 
         pages: list[PageDef] = []
         nav: list[NavItem] = []
@@ -94,6 +103,49 @@ class SiteStructureBuilder:
                 nav.append(nav_item)
             pages.extend(new_pages)
         return site_meta, pages, nav
+
+    def _build_standalone_body_page(
+        self,
+        tree: etree._ElementTree,
+        site_meta: SiteMeta,
+    ) -> tuple[list[PageDef], list[NavItem]]:
+        """Construit une page unique pour une unité TEI autonome (<text><body>, sans <group>).
+
+        Ce cas couvre les documents TEI Commons Publishing valides dont le
+        <text> n'est pas organisé en <group> (ex. unité éditoriale produite
+        par Mini-Métopes) : Impressions ne doit pas conclure à un site vide
+        uniquement parce que l'organisation ne correspond pas au modèle de
+        livre privilégié.
+        """
+        bodies = tree.xpath("/tei:TEI/tei:text/tei:body[1]", namespaces=NSMAP)
+        if not bodies:
+            return [], []
+        body = bodies[0]
+        node_id = xml_id(body)
+        if not node_id:
+            return [], []
+
+        title = site_meta.title
+        base_slug = slugify(title, fallback="unite-editoriale")
+        file_name = f"{base_slug}.html"
+        author_entries = [AuthorEntry(name=name) for name in site_meta.creators]
+        page = PageDef(
+            node_id=node_id,
+            file_name=file_name,
+            title=title,
+            subtitle=site_meta.subtitle,
+            authors=list(site_meta.creators),
+            author_entries=author_entries,
+            group_type="body",
+            page_kind="article",
+            section_chain=[],
+            sequence=1,
+        )
+        nav_item = NavItem(title=title, href=file_name, page_kind=page.page_kind)
+        self.last_diagnostics.append(
+            "Unité TEI autonome détectée : rendu du body sur une page unique."
+        )
+        return [page], [nav_item]
 
     def build_nav_for_page(self, nav: Iterable[NavItem], current_file_name: str | None) -> list[NavItem]:
         return [self._clone_nav_item(item, current_file_name) for item in nav]

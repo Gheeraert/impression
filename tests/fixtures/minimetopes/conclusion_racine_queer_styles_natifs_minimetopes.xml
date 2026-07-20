@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title type="main">Racine queer : des styles natifs</title>
+        <title type="sub">Conclusion</title>
+        <author>
+          <persName>Alix Dumoulin</persName>
+        </author>
+      </titleStmt>
+      <publicationStmt>
+        <publisher>PURH</publisher>
+        <date type="publishing" when="2025">2025</date>
+      </publicationStmt>
+      <sourceDesc>
+        <p>Unité éditoriale produite par Mini-Métopes.</p>
+      </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="section1">
+        <head>Le confident, une discrétion trompeuse</head>
+        <p>En général, le confident attire peu l’attention. Relégué au second plan par la
+          tradition critique, il apparaît comme un simple rouage dramaturgique, chargé de
+          recueillir les aveux que le protagoniste ne saurait proférer devant la cour<note>Voir
+          à ce sujet les analyses classiques consacrées au personnage du confident dans la
+          tragédie classique.</note>. C’est précisément cette discrétion qui mérite d’être
+          interrogée : elle dissimule une fonction bien plus centrale dans l’économie du
+          désir que le texte racinien met en scène.</p>
+        <p>Le confident n’est pas seulement un réceptacle de paroles ; il est aussi, souvent,
+          le lieu où s’énonce un style autre, moins contraint par les conventions de la
+          bienséance<note>Sur la notion de style « natif » appliquée aux voix secondaires du
+          théâtre classique, on se reportera aux chapitres précédents de ce volume.</note>. Ce
+          style natif, propre aux voix secondaires, ouvre un espace de lecture que l’on peut
+          qualifier, à la suite des travaux récents, de lecture queer.</p>
+      </div>
+      <div type="section1">
+        <head>Styles natifs et voix secondaires</head>
+        <p>Les scènes de confidence, dans <hi rend="italic">Bérénice</hi> comme dans
+          <hi rend="italic">Britannicus</hi>, révèlent une tension constante entre la parole
+          publique du protagoniste et la parole intime confiée au confident. Cette tension se
+          lit jusque dans le mètre, comme le montre le passage suivant.</p>
+        <quote>
+          <lg>
+            <l>Ami, dans ce désordre où tu me vois réduite,</l>
+            <l>Je ne rappelle point une gloire perdue ;</l>
+            <l>Mais de tant de vertus si mal récompensées</l>
+            <l>Dois-je perdre le fruit et le prix ?</l>
+          </lg>
+        </quote>
+        <p>Cette tirade, adressée à un confident, condense en quelques vers l’essentiel de
+          notre propos<note>Ces vers sont cités d’après l’édition de référence utilisée dans ce
+          volume.</note> : la confidence n’est pas un aparté secondaire, mais le lieu même où
+          se love une écriture natale du trouble.</p>
+      </div>
+      <div type="section1">
+        <head>Pour une lecture queer des styles natifs</head>
+        <p>En guise de conclusion, on retiendra que la figure du confident, loin d’être un
+          simple faire-valoir, constitue un poste d’observation privilégié pour qui souhaite
+          interroger les styles natifs du théâtre racinien et les lectures queer qu’ils
+          autorisent.</p>
+      </div>
+    </body>
+  </text>
+</TEI>
