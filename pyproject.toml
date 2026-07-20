@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Impression"
+version = "0.1.0"
+description = "Générateur de livres web statiques, LaTEI et PDF réversible à partir de TEI Métopes"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "lxml>=5.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["purh_site*"]
+
+[tool.setuptools.package-data]
+purh_site = ["resources/*"]
