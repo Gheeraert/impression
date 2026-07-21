@@ -1,0 +1,666 @@
+Metadata-Version: 2.4
+Name: impression
+Version: 0.1.0
+Summary: Générateur de livres web statiques, LaTEI et PDF réversible à partir de TEI Métopes
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: lxml>=5.0
+Dynamic: license-file
+
+# Impressions — TEI Métopes vers livre web statique, LaTEI et PDF réversible
+
+**Impressions** est un générateur de **livres web statiques** à partir de fichiers **TEI Métopes / Commons Publishing**.
+
+Développé en Python et utilisable avec une interface graphique, il produit en un clic un site HTML complet, structuré, navigable et directement publiable par simple FTP.
+
+Impressions intègre également une chaîne **LaTEI** : un LaTeX sémantique, éditable à la main, compilable en PDF, puis restaurable vers XML Métopes sans perdre la structure éditoriale.
+
+---
+
+## Objectif
+
+À partir d’un **fichier maître TEI**, Impressions construit un **livre numérique multi-pages** :
+
+* sans base de données ;
+* sans CMS ;
+* avec une structure éditoriale robuste ;
+* compatible avec les usages académiques : citabilité, métadonnées, Zotero ;
+* publiable comme site web statique ;
+* exportable en XML normalisé ;
+* exportable en LaTEI et en PDF ;
+* restaurable vers XML Métopes depuis un fichier LaTEI modifié.
+
+L’objectif est de disposer d’une chaîne éditoriale sobre, maintenable et réversible :
+
+```text
+XML Métopes / TEI Commons Publishing
+        ↓
+XML normalisé
+        ↓
+site HTML statique
+        ↓
+LaTEI éditable
+        ↓
+PDF
+        ↓
+retour possible vers XML Métopes
+```
+
+---
+
+## Philosophie générale
+
+Impressions repose sur quelques principes forts :
+
+* **sobriété technique** : pas de CMS, pas de base de données, pas de dépendance serveur ;
+* **pérennité des formats** : XML/TEI, HTML statique, LaTeX contrôlé ;
+* **édition savante** : structure, citabilité, métadonnées, notes, figures, références ;
+* **séparation stricte contenu / rendu** ;
+* **réversibilité éditoriale** : le fichier LaTEI peut être modifié à la main sans perdre la possibilité de restaurer un XML Métopes propre ;
+* **correction d’épreuves intégrée** : les ajustements fins de mise en page PDF sont possibles dans LaTEI, sans polluer le XML.
+
+---
+
+## Fonctionnalités principales
+
+### Traitement TEI
+
+* chargement d’un fichier maître XML ;
+* résolution des `xi:include` ;
+* normalisation et export d’un `book.normalized.xml` ;
+* transformation TEI → HTML via XSLT ;
+* conservation de la structure éditoriale du livre ;
+* prise en charge des divisions, titres, paragraphes, notes, références, figures, tableaux et métadonnées.
+
+### Génération du livre web
+
+* **une page HTML par chapitre** pour une monographie ;
+* **une page HTML par contribution** pour un volume collectif ;
+* génération automatique du **sommaire** ;
+* navigation précédente / suivante ;
+* menu latéral arborescent ;
+* page d’accueil enrichie ;
+* sortie entièrement statique, publiable par FTP.
+
+### Métadonnées et édition
+
+* génération de **cartes de citabilité** pour les chapitres ou articles ;
+* intégration des :
+
+  * auteurs ;
+  * directeurs de volume (*Dir.*) ;
+  * ISBN / ISSN ;
+  * collection depuis le XML ou l’interface graphique ;
+  * quatrième de couverture depuis le XML ou depuis l’interface graphique ;
+* format de citation conforme aux usages PURH.
+
+### Page d’accueil enrichie
+
+* présentation du volume ;
+* affichage de la couverture ;
+* **quatrième de couverture** :
+
+  * prioritairement depuis le XML ;
+  * sinon depuis `assets/quatrieme/` en Markdown, HTML ou TXT ;
+* boutons de téléchargement :
+
+  * XML normalisé ;
+  * PDF si présent dans `assets/PDF` ;
+  * autres fichiers éditoriaux éventuellement fournis.
+
+### Médias et assets
+
+* prise en charge des balises TEI :
+
+  * `graphic` ;
+  * `media` ;
+* zoom sur les images ;
+* bouton de téléchargement des images ;
+* copie automatique du dossier `assets/` ;
+* conservation des chemins déclarés dans le XML.
+
+### Interface utilisateur
+
+L’interface graphique Tkinter permet :
+
+* de sélectionner le XML maître ;
+* de sélectionner le dossier `assets` ;
+* de configurer les métadonnées complémentaires :
+
+  * collection ;
+  * numéro de collection ;
+  * ISSN ;
+  * quatrième de couverture ;
+* de choisir les exports :
+
+  * site HTML ;
+  * XML normalisé ;
+  * LaTEI ;
+  * PDF LaTEI.
+
+---
+
+## LaTEI : LaTeX éditorial réversible
+
+LaTEI est un LaTeX contrôlé produit par Impressions.
+
+Il a trois fonctions :
+
+1. produire un PDF ;
+2. permettre des corrections manuelles dans le fichier `.latei.tex` ;
+3. permettre ensuite de restaurer un XML Métopes propre.
+
+LaTEI n’est pas un simple LaTeX de sortie. C’est une **sérialisation éditoriale réversible**.
+
+---
+
+## Les trois couches de LaTEI
+
+Un fichier LaTEI distingue trois couches.
+
+### 1. Les commandes `\tei...`
+
+Les commandes `\tei...` portent le contenu éditorial réversible :
+
+```latex
+\teiP[xmlid={p-111}]{C’est effectivement ce qui s’était pratiqué pour Jules III.}
+```
+
+Elles correspondent aux éléments XML/TEI.
+
+Elles sont restaurées vers XML.
+
+On peut corriger le texte placé dans les accolades, par exemple :
+
+```latex
+\teiP[xmlid={p-111}]{C’est bien ce qui s’était pratiqué pour Jules III.}
+```
+
+Mais il ne faut pas modifier la mécanique de la commande :
+
+```latex
+\teiP[xmlid={p-111}]{...}
+```
+
+Il ne faut donc pas renommer `\teiP`, supprimer les accolades ou modifier sans raison un attribut comme `xmlid`.
+
+### 2. Les commandes `\latei...`
+
+Les commandes `\latei...` portent uniquement des corrections locales de mise en page PDF.
+
+Exemple :
+
+```latex
+\lateiVSpace{small}
+```
+
+ou :
+
+```latex
+\lateiNoIndent{
+  \teiP[xmlid={p-112}]{Ce paragraphe ne doit pas avoir d’alinéa.}
+}
+```
+
+Ces commandes agissent sur le PDF, mais elles disparaissent lors du retour XML.
+
+Ainsi :
+
+```latex
+\lateiSpaceBefore{small}{
+  \teiP[xmlid={p-112}]{Texte corrigé.}
+}
+```
+
+restaure seulement :
+
+```xml
+<p xml:id="p-112">Texte corrigé.</p>
+```
+
+### 3. Le LaTeX brut
+
+Les commandes LaTeX ordinaires comme :
+
+```latex
+\noindent
+\vspace
+\newpage
+\clearpage
+```
+
+ne doivent pas être écrites directement dans la zone éditoriale LaTEI.
+
+Elles sont réservées au moteur, au préambule ou aux macros internes.
+
+Dans le corps éditorial, il faut utiliser uniquement les commandes `\latei...` documentées.
+
+---
+
+## Ce qu’on peut modifier dans un fichier LaTEI
+
+Les éditrices et éditeurs peuvent :
+
+* corriger une coquille ;
+* ajouter un mot oublié ;
+* supprimer un mot en trop ;
+* modifier la ponctuation ;
+* corriger une espace, une apostrophe, une majuscule ;
+* corriger un problème typographique local au moyen d’une commande `\latei...` documentée.
+
+Exemple autorisé :
+
+```latex
+\teiP[xmlid={p-111}]{C’est effectivement ce qui s’était pratiqué.}
+```
+
+peut devenir :
+
+```latex
+\teiP[xmlid={p-111}]{C’est bien ce qui s’était pratiqué.}
+```
+
+Autre exemple autorisé :
+
+```latex
+\teiP[xmlid={p-111}]{Premier paragraphe.}
+
+\lateiVSpace{small}
+
+\teiP[xmlid={p-112}]{Second paragraphe.}
+```
+
+---
+
+## Ce qu’il ne faut pas modifier
+
+Il ne faut pas :
+
+* renommer une commande `\tei...` ;
+* supprimer ou déplacer une accolade ;
+* supprimer ou modifier un attribut comme `xmlid={...}` sans raison éditoriale explicite ;
+* écrire du LaTeX brut dans la zone éditoriale ;
+* remplacer une correction de contenu par une correction de mise en page ;
+* modifier une structure XML depuis LaTEI si la correction doit être faite dans le XML source.
+
+Exemples interdits :
+
+```latex
+\p[xmlid={p-111}]{Texte.}
+```
+
+```latex
+\noindent\teiP[xmlid={p-111}]{Texte.}
+```
+
+```latex
+\lateiVSpace{12pt}
+```
+
+Les espacements libres comme `12pt`, `1em`, `0.5cm` sont volontairement interdits. Impressions utilise des valeurs contrôlées.
+
+---
+
+## Commandes LaTEI de mise en page actuellement implémentées
+
+Les commandes suivantes sont actuellement reconnues comme commandes de mise en page PDF non exportées vers XML.
+
+### Alinéas
+
+```latex
+\lateiNoIndent{...}
+\lateiIndent{...}
+```
+
+### Espacements verticaux
+
+Commandes autonomes entre deux éléments :
+
+```latex
+\lateiVSpace{small}
+\lateiVSpace{medium}
+\lateiVSpace{large}
+```
+
+Commandes enveloppantes :
+
+```latex
+\lateiSpaceBefore{small}{...}
+\lateiSpaceBefore{medium}{...}
+\lateiSpaceBefore{large}{...}
+
+\lateiSpaceAfter{small}{...}
+\lateiSpaceAfter{medium}{...}
+\lateiSpaceAfter{large}{...}
+```
+
+Les seules tailles autorisées sont :
+
+```text
+small
+medium
+large
+```
+
+### Sauts de page
+
+Commandes autonomes :
+
+```latex
+\lateiPageBreak
+\lateiClearPage
+```
+
+Commandes enveloppantes :
+
+```latex
+\lateiPageBreakBefore{...}
+\lateiPageBreakAfter{...}
+
+\lateiClearPageBefore{...}
+\lateiClearPageAfter{...}
+```
+
+### Contrôle des coupures
+
+```latex
+\lateiKeepWithNext{...}
+\lateiKeepTogether{...}
+
+\lateiNoPageBreakBefore{...}
+\lateiNoPageBreakAfter{...}
+```
+
+---
+
+## Documentation LaTEI complémentaire
+
+La documentation LaTEI est divisée en deux niveaux.
+
+### Documentation technique
+
+```text
+LATEI_LAYOUT_COMMANDS.md
+```
+
+Ce document décrit :
+
+* la doctrine des trois couches ;
+* les familles de commandes ;
+* le comportement du parseur ;
+* la procédure pour ajouter une nouvelle commande `\latei...`.
+
+### Documentation éditoriale
+
+```text
+MODE_EMPLOI_LATEI_EDITRICES.md
+```
+
+Ce document est destiné aux éditrices et éditeurs. Il explique :
+
+* ce qu’on peut modifier dans un fichier LaTEI ;
+* comment corriger la mise en page PDF ;
+* quelles commandes utiliser ;
+* ce qui disparaît au retour XML.
+
+Une version LaTeX/PDF de cette documentation peut également être maintenue dans :
+
+```text
+docs/guide_latei_corrections_editoriales.tex
+```
+
+---
+
+## Workflow LaTEI
+
+Le workflow LaTEI peut être résumé ainsi :
+
+1. partir d’un XML Métopes ;
+2. générer un fichier `.latei.tex` ;
+3. compiler le PDF ;
+4. corriger éventuellement le fichier `.latei.tex` :
+
+   * corrections de texte à l’intérieur des commandes `\tei...` ;
+   * corrections de mise en page avec les commandes `\latei...` ;
+5. recompiler le PDF ;
+6. restaurer un XML Métopes depuis le LaTEI corrigé si nécessaire.
+
+Les corrections `\latei...` ne sont pas conservées dans le XML restauré.
+
+Les corrections textuelles faites dans les contenus `\tei...` sont conservées.
+
+---
+
+## Compatibilité Zotero
+
+Impressions ajoute des métadonnées intégrées :
+
+* Open Graph ;
+* Dublin Core ;
+* métadonnées bibliographiques ;
+* détection automatique du type : livre, chapitre, contribution.
+
+Le résultat est récupérable automatiquement dans Zotero.
+
+---
+
+## Habillage éditorial
+
+Le site généré comprend :
+
+* bandeau avec logos de la maison d’édition ;
+* sidebar structurée ;
+* footer intégré avec crédits :
+
+  * Impressions ;
+  * PURH ;
+  * Chaire d’excellence en édition numérique ;
+* feuilles de style intégrées ;
+* navigation adaptée aux monographies et aux volumes collectifs.
+
+---
+
+## Convention d’assets
+
+Le dossier choisi dans l’interface est copié tel quel dans `assets/`.
+
+Le XML reste la source de vérité pour les chemins.
+
+### Exemple de sortie
+
+```text
+site/
+  index.html
+  01-chapitre.html
+  assets/
+    icono/
+      br/
+        Ch03_Loskoutoff_1/
+          fig10.jpg
+    logos/
+      purh.svg
+      universite.svg
+      ceen.svg
+    quatrieme/
+```
+
+### Exemple TEI
+
+```xml
+<graphic url="../icono/br/Ch03_Loskoutoff_1/fig10.jpg"/>
+```
+
+---
+
+## Conventions automatiques
+
+Impressions détecte automatiquement certains fichiers dans `assets/`.
+
+### Couverture
+
+Noms reconnus notamment :
+
+```text
+cover
+couverture
+couv
+```
+
+### Logo université
+
+Noms reconnus notamment :
+
+```text
+universite
+university
+```
+
+### Logo maison d’édition
+
+Noms reconnus notamment :
+
+```text
+logo
+presses
+```
+
+### Logo de footer
+
+Les logos optionnels peuvent être placés dans :
+
+```text
+assets/logos/
+```
+
+---
+
+## Quatrième de couverture
+
+Ordre de priorité :
+
+1. XML, si la quatrième de couverture est présente ;
+2. `assets/quatrieme/`, avec priorité :
+
+   * `.md` ;
+   * `.html` ;
+   * `.txt` ;
+3. saisie dans l’interface graphique.
+
+---
+
+## Collections
+
+Les informations de collection peuvent provenir :
+
+* du XML, si elles sont présentes ;
+* de l’interface graphique.
+
+Sont pris en charge :
+
+* nom de collection ;
+* numéro ;
+* ISSN.
+
+Ces informations peuvent apparaître :
+
+* sur la page d’accueil ;
+* dans les citations ;
+* dans la sidebar ;
+* dans les métadonnées.
+
+---
+
+## Sortie générée
+
+Une sortie typique contient :
+
+```text
+output/
+  index.html
+  01-chapitre.html
+  02-chapitre.html
+  assets/
+  book.normalized.xml
+  build_report.txt
+```
+
+Si l’export LaTEI/PDF est activé, la sortie peut également contenir :
+
+```text
+book.normalized.latei.tex
+book.pdf
+```
+
+ou un paquet LaTEI comprenant le monofichier, les macros, les assets et les fichiers nécessaires à la compilation.
+
+---
+
+## Lancer l’application
+
+Installer les dépendances :
+
+```bash
+pip install -r requirements.txt
+```
+
+Lancer l’interface :
+
+```bash
+python main.py
+```
+
+---
+
+## Librairies requises
+
+Voir :
+
+```text
+requirements.txt
+```
+
+Impressions utilise notamment :
+
+* `lxml` pour le traitement XML ;
+* les bibliothèques Python standard ;
+* LuaLaTeX ou un moteur LaTeX compatible pour la compilation PDF, lorsque l’export PDF est activé.
+
+---
+
+## Tests
+
+Lancer les tests :
+
+```bash
+python -m pytest tests/ -q
+```
+
+Tests ciblés utiles :
+
+```bash
+python -m pytest tests/test_latei_layout_commands.py -q
+python -m pytest tests/test_latei_real_metopes_fixture.py -q
+python -m pytest tests/test_reversible_roundtrip.py -q
+```
+
+---
+
+## Crédits
+
+Impressions est développé par Tony Gheeraert dans le cadre des :
+
+* Presses universitaires de Rouen et du Havre (PURH) ;
+* Chaire d’excellence en édition numérique (CEEN).
+
+Site CEEN :
+
+```text
+https://ceen.hypotheses.org/
+```
+
+---
+
+## Licence
+
+MIT
