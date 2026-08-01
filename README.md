@@ -602,6 +602,29 @@ python main.py
 
 ---
 
+## Packaging Windows (.exe)
+
+`dist/main.exe` et `dist/main.cmd` sont produits par [Nuitka](https://nuitka.net/) en mode
+« accéléré » (ni `--standalone`, ni `--onefile`). L'exécutable reste dépendant du `.venv`
+utilisé pour la compilation : `dist/main.cmd`, généré automatiquement, positionne
+`PYTHONHOME`/`PYTHONPATH` vers ce `.venv` avant de lancer `main.exe`. Ce n'est donc pas un
+exécutable portable ; la machine cible doit disposer d'un `.venv` équivalent au même chemin.
+
+Reconstruire le build :
+
+```bash
+pip install -r requirements-build.txt
+powershell -File scripts/build_windows_exe.ps1
+```
+
+Commande Nuitka équivalente, pour référence :
+
+```bash
+python -m nuitka --windows-console-mode=disable --output-dir=dist main.py
+```
+
+---
+
 ## Librairies requises
 
 Voir :

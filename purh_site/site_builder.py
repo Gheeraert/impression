@@ -6,15 +6,17 @@ import re
 import shutil
 from dataclasses import dataclass, replace
 from pathlib import Path
-from urllib.parse import unquote, urldefrag, urljoin, urlparse
 
 from lxml import etree
 from lxml import html as lxml_html
 
 from .config import BuildConfig
 from .normalizer import NormalizeReport, TeiNormalizer
+from .site_credits import render_credit_block
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
+from .site_quality import run_site_quality_checks
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
+from .site_zotero import render_zotero_meta
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
 
@@ -353,7 +355,7 @@ class SiteBuilder:
         report_lines.extend(self._pdf_site_report_lines(theme_assets, pdf_artifacts))
         if back_cover_source:
             report_lines.append(f"Quatrième de couverture : {back_cover_source}")
-        quality_issues = self._run_site_quality_checks(config.output_dir)
+        quality_issues = run_site_quality_checks(config.output_dir)
         report_lines.extend(["", "Contrôle qualité du site :"])
         if quality_issues:
             report_lines.extend(f"- {issue}" for issue in quality_issues)
@@ -470,114 +472,6 @@ class SiteBuilder:
             else:
                 shutil.copy2(child, dst)
 
-    def _run_site_quality_checks(self, output_dir: Path) -> list[str]:
-        issues: list[str] = []
-        html_files = sorted(path for path in output_dir.glob("*.html") if path.is_file())
-        parsed_pages: dict[Path, lxml_html.HtmlElement] = {}
-
-        def parse_page(path: Path) -> lxml_html.HtmlElement | None:
-            if path in parsed_pages:
-                return parsed_pages[path]
-            try:
-                parsed = lxml_html.fromstring(path.read_text(encoding="utf-8"))
-            except Exception as exc:  # pragma: no cover - garde-fou de rapport.
-                issues.append(f"[WARNING] {path.name} : HTML illisible ({exc})")
-                return None
-            parsed_pages[path] = parsed
-            return parsed
-
-        for html_file in html_files:
-            document = parse_page(html_file)
-            if document is None:
-                continue
-            page_ids = self._html_ids(document)
-            self._check_empty_html_attributes(document, html_file.name, issues)
-            self._check_duplicate_html_ids(page_ids, html_file.name, issues)
-            self._check_html_links(output_dir, html_file, document, page_ids, parse_page, issues)
-            self._check_html_resources(output_dir, html_file, document, issues)
-        return issues
-
-    def _html_ids(self, document: lxml_html.HtmlElement) -> list[str]:
-        return [str(value) for value in document.xpath("//*[@id]/@id")]
-
-    def _check_empty_html_attributes(self, document: lxml_html.HtmlElement, file_name: str, issues: list[str]) -> None:
-        for attr_name in ("href", "src", "id"):
-            for _node in document.xpath(f"//*[@{attr_name}='']"):
-                issues.append(f"[WARNING] {file_name} : attribut {attr_name} vide")
-
-    def _check_duplicate_html_ids(self, ids: list[str], file_name: str, issues: list[str]) -> None:
-        seen: set[str] = set()
-        duplicates: set[str] = set()
-        for html_id in ids:
-            if not html_id:
-                continue
-            if html_id in seen:
-                duplicates.add(html_id)
-            seen.add(html_id)
-        for html_id in sorted(duplicates):
-            issues.append(f'[WARNING] {file_name} : id HTML dupliqué "{html_id}"')
-
-    def _check_html_links(
-        self,
-        output_dir: Path,
-        html_file: Path,
-        document: lxml_html.HtmlElement,
-        page_ids: list[str],
-        parse_page,
-        issues: list[str],
-    ) -> None:
-        page_id_set = set(page_ids)
-        for link in document.xpath("//a[@href]"):
-            href = (link.get("href") or "").strip()
-            if not href or href == "#" or self._is_external_or_unchecked_url(href):
-                continue
-            href_without_fragment, fragment = urldefrag(href)
-            if not href_without_fragment:
-                if fragment and fragment not in page_id_set:
-                    issues.append(f"[WARNING] {html_file.name} : lien interne cassé vers #{fragment}")
-                continue
-
-            target_path = self._resolve_quality_local_path(output_dir, html_file, href_without_fragment)
-            if target_path is None:
-                continue
-            if not target_path.exists():
-                issues.append(f"[WARNING] {html_file.name} : fichier HTML local absent {href_without_fragment}")
-                continue
-            if fragment and target_path.suffix.lower() == ".html":
-                target_doc = parse_page(target_path)
-                if target_doc is None:
-                    continue
-                target_ids = set(self._html_ids(target_doc))
-                if fragment not in target_ids:
-                    issues.append(f"[WARNING] {html_file.name} : cible absente {href_without_fragment}#{fragment}")
-
-    def _check_html_resources(self, output_dir: Path, html_file: Path, document: lxml_html.HtmlElement, issues: list[str]) -> None:
-        resource_refs: list[tuple[str, str]] = []
-        resource_refs.extend(("src", value) for value in document.xpath("//img[@src]/@src | //script[@src]/@src | //source[@src]/@src"))
-        resource_refs.extend(("href", value) for value in document.xpath("//link[@href]/@href"))
-        for _attr_name, value in resource_refs:
-            ref = (value or "").strip()
-            if not ref or self._is_external_or_unchecked_url(ref):
-                continue
-            ref_without_fragment, _fragment = urldefrag(ref)
-            target_path = self._resolve_quality_local_path(output_dir, html_file, ref_without_fragment)
-            if target_path is not None and not target_path.exists():
-                issues.append(f"[WARNING] {html_file.name} : fichier local absent {ref_without_fragment}")
-
-    def _is_external_or_unchecked_url(self, value: str) -> bool:
-        parsed = urlparse(value)
-        if parsed.scheme in {"http", "https", "mailto", "tel", "data", "javascript"}:
-            return True
-        return bool(parsed.netloc) or value.startswith("/")
-
-    def _resolve_quality_local_path(self, output_dir: Path, html_file: Path, value: str) -> Path | None:
-        if not value:
-            return html_file
-        parsed = urlparse(value)
-        if parsed.scheme or parsed.netloc or parsed.path.startswith("/"):
-            return None
-        return (html_file.parent / unquote(parsed.path)).resolve()
-
     def _write_index_page(
             self,
             output_dir: Path,
@@ -651,7 +545,7 @@ class SiteBuilder:
         fragment_html = self._render_page_fragment(page_group)
         nav_html = self._render_sidebar(nav, current_file_name=page.file_name)
         page_header = self._render_page_header(page, theme_assets)
-        credits = self._render_credit_block(page, site_meta)
+        credits = render_credit_block(page, site_meta)
         pager = self._render_prev_next(page, nav)
         full_content = page_header + fragment_html + credits + pager + self._render_footer(theme_assets)
         page_html = self._wrap_html(
@@ -942,90 +836,6 @@ class SiteBuilder:
         parts.append('</div>')
         return ''.join(parts)
 
-    def _render_credit_block(self, page: PageDef, site_meta: SiteMeta) -> str:
-        page_creators = self._page_citation_authors(page, site_meta)
-        volume_title = site_meta.title
-        if site_meta.subtitle:
-            volume_title = f"{volume_title}. {site_meta.subtitle}"
-
-        volume_creators_text = " ; ".join(site_meta.creators)
-        role_label = site_meta.creator_role_label
-        public_url = self._build_public_page_url(page.file_name, site_meta)
-        doi_value = site_meta.doi.strip()
-        doi_url = self._normalize_doi_url(doi_value) if doi_value else ""
-        cite_heading = {
-            "article": "Pour citer cette contribution",
-            "chapter": "Pour citer ce chapitre",
-        }.get(page.page_kind, "Pour citer cette page")
-
-        suggestion = [html.escape(" ; ".join(page_creators))] if page_creators else []
-        title_bit = page.title
-        if page.subtitle:
-            title_bit += f". {page.subtitle}"
-        suggestion.append(f'« {html.escape(title_bit)} »')
-        host = f'dans <em>{html.escape(volume_title)}</em>'
-        if volume_creators_text and set(page_creators) != set(site_meta.creators):
-            host += f', {html.escape(role_label)} : {html.escape(volume_creators_text)}'
-        suggestion.append(host)
-        if site_meta.publisher:
-            suggestion.append(html.escape(site_meta.publisher))
-        if site_meta.publication_year:
-            suggestion.append(html.escape(site_meta.publication_year))
-        if public_url:
-            suggestion.append(f'URL : <a href="{html.escape(public_url)}">{html.escape(public_url)}</a>')
-        if doi_url:
-            suggestion.append(f'DOI : <a href="{html.escape(doi_url)}">{html.escape(doi_value)}</a>')
-        suggestion.append('consulté le <time class="consultation-date"></time>')
-
-        lines = ['<section class="credit-box">']
-        lines.append('<h2>Crédits et citabilité</h2>')
-        lines.append(f'<p class="credit-kicker">{cite_heading}</p>')
-        lines.append('<dl class="credit-list">')
-        if page_creators:
-            lines.append(f'<p class="credit-names">{html.escape(" ; ".join(page_creators))}</p>')
-        lines.append(f'<div><dt>{"Contribution" if page.page_kind == "article" else "Chapitre"}</dt><dd>{html.escape(page.title)}</dd></div>')
-        if page.subtitle:
-            lines.append(f'<div><dt>Sous-titre</dt><dd>{html.escape(page.subtitle)}</dd></div>')
-        lines.append(f'<div><dt>Volume</dt><dd><em>{html.escape(site_meta.title)}</em></dd></div>')
-        if site_meta.subtitle:
-            lines.append(f'<div><dt>Sous-titre du volume</dt><dd>{html.escape(site_meta.subtitle)}</dd></div>')
-        if site_meta.publisher:
-            lines.append(f'<div><dt>Éditeur</dt><dd>{html.escape(site_meta.publisher)}</dd></div>')
-        if site_meta.publication_year:
-            lines.append(f'<div><dt>Année</dt><dd>{html.escape(site_meta.publication_year)}</dd></div>')
-        if public_url:
-            lines.append(f'<div><dt>URL</dt><dd><a href="{html.escape(public_url)}">{html.escape(public_url)}</a></dd></div>')
-        if doi_url:
-            lines.append(f'<div><dt>DOI</dt><dd><a href="{html.escape(doi_url)}">{html.escape(doi_value)}</a></dd></div>')
-        lines.append('<div><dt>Date de consultation</dt><dd><time class="consultation-date"></time></dd></div>')
-        lines.append('</dl>')
-        lines.append(f'<p class="credit-citation"><strong>Référence suggérée</strong> : {". ".join(suggestion)}.</p>')
-        lines.append('</section>')
-        return ''.join(lines)
-
-    def _build_public_page_url(self, file_name: str, site_meta: SiteMeta) -> str:
-        base = site_meta.site_url.strip()
-        if not base:
-            return file_name
-        if base.endswith('.html'):
-            return urljoin(base, file_name)
-        return urljoin(base.rstrip('/') + '/', file_name)
-
-    def _normalize_doi_url(self, doi: str) -> str:
-        if not doi:
-            return ''
-        if doi.startswith('http://') or doi.startswith('https://'):
-            return doi
-        return f'https://doi.org/{doi}'
-
-    def _page_citation_authors(self, page: PageDef, site_meta: SiteMeta) -> list[str]:
-        volume_is_edited = site_meta.creator_role_label.lower().startswith('dir')
-        if page.authors:
-            return page.authors
-        if volume_is_edited:
-            return []
-        return site_meta.creators
-
     def _render_prev_next(self, page: PageDef, nav: list[NavItem]) -> str:
         flat: list[tuple[str, str]] = []
         self._flatten_nav(nav, flat)
@@ -1183,103 +993,6 @@ class SiteBuilder:
         return ''.join(parts)
 
 
-    def _full_volume_title(self, site_meta: SiteMeta) -> str:
-        if site_meta.subtitle:
-            return f"{site_meta.title}. {site_meta.subtitle}"
-        return site_meta.title
-
-    def _build_public_asset_url(self, asset_href: str, site_meta: SiteMeta) -> str:
-        base = site_meta.site_url.strip()
-        if not base:
-            return asset_href
-        if base.endswith('.html'):
-            return urljoin(base, asset_href)
-        return urljoin(base.rstrip('/') + '/', asset_href)
-
-    def _strip_html(self, value: str) -> str:
-        text_value = re.sub(r'<[^>]+>', ' ', value or '')
-        return re.sub(r'\s+', ' ', text_value).strip()
-
-    def _meta_tag(self, name: str, content: str) -> str:
-        content = (content or '').strip()
-        if not content:
-            return ''
-        return f'<meta name="{html.escape(name, quote=True)}" content="{html.escape(content, quote=True)}">'
-
-    def _render_zotero_meta(
-        self,
-        site_meta: SiteMeta,
-        theme_assets: ThemeAssets,
-        page: PageDef | None = None,
-        abstract_html: str | None = None,
-        citation_pdf_href: str | None = None,
-    ) -> str:
-        tags: list[str] = []
-        volume_title = self._full_volume_title(site_meta)
-
-        page_url = self._build_public_page_url(page.file_name if page is not None else 'index.html', site_meta)
-        if page is None:
-            citation_title = volume_title
-            creator_tag = 'citation_editor' if site_meta.creator_role_label.lower().startswith('dir') else 'citation_author'
-            for creator in site_meta.creators:
-                tags.append(self._meta_tag(creator_tag, creator))
-            tags.extend([
-                self._meta_tag('citation_title', citation_title),
-                self._meta_tag('citation_publisher', site_meta.publisher),
-                self._meta_tag('citation_publication_date', site_meta.publication_year),
-                self._meta_tag('citation_isbn', site_meta.isbn),
-                self._meta_tag('citation_issn', site_meta.issn),
-                self._meta_tag('citation_series_title', site_meta.collection_title),
-                self._meta_tag('citation_series_number', site_meta.collection_number),
-                self._meta_tag('citation_doi', site_meta.doi),
-                self._meta_tag('citation_language', 'fr'),
-                self._meta_tag('citation_pdf_url', self._build_public_asset_url(citation_pdf_href, site_meta) if citation_pdf_href else ''),
-                self._meta_tag('citation_abstract_html_url', page_url),
-                self._meta_tag('DC.Title', citation_title),
-                self._meta_tag('DC.Type', 'book'),
-                self._meta_tag('DC.Publisher', site_meta.publisher),
-                self._meta_tag('DC.Date', site_meta.publication_year),
-                self._meta_tag('DC.Identifier', page_url),
-            ])
-            if abstract_html:
-                abstract_text = self._strip_html(abstract_html)
-                tags.append(self._meta_tag('description', abstract_text))
-                tags.append(self._meta_tag('DC.Description', abstract_text))
-            for creator in site_meta.creators:
-                dc_name = 'DC.Contributor' if creator_tag == 'citation_editor' else 'DC.Creator'
-                tags.append(self._meta_tag(dc_name, creator))
-        else:
-            citation_title = page.title if not page.subtitle else f"{page.title}. {page.subtitle}"
-            volume_is_edited = site_meta.creator_role_label.lower().startswith('dir')
-            chapter_authors = self._page_citation_authors(page, site_meta)
-            for author in chapter_authors:
-                tags.append(self._meta_tag('citation_author', author))
-                tags.append(self._meta_tag('DC.Creator', author))
-            if site_meta.creators and volume_is_edited:
-                for editor in site_meta.creators:
-                    tags.append(self._meta_tag('citation_editor', editor))
-                    tags.append(self._meta_tag('DC.Contributor', editor))
-            tags.extend([
-                self._meta_tag('citation_title', citation_title),
-                self._meta_tag('citation_book_title', volume_title),
-                self._meta_tag('citation_publisher', site_meta.publisher),
-                self._meta_tag('citation_publication_date', site_meta.publication_year),
-                self._meta_tag('citation_isbn', site_meta.isbn),
-                self._meta_tag('citation_issn', site_meta.issn),
-                self._meta_tag('citation_series_title', site_meta.collection_title),
-                self._meta_tag('citation_series_number', site_meta.collection_number),
-                self._meta_tag('citation_language', 'fr'),
-                self._meta_tag('citation_abstract_html_url', page_url),
-                self._meta_tag('DC.Title', citation_title),
-                self._meta_tag('DC.Type', 'bookSection'),
-                self._meta_tag('DC.Relation', volume_title),
-                self._meta_tag('DC.Publisher', site_meta.publisher),
-                self._meta_tag('DC.Date', site_meta.publication_year),
-                self._meta_tag('DC.Identifier', page_url),
-            ])
-
-        return '\n  '.join(tag for tag in tags if tag)
-
     def _wrap_html(
         self,
         page_title: str,
@@ -1293,7 +1006,7 @@ class SiteBuilder:
         citation_pdf_href: str | None = None,
     ) -> str:
         banner = self._render_banner(site_meta, theme_assets)
-        zotero_meta = self._render_zotero_meta(
+        zotero_meta = render_zotero_meta(
             site_meta,
             theme_assets,
             page=page,
