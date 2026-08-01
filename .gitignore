@@ -18,3 +18,20 @@ Thumbs.db
 
 # Micro-tests de diagnostic LaTEI (artefacts temporaires, non commités)
 .audit_f1/latei/micro_test_*
+
+# Artefacts d'audit/comparaison LaTeX (logs, caches de polices, PDF intermédiaires)
+.audit_f1/
+
+# Artefacts de compilation LaTeX (régénérés à chaque build)
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+docs/*.log
+
+# Build Nuitka (artefacts intermédiaires, non reproductibles à committer)
+dist/main.build/
+dist/main.exe
+dist/main.cmd
