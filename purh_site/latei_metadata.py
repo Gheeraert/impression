@@ -13,7 +13,6 @@ from lxml import etree
 
 from .utils import TEI_NS
 
-
 NS = {"tei": TEI_NS}
 EMPTY_MARKERS = {"", "#", "-", "##"}
 

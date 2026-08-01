@@ -115,7 +115,11 @@ def _compare_element(
             )
         )
 
-    for index, (source_child, emitted_child) in enumerate(zip(source, emitted), start=1):
+    # strict=False : un décalage de longueur est déjà signalé ci-dessus via
+    # CHILD_COUNT_MISMATCH ; on continue de comparer les enfants communs.
+    for index, (source_child, emitted_child) in enumerate(
+        zip(source, emitted, strict=False), start=1
+    ):
         _compare_element(source_child, emitted_child, _child_path(path, source_child, index), diagnostics)
 
 

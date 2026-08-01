@@ -618,7 +618,15 @@ Impressions utilise notamment :
 
 ---
 
-## Tests
+## Développement
+
+Installer les dépendances de développement (inclut `requirements.txt`, `pytest` et `ruff`) :
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+### Tests
 
 Lancer les tests :
 
@@ -633,6 +641,14 @@ python -m pytest tests/test_latei_layout_commands.py -q
 python -m pytest tests/test_latei_real_metopes_fixture.py -q
 python -m pytest tests/test_reversible_roundtrip.py -q
 ```
+
+### Lint
+
+```bash
+ruff check .
+```
+
+Ces deux commandes sont exécutées automatiquement en intégration continue (`.github/workflows/ci.yml`) à chaque push et pull request sur `main`.
 
 ---
 

@@ -8,12 +8,13 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import unquote, urldefrag, urljoin, urlparse
 
-from lxml import etree, html as lxml_html
+from lxml import etree
+from lxml import html as lxml_html
 
 from .config import BuildConfig
 from .normalizer import NormalizeReport, TeiNormalizer
-from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
+from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
 

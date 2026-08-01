@@ -5,7 +5,6 @@ import re
 import unicodedata
 from pathlib import Path
 
-
 XML_NS = "http://www.w3.org/XML/1998/namespace"
 TEI_NS = "http://www.tei-c.org/ns/1.0"
 XI_NS = "http://www.w3.org/2001/XInclude"

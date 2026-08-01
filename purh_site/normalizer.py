@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from lxml import etree
 
-from .utils import NSMAP, slugify, xml_id, set_xml_id
+from .utils import NSMAP, set_xml_id, slugify, xml_id
 
 
 @dataclass(slots=True)

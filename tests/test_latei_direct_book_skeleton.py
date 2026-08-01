@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 from lxml import etree
 
 from purh_site.reversible import compare_tei_elements, read_latex_document, write_tei_element
 from purh_site.reversible_integration import ReversibleExportResult, run_reversible_export_for_file
-
 
 FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 

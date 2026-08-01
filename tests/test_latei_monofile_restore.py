@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from purh_site.reversible import compare_tei_elements, read_tei_element, write_latex
+from purh_site.reversible import compare_tei_elements
 from purh_site.reversible.latex_reader import (
     LatexParseError,
     extract_latei_document_zone,
@@ -16,7 +16,6 @@ from purh_site.reversible_integration import (
     restore_xml_from_latei_monofile,
     run_reversible_export_for_file,
 )
-
 
 TEI_NS = "http://www.tei-c.org/ns/1.0"
 

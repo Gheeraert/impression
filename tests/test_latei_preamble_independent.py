@@ -15,7 +15,6 @@ def _import_fresh(module_name: str):
 
 
 def _import_lines(module_name: str) -> list[str]:
-    import purh_site.latei_preamble  # ensure loaded
     mod = sys.modules[module_name]
     with open(mod.__file__, encoding="utf-8") as f:
         return [line for line in f if line.startswith("import ") or line.startswith("from ")]

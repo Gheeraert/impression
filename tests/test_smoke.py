@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from lxml import etree
-
 from purh_site.config import BuildConfig
 from purh_site.site_builder import SiteBuilder, has_editor_pdf
 
@@ -101,7 +99,7 @@ def test_build_preserves_xml_driven_asset_paths(tmp_path: Path) -> None:
     figure_path.write_bytes(b'fake-jpg')
 
     builder = SiteBuilder()
-    result = builder.build_from_master(xml_path, BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir))
+    builder.build_from_master(xml_path, BuildConfig(output_dir=tmp_path / 'site', assets_dir=assets_dir))
 
     page_html = (tmp_path / 'site' / '01-chapitre-image.html').read_text(encoding='utf-8')
     assert 'src="assets/images/../icono/br/Ch03_Loskoutoff_1/fig10.jpg"' in page_html

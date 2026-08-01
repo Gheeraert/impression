@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pytest
 from lxml import etree
@@ -10,7 +10,6 @@ from purh_site.latei_metadata import extract_latei_metadata
 from purh_site.reversible import run_tei_latex_tei_roundtrip
 from purh_site.reversible_integration import ReversibleExportResult, run_reversible_export_for_file
 from purh_site.utils import TEI_NS, XML_NS
-
 
 FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 NS = {"tei": TEI_NS, "xml": XML_NS}

@@ -9,7 +9,6 @@ without pulling in the legacy stable-PDF chain.
 
 import re
 
-
 RUNNING_TITLE_STOPWORDS = {
     "de",
     "d'",

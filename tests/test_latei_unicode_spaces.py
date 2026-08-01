@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pytest
 from lxml import etree
 
 from purh_site.reversible import compare_tei_elements
 from purh_site.reversible_integration import run_reversible_export_for_file
-
 
 UNICODE_TEXT = "Avant\u00a0: un test\u202f; encore\u2009? oui\u202f! \u00ab\u202fmot\u202f\u00bb."
 

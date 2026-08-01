@@ -1,0 +1,10 @@
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+# E501 (ligne trop longue) et E402 (imports après le docstring de module,
+# lui-même placé après `from __future__ import annotations` par convention
+# dans ce projet) ne sont pas des bugs : on se limite aux règles qui
+# détectent de vraies erreurs (F), le tri des imports (I) et la modernisation (UP, B).
+select = ["F", "I", "UP", "B"]

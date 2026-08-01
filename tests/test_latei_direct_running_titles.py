@@ -8,7 +8,6 @@ from purh_site.latei_running_titles import package_latei_running_titles
 from purh_site.latei_typography import RUNNING_TITLE_STOPWORDS, _short_running_title
 from purh_site.reversible_integration import run_reversible_export_for_file
 
-
 LONG_TITLE = (
     "Les usages politiques et spirituels de l'héraldique pontificale "
     "dans les cérémonies romaines du XVIIe siècle"

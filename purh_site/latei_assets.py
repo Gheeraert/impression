@@ -7,17 +7,16 @@ module only creates compilation artifacts: copied local images and a TeX mapping
 from documentary paths to local package paths.
 """
 
+import re
+import shutil
 from dataclasses import dataclass, field
 from hashlib import sha1
 from pathlib import Path
-import re
-import shutil
 
 from lxml import etree
 
 from purh_site.reversible.latex_writer import escape_latex
 from purh_site.utils import TEI_NS
-
 
 NS = {"tei": TEI_NS}
 

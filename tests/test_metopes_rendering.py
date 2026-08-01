@@ -52,7 +52,7 @@ def render_raw_tei_fragment(fragment: str) -> str:
   <body>
     {fragment}
   </body>
-</group>""".encode("utf-8")
+</group>""".encode()
     )
     return SiteBuilder()._render_page_fragment(root)
 

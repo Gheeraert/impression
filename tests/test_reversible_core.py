@@ -3,9 +3,8 @@ from __future__ import annotations
 from lxml import etree
 
 from purh_site.reversible import ElementNode, read_tei_element, write_tei_element
-from purh_site.reversible.nodes import HiNode, NoteNode, ParagraphNode, RefNode
+from purh_site.reversible.nodes import HiNode, ParagraphNode, RefNode
 from purh_site.utils import TEI_NS, XML_NS
-
 
 NS = {"tei": TEI_NS, "xml": XML_NS}
 
@@ -29,7 +28,7 @@ def test_simple_paragraph_is_read_and_emitted() -> None:
 
 def test_paragraph_with_italic_hi_preserves_rend() -> None:
     source = etree.fromstring(
-        '<p xmlns="http://www.tei-c.org/ns/1.0">Un <hi rend="italic">mot</hi> ici.</p>'.encode("utf-8")
+        b'<p xmlns="http://www.tei-c.org/ns/1.0">Un <hi rend="italic">mot</hi> ici.</p>'
     )
     node = read_tei_element(source)
     emitted = write_tei_element(node)
@@ -53,7 +52,7 @@ def test_footnote_with_xml_id_is_preserved() -> None:
 
 def test_ref_target_is_preserved() -> None:
     source = etree.fromstring(
-        '<p xmlns="http://www.tei-c.org/ns/1.0">Voir <ref target="#fig1">figure</ref>.</p>'.encode("utf-8")
+        b'<p xmlns="http://www.tei-c.org/ns/1.0">Voir <ref target="#fig1">figure</ref>.</p>'
     )
     node = read_tei_element(source)
     emitted = write_tei_element(node)
@@ -76,9 +75,7 @@ def test_division_with_head_and_paragraph_preserves_order() -> None:
 
 def test_unknown_tei_element_is_preserved_as_element_node() -> None:
     source = etree.fromstring(
-        '<custom xmlns="http://www.tei-c.org/ns/1.0" type="x">Avant <hi rend="bold">gras</hi> après</custom>'.encode(
-            "utf-8"
-        )
+        '<custom xmlns="http://www.tei-c.org/ns/1.0" type="x">Avant <hi rend="bold">gras</hi> après</custom>'.encode()
     )
     node = read_tei_element(source)
     emitted = write_tei_element(node)
@@ -93,13 +90,13 @@ def test_unknown_tei_element_is_preserved_as_element_node() -> None:
 
 def test_round_trip_preserves_essential_tags_attributes_and_mixed_content() -> None:
     source = etree.fromstring(
-        """
+        b"""
         <div xmlns="http://www.tei-c.org/ns/1.0" type="chapter" xml:id="d1">
           <head rend="caps">Titre</head>
           <p>Un <hi rend="italic">mot</hi>, une <ref target="#n1">note</ref>.</p>
           <note place="foot" xml:id="n1">Contenu</note>
         </div>
-        """.encode("utf-8")
+        """
     )
 
     node = read_tei_element(source)

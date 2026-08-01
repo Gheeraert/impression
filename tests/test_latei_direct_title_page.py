@@ -8,7 +8,6 @@ from lxml import etree
 from purh_site.latei_metadata import extract_latei_metadata
 from purh_site.reversible_integration import ReversibleExportResult, run_reversible_export_for_file
 
-
 FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 
 

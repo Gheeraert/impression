@@ -10,7 +10,6 @@ from purh_site.reversible import compare_tei_elements, read_tei_element, write_l
 from purh_site.reversible.latex_reader import LatexParseError
 from purh_site.reversible_integration import restore_xml_from_latei_body
 
-
 TEI_NS = "http://www.tei-c.org/ns/1.0"
 
 

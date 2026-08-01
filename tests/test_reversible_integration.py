@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
-from lxml import etree
 import pytest
+from lxml import etree
 
 import purh_site.latei_driver as latei_driver
 from purh_site.latei_driver import compile_latei_pdf

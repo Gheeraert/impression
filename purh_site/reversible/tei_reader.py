@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from lxml import etree
 
-from purh_site.utils import TEI_NS, XML_NS
+from purh_site.utils import XML_NS
 
 from .nodes import ElementNode, Node, TextNode, make_element_node
 

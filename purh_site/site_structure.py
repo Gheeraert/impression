@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from lxml import etree
 
-from .utils import NSMAP, slugify, short_text, xml_id
+from .utils import NSMAP, short_text, slugify, xml_id
 
 PAGE_TYPES = {
     "chapter",
@@ -65,7 +65,7 @@ class PageDef:
 class NavItem:
     title: str
     href: str | None = None
-    children: list["NavItem"] = field(default_factory=list)
+    children: list[NavItem] = field(default_factory=list)
     is_current: bool = False
     page_kind: str = ""
 
