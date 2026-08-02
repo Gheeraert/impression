@@ -8,8 +8,8 @@ children, text nodes, mixed content, and unknown elements so later HTML,
 LaTeX, or other outputs can be produced without impoverishing the source.
 """
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Iterator
 
 from purh_site.utils import TEI_NS, XML_NS
 

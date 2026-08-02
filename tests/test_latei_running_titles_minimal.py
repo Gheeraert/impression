@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 
 from purh_site.latei_typography import _short_running_title
 from purh_site.reversible_integration import run_reversible_export_for_file
-
 
 LONG_CHAPTER_TITLE = (
     "Les cérémonies pontificales et les pratiques héraldiques dans les "

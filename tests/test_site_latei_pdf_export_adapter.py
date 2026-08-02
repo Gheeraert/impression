@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 import pytest
@@ -10,7 +9,6 @@ from purh_site.site_latei_pdf_export import (
     SiteLateiPdfExportResult,
     build_site_latei_pdf_artifacts,
 )
-
 
 MINIMAL_TEI = (
     '<p xmlns="http://www.tei-c.org/ns/1.0" xml:id="p_001">'

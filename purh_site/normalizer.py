@@ -6,8 +6,7 @@ from dataclasses import dataclass, field
 
 from lxml import etree
 
-from .utils import NSMAP, slugify, xml_id, set_xml_id
-
+from .utils import NSMAP, set_xml_id, slugify, xml_id
 
 # Attributs TEI dont les valeurs sont des pointeurs (éventuellement multivalués,
 # séparés par des espaces). Seuls les tokens de forme "#identifiant" sont des

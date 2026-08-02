@@ -98,7 +98,7 @@ def test_list_item_figure_graphic_and_quote_have_controlled_macros() -> None:
 
 
 def test_write_latex_document_delegates_to_main_writer() -> None:
-    element = etree.fromstring('<p xmlns="http://www.tei-c.org/ns/1.0">Texte</p>'.encode("utf-8"))
+    element = etree.fromstring(b'<p xmlns="http://www.tei-c.org/ns/1.0">Texte</p>')
     node = read_tei_element(element)
 
     assert write_latex_document(node) == r"\teiP{Texte}"

@@ -11,7 +11,6 @@ from purh_site.utils import TEI_NS, XML_NS
 
 from .nodes import ElementNode, Node, TextNode
 
-
 ENVIRONMENT_ELEMENTS = {
     "bibl": "teiBibl",
     "cit": "teiCit",

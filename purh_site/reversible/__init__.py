@@ -1,17 +1,24 @@
 """Experimental reversible TEI document core."""
 
+from .latex_reader import (
+    LatexParseError,
+    extract_latei_document_zone,
+    read_latex,
+    read_latex_document,
+)
+from .latex_writer import write_latex, write_latex_document
 from .nodes import (
     AuthorNode,
     BiblNode,
     BiblScopeNode,
     CellNode,
     CitNode,
+    DateNode,
     DivNode,
     EditorNode,
     ElementNode,
     FigureNode,
     ForeignNode,
-    DateNode,
     HeadNode,
     HiNode,
     IdnoNode,
@@ -23,24 +30,20 @@ from .nodes import (
     NumNode,
     OrgNameNode,
     ParagraphNode,
+    PbNode,
     PersNameNode,
     PlaceNameNode,
-    PbNode,
     PtrNode,
     PublisherNode,
     QNode,
     RefNode,
-    SaidNode,
     RowNode,
+    SaidNode,
     TableNode,
     TermNode,
     TextNode,
     TitleNode,
 )
-from .tei_reader import read_tei_element
-from .tei_writer import write_tei_element
-from .latex_reader import LatexParseError, extract_latei_document_zone, read_latex, read_latex_document
-from .latex_writer import write_latex, write_latex_document
 from .roundtrip import (
     Diagnostic,
     RoundTripResult,
@@ -48,6 +51,8 @@ from .roundtrip import (
     run_tei_latex_tei_roundtrip,
     tei_latex_tei_roundtrip,
 )
+from .tei_reader import read_tei_element
+from .tei_writer import write_tei_element
 
 __all__ = [
     "DivNode",

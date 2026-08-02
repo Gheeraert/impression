@@ -4,6 +4,7 @@ from pathlib import Path
 
 from purh_site.config import BuildConfig
 from purh_site.site_builder import SiteBuilder
+from purh_site.site_quality import run_site_quality_checks
 
 
 def write_html(path: Path, body: str) -> None:
@@ -13,7 +14,7 @@ def write_html(path: Path, body: str) -> None:
 def test_quality_check_reports_broken_same_page_anchor(tmp_path: Path) -> None:
     write_html(tmp_path / "page.html", '<a href="#absent">lien cassé</a>')
 
-    issues = SiteBuilder()._run_site_quality_checks(tmp_path)
+    issues = run_site_quality_checks(tmp_path)
 
     assert any("page.html" in issue and "#absent" in issue for issue in issues)
 
@@ -22,7 +23,7 @@ def test_quality_check_reports_broken_cross_page_anchor_and_missing_html(tmp_pat
     write_html(tmp_path / "page.html", '<a href="other.html#missing">section absente</a><a href="missing.html">page absente</a>')
     write_html(tmp_path / "other.html", '<section id="present">Texte</section>')
 
-    issues = SiteBuilder()._run_site_quality_checks(tmp_path)
+    issues = run_site_quality_checks(tmp_path)
 
     assert any("page.html" in issue and "other.html#missing" in issue for issue in issues)
     assert any("page.html" in issue and "missing.html" in issue for issue in issues)
@@ -37,7 +38,7 @@ def test_quality_check_reports_missing_local_resources(tmp_path: Path) -> None:
     (tmp_path / "assets" / "app.js").write_text("", encoding="utf-8")
     (tmp_path / "assets" / "site.css").write_text("", encoding="utf-8")
 
-    issues = SiteBuilder()._run_site_quality_checks(tmp_path)
+    issues = run_site_quality_checks(tmp_path)
 
     assert any("assets/images/missing.png" in issue for issue in issues)
     assert not any("assets/app.js" in issue for issue in issues)
@@ -47,7 +48,7 @@ def test_quality_check_reports_missing_local_resources(tmp_path: Path) -> None:
 def test_quality_check_reports_empty_attributes_and_duplicate_ids(tmp_path: Path) -> None:
     write_html(tmp_path / "page.html", '<a href="">vide</a><img src=""><div id=""></div><p id="dup"></p><section id="dup"></section>')
 
-    issues = SiteBuilder()._run_site_quality_checks(tmp_path)
+    issues = run_site_quality_checks(tmp_path)
 
     assert any("attribut href vide" in issue for issue in issues)
     assert any("attribut src vide" in issue for issue in issues)
@@ -61,7 +62,7 @@ def test_quality_check_ignores_external_and_data_urls(tmp_path: Path) -> None:
         '<a href="https://example.org">externe</a><a href="mailto:test@example.org">mail</a><img src="data:image/png;base64,AAAA">',
     )
 
-    assert SiteBuilder()._run_site_quality_checks(tmp_path) == []
+    assert run_site_quality_checks(tmp_path) == []
 
 
 def test_build_report_contains_quality_ok_for_healthy_site(tmp_path: Path) -> None:

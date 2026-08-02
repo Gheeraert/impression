@@ -9,17 +9,28 @@ LaTeX, round-trip TEI, and a human-readable diagnostics report for one XML file.
 
 import argparse
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 from lxml import etree
 
 from .latei_assets import package_latei_graphics
-from .latei_driver import LateiPdfResult, build_latei_driver, build_latei_monofile, compile_latei_pdf
+from .latei_driver import (
+    LateiPdfResult,
+    build_latei_driver,
+    build_latei_monofile,
+    compile_latei_pdf,
+)
 from .latei_metadata import extract_latei_metadata
 from .latei_running_titles import package_latei_running_titles
-from .reversible import Diagnostic, extract_latei_document_zone, read_latex_document, run_tei_latex_tei_roundtrip, write_tei_element
+from .reversible import (
+    Diagnostic,
+    extract_latei_document_zone,
+    read_latex_document,
+    run_tei_latex_tei_roundtrip,
+    write_tei_element,
+)
 
 
 @dataclass(slots=True)

@@ -21,8 +21,10 @@ from purh_site.reversible import (
     write_tei_element,
 )
 from purh_site.reversible.latex_reader import extract_latei_document_zone, read_latex_document
-from purh_site.reversible_integration import restore_xml_from_latei_monofile, run_reversible_export_for_file
-
+from purh_site.reversible_integration import (
+    restore_xml_from_latei_monofile,
+    run_reversible_export_for_file,
+)
 
 TEI_NS = "http://www.tei-c.org/ns/1.0"
 

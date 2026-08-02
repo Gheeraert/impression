@@ -10,10 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from purh_site.config import BuildConfig
 import purh_site.reversible_integration as reversible_integration
+from purh_site.config import BuildConfig
 from purh_site.site_builder import SiteBuilder
-
 
 TEI_SAMPLE = """<?xml version='1.0' encoding='UTF-8'?>
 <TEI xmlns='http://www.tei-c.org/ns/1.0'>
@@ -206,7 +205,7 @@ def test_legacy_latex_mode_falls_back_to_none(tmp_path: Path) -> None:
     xml_path = tmp_path / "book.xml"
     xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
 
-    result = SiteBuilder().build_from_master(
+    SiteBuilder().build_from_master(
         xml_path,
         BuildConfig(output_dir=tmp_path / "site", pdf_export_mode="latex"),
     )
@@ -220,7 +219,7 @@ def test_legacy_latex_pdf_mode_falls_back_to_none(tmp_path: Path) -> None:
     xml_path = tmp_path / "book.xml"
     xml_path.write_text(TEI_SAMPLE, encoding="utf-8")
 
-    result = SiteBuilder().build_from_master(
+    SiteBuilder().build_from_master(
         xml_path,
         BuildConfig(output_dir=tmp_path / "site", pdf_export_mode="latex_pdf"),
     )

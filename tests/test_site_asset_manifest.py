@@ -23,7 +23,6 @@ import pytest
 from purh_site.config import BuildConfig
 from purh_site.site_builder import SiteBuilder
 
-
 # ---------------------------------------------------------------------------
 # Helpers partagés
 # ---------------------------------------------------------------------------

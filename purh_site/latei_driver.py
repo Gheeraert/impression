@@ -7,15 +7,14 @@ The body file remains the reversible artifact read by
 compilable wrapper and must not be used as a reversible source.
 """
 
-from dataclasses import dataclass
 import os
-from pathlib import Path
 import shutil
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 
 from .latei_metadata import LateiMetadata
 from .latei_preamble import PurhPreambleData, render_purh_latex_preamble
-
 
 LATEI_MACROS_PATH = Path(__file__).resolve().parent / "resources" / "latei_macros.tex"
 

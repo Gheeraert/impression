@@ -7,7 +7,6 @@ import pytest
 
 from purh_site.reversible_integration import ReversibleExportResult, run_reversible_export_for_file
 
-
 FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 
 

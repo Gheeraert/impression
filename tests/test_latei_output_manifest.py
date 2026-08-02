@@ -7,7 +7,6 @@ import pytest
 
 from purh_site.reversible_integration import run_reversible_export_for_file
 
-
 TEI_NS = "http://www.tei-c.org/ns/1.0"
 
 MINI_XML = f"""<TEI xmlns="{TEI_NS}">

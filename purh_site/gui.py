@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+import tkinter as tk
 import traceback
 from pathlib import Path
-import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from .config import BuildConfig
@@ -14,7 +14,6 @@ from .reversible_integration import (
     run_reversible_export_for_file,
 )
 from .site_builder import SiteBuilder, has_editor_pdf
-
 
 LATEI_PACKAGE_HELP = (
     "Le paquet LaTEI contient le corps réversible, le driver compilable, "

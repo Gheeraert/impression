@@ -5,16 +5,15 @@ from pathlib import Path
 import pytest
 
 from purh_site.reversible.latex_reader import (
-    LatexParseError,
     LAYOUT_PARAM_STANDALONE_MACROS,
     LAYOUT_PARAM_WRAPPER_MACROS,
     LAYOUT_STANDALONE_MACROS,
     LAYOUT_WRAPPER_MACROS,
+    LatexParseError,
     _Parser,
 )
-from purh_site.reversible.nodes import ElementNode, TextNode
+from purh_site.reversible.nodes import ElementNode
 from purh_site.utils import TEI_NS
-
 
 # ---------------------------------------------------------------------------
 # 8.1 — Enveloppes simples : toutes les commandes LAYOUT_WRAPPER_MACROS

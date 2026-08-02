@@ -602,6 +602,29 @@ python main.py
 
 ---
 
+## Packaging Windows (.exe)
+
+`dist/main.exe` et `dist/main.cmd` sont produits par [Nuitka](https://nuitka.net/) en mode
+« accéléré » (ni `--standalone`, ni `--onefile`). L'exécutable reste dépendant du `.venv`
+utilisé pour la compilation : `dist/main.cmd`, généré automatiquement, positionne
+`PYTHONHOME`/`PYTHONPATH` vers ce `.venv` avant de lancer `main.exe`. Ce n'est donc pas un
+exécutable portable ; la machine cible doit disposer d'un `.venv` équivalent au même chemin.
+
+Reconstruire le build :
+
+```bash
+pip install -r requirements-build.txt
+powershell -File scripts/build_windows_exe.ps1
+```
+
+Commande Nuitka équivalente, pour référence :
+
+```bash
+python -m nuitka --windows-console-mode=disable --output-dir=dist main.py
+```
+
+---
+
 ## Librairies requises
 
 Voir :
@@ -618,7 +641,15 @@ Impressions utilise notamment :
 
 ---
 
-## Tests
+## Développement
+
+Installer les dépendances de développement (inclut `requirements.txt`, `pytest` et `ruff`) :
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+### Tests
 
 Lancer les tests :
 
@@ -633,6 +664,14 @@ python -m pytest tests/test_latei_layout_commands.py -q
 python -m pytest tests/test_latei_real_metopes_fixture.py -q
 python -m pytest tests/test_reversible_roundtrip.py -q
 ```
+
+### Lint
+
+```bash
+ruff check .
+```
+
+Ces deux commandes sont exécutées automatiquement en intégration continue (`.github/workflows/ci.yml`) à chaque push et pull request sur `main`.
 
 ---
 

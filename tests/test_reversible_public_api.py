@@ -14,7 +14,7 @@ from purh_site.reversible import (
 
 def test_experimental_public_api_imports_and_round_trips_minimal_paragraph():
     source = etree.fromstring(
-        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte</p>'.encode("utf-8")
+        b'<p xmlns="http://www.tei-c.org/ns/1.0">Texte</p>'
     )
 
     first_tree = read_tei_element(source)

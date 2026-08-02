@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pytest
 
 from purh_site.reversible_integration import run_reversible_export_for_file
-
 
 FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 

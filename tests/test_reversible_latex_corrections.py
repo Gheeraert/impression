@@ -12,7 +12,6 @@ from purh_site.reversible import (
 )
 from purh_site.utils import TEI_NS, XML_NS
 
-
 NS = {"tei": TEI_NS, "xml": XML_NS}
 
 

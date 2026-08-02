@@ -15,7 +15,6 @@ from purh_site.reversible import (
 )
 from purh_site.utils import TEI_NS, XML_NS
 
-
 NS = {"tei": TEI_NS, "xml": XML_NS}
 
 
@@ -167,9 +166,9 @@ def test_unknown_macro_raises_explicit_error() -> None:
 
 def test_partial_round_trip_tei_tree_latex_tree_tei() -> None:
     source = etree.fromstring(
-        '<p xmlns="http://www.tei-c.org/ns/1.0" xml:id="p_001">'
-        'Un <hi rend="italic">mot</hi> avec une <ref target="#x">reference</ref>.'
-        "</p>".encode("utf-8")
+        b'<p xmlns="http://www.tei-c.org/ns/1.0" xml:id="p_001">'
+        b'Un <hi rend="italic">mot</hi> avec une <ref target="#x">reference</ref>.'
+        b"</p>"
     )
 
     first_tree = read_tei_element(source)

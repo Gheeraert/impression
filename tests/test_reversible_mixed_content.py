@@ -5,7 +5,6 @@ from lxml import etree
 from purh_site.reversible import ElementNode, TextNode, read_tei_element, write_tei_element
 from purh_site.utils import TEI_NS, XML_NS
 
-
 NS = {"tei": TEI_NS, "xml": XML_NS}
 
 

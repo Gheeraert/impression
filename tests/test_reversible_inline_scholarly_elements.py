@@ -5,7 +5,6 @@ from lxml import etree
 from purh_site.reversible import run_tei_latex_tei_roundtrip
 from purh_site.utils import TEI_NS
 
-
 NS = {"tei": TEI_NS}
 
 
@@ -53,14 +52,12 @@ def test_each_scholarly_inline_element_round_trips_with_dedicated_macro() -> Non
 def test_successive_scholarly_inline_elements_preserve_order_and_spaces() -> None:
     result = run_tei_latex_tei_roundtrip(
         etree.fromstring(
-            (
-                '<p xmlns="http://www.tei-c.org/ns/1.0">'
-                '<title level="m">Livre</title> par '
-                '<persName ref="#p1">Autrice</persName>, '
-                '<date when="2026-06-18">2026</date> : '
-                '<term type="keyword">mot-cle</term>.'
-                "</p>"
-            ).encode("utf-8")
+            b'<p xmlns="http://www.tei-c.org/ns/1.0">'
+            b'<title level="m">Livre</title> par '
+            b'<persName ref="#p1">Autrice</persName>, '
+            b'<date when="2026-06-18">2026</date> : '
+            b'<term type="keyword">mot-cle</term>.'
+            b"</p>"
         )
     )
 
@@ -78,15 +75,13 @@ def test_successive_scholarly_inline_elements_preserve_order_and_spaces() -> Non
 def test_scholarly_inline_latex_uses_specialized_macros_not_generic_elements() -> None:
     result = run_tei_latex_tei_roundtrip(
         etree.fromstring(
-            (
-                '<p xmlns="http://www.tei-c.org/ns/1.0">'
-                '<title level="m">Livre</title>'
-                '<persName ref="#p1">Nom</persName>'
-                '<date when="2026-06-18">Date</date>'
-                '<num type="ordinal">premier</num>'
-                '<label n="1">I</label>'
-                "</p>"
-            ).encode("utf-8")
+            b'<p xmlns="http://www.tei-c.org/ns/1.0">'
+            b'<title level="m">Livre</title>'
+            b'<persName ref="#p1">Nom</persName>'
+            b'<date when="2026-06-18">Date</date>'
+            b'<num type="ordinal">premier</num>'
+            b'<label n="1">I</label>'
+            b"</p>"
         )
     )
 

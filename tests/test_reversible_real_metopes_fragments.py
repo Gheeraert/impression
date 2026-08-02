@@ -5,7 +5,6 @@ from lxml import etree
 from purh_site.reversible import compare_tei_elements, run_tei_latex_tei_roundtrip
 from purh_site.utils import TEI_NS, XML_NS
 
-
 NS = {"tei": TEI_NS, "xml": XML_NS}
 
 

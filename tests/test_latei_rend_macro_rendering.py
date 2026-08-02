@@ -14,7 +14,6 @@ from pathlib import Path
 
 import pytest
 
-
 MACROS_PATH = Path("purh_site/resources/latei_macros.tex")
 
 # ── Macros expected to use \detokenize on both sides ────────────────────────
@@ -189,7 +188,7 @@ def test_lualatex_log_has_no_fatal_errors(compiled_pdf) -> None:
         pytest.skip("Log file not produced.")
     log = compiled_pdf["log"].read_text(encoding="utf-8", errors="replace")
     fatal = [line for line in log.splitlines() if line.startswith("!")]
-    assert not fatal, f"LaTeX fatal errors in log:\n" + "\n".join(fatal[:20])
+    assert not fatal, "LaTeX fatal errors in log:\n" + "\n".join(fatal[:20])
 
 
 def test_pdf_contains_italic_font(compiled_pdf) -> None:
