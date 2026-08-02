@@ -11,8 +11,9 @@ from lxml import etree
 from lxml import html as lxml_html
 
 from .config import BuildConfig
+from .image_dimensions import read_image_dimensions
 from .normalizer import NormalizeReport, TeiNormalizer
-from .site_asset_manifest import build_asset_manifest, write_asset_manifest
+from .site_asset_manifest import build_asset_manifest, resolve_image_output, write_asset_manifest
 from .site_credits import render_credit_block
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
 from .site_quality import run_site_quality_checks
@@ -546,7 +547,7 @@ class SiteBuilder:
         page_group = self._find_page_group(tree, page.node_id)
         if page_group is None:
             return
-        fragment_html = self._render_page_fragment(page_group, tree)
+        fragment_html = self._render_page_fragment(page_group, tree, output_dir)
         nav_html = self._render_sidebar(nav, current_file_name=page.file_name)
         page_header = self._render_page_header(page, theme_assets)
         credits = render_credit_block(page, site_meta)
@@ -587,10 +588,17 @@ class SiteBuilder:
         matches = tree.xpath(f"//*[@xml:id='{node_id}']", namespaces=NSMAP)
         return matches[0] if matches else None
 
-    def _render_page_fragment(self, page_group: etree._Element, tree: etree._ElementTree) -> str:
+    def _render_page_fragment(
+        self,
+        page_group: etree._Element,
+        tree: etree._ElementTree,
+        output_dir: Path | None = None,
+    ) -> str:
         cloned = copy.deepcopy(page_group)
         self._strip_redundant_title_pages(cloned)
         self._renumber_fragment_notes(cloned)
+        if output_dir is not None:
+            self._apply_image_dimensions(cloned, output_dir)
         fragment_root = etree.Element(f"{{{NSMAP['tei']}}}fragment-root", nsmap={"tei": NSMAP["tei"]})
         tags_decl = tree.xpath(
             "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:tagsDecl", namespaces=NSMAP
@@ -622,6 +630,29 @@ class SiteBuilder:
             if not (note.get('n') or '').strip():
                 note.set('n', str(index))
 
+    def _apply_image_dimensions(self, root: etree._Element, output_dir: Path) -> None:
+        """Renseigne @width/@height sur les <graphic> qui en sont dépourvues,
+        en lisant les dimensions réelles du fichier copié dans assets/.
+
+        Évite les décalages de mise en page pendant le chargement (CLS) sans
+        exiger que le XML source déclare @width/@height à la main.
+        """
+        for graphic in root.xpath('.//tei:graphic[@url]', namespaces=NSMAP):
+            if graphic.get('width') or graphic.get('height'):
+                continue
+            url = (graphic.get('url') or '').strip()
+            if not url:
+                continue
+            resolved = resolve_image_output(url)
+            if '://' in resolved or resolved.startswith('data:'):
+                continue
+            dimensions = read_image_dimensions(output_dir / resolved)
+            if dimensions is None:
+                continue
+            width, height = dimensions
+            graphic.set('width', str(width))
+            graphic.set('height', str(height))
+
     def _render_sidebar(self, nav: list[NavItem], current_file_name: str | None) -> str:
         nav_items = self.structure_builder.build_nav_for_page(nav, current_file_name)
         return (
@@ -648,7 +679,8 @@ class SiteBuilder:
                 classes.append('is-current')
             html_parts.append(f'<li class="{" ".join(classes)}">')
             if item.href:
-                html_parts.append(f'<a href="{html.escape(item.href)}">{html.escape(item.title)}</a>')
+                current_attr = ' aria-current="page"' if item.is_current else ''
+                html_parts.append(f'<a href="{html.escape(item.href)}"{current_attr}>{html.escape(item.title)}</a>')
             else:
                 html_parts.append(f'<span class="nav-label">{html.escape(item.title)}</span>')
             html_parts.append(self._render_nav_list(item.children))

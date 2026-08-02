@@ -22,7 +22,7 @@ MANIFEST_RELATIVE_PATH = "assets/metadata/manifest.json"
 _ABSOLUTE_OR_EXTERNAL_PREFIXES = ("assets/", "/", "data:")
 
 
-def _resolve_image_output(url: str) -> str:
+def resolve_image_output(url: str) -> str:
     """Reproduit exactement la règle de resolved-asset-src dans tei_to_html.xsl.
 
     "assets/images" est préfixé normalement, sauf si l'URL répète déjà
@@ -49,7 +49,7 @@ def _collect_xml_images(
 
     for graphic in tree.xpath("//tei:graphic[normalize-space(@url) != '']", namespaces=NSMAP):
         url = (graphic.get("url") or "").strip()
-        output = _resolve_image_output(url)
+        output = resolve_image_output(url)
         if output in seen:
             continue
         seen.add(output)

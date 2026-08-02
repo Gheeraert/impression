@@ -58,9 +58,24 @@
       <xsl:if test="tei:head">
         <xsl:variable name="level" select="count(ancestor::tei:div) + 2"/>
         <xsl:choose>
-          <xsl:when test="$level = 2"><h2><xsl:apply-templates select="tei:head[1]/node()"/></h2></xsl:when>
-          <xsl:when test="$level = 3"><h3><xsl:apply-templates select="tei:head[1]/node()"/></h3></xsl:when>
-          <xsl:otherwise><h4><xsl:apply-templates select="tei:head[1]/node()"/></h4></xsl:otherwise>
+          <xsl:when test="$level = 2">
+            <h2>
+              <xsl:if test="tei:head[1]/@xml:id"><xsl:attribute name="id"><xsl:value-of select="tei:head[1]/@xml:id"/></xsl:attribute></xsl:if>
+              <xsl:apply-templates select="tei:head[1]/node()"/>
+            </h2>
+          </xsl:when>
+          <xsl:when test="$level = 3">
+            <h3>
+              <xsl:if test="tei:head[1]/@xml:id"><xsl:attribute name="id"><xsl:value-of select="tei:head[1]/@xml:id"/></xsl:attribute></xsl:if>
+              <xsl:apply-templates select="tei:head[1]/node()"/>
+            </h3>
+          </xsl:when>
+          <xsl:otherwise>
+            <h4>
+              <xsl:if test="tei:head[1]/@xml:id"><xsl:attribute name="id"><xsl:value-of select="tei:head[1]/@xml:id"/></xsl:attribute></xsl:if>
+              <xsl:apply-templates select="tei:head[1]/node()"/>
+            </h4>
+          </xsl:otherwise>
         </xsl:choose>
       </xsl:if>
       <xsl:apply-templates select="node()[not(self::tei:head)]"/>
@@ -191,7 +206,10 @@
   </xsl:template>
 
   <xsl:template match="tei:table/tei:head" priority="20">
-    <caption><xsl:apply-templates/></caption>
+    <caption>
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:apply-templates/>
+    </caption>
   </xsl:template>
 
   <xsl:template match="tei:row">
@@ -284,6 +302,9 @@
       <xsl:apply-templates select="tei:formula"/>
       <xsl:if test="tei:head or tei:p">
         <figcaption>
+          <xsl:if test="tei:head[1]/@xml:id">
+            <xsl:attribute name="id"><xsl:value-of select="tei:head[1]/@xml:id"/></xsl:attribute>
+          </xsl:if>
           <xsl:if test="tei:head">
             <xsl:apply-templates select="tei:head[1]/node()"/>
           </xsl:if>
@@ -316,19 +337,37 @@
     </xsl:choose>
   </xsl:template>
 
+  <!-- Description visuelle courte destinée à @alt : <desc> (enfant direct
+       de <graphic>/<media>, convention TEI standard pour ce besoin précis)
+       si présent, sinon repli sur la légende bibliographique (figDesc, ou
+       head à défaut) — mieux qu'une image muette, mais pas une vraie
+       description visuelle distincte tant que @desc n'est pas renseigné. -->
+  <xsl:template name="image-alt-text">
+    <xsl:choose>
+      <xsl:when test="normalize-space(tei:desc[1]) != ''"><xsl:value-of select="normalize-space(tei:desc[1])"/></xsl:when>
+      <xsl:when test="normalize-space(../tei:figDesc[1]) != ''"><xsl:value-of select="normalize-space(../tei:figDesc[1])"/></xsl:when>
+      <xsl:otherwise><xsl:value-of select="normalize-space(../tei:head[1])"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="image-caption-text">
+    <xsl:choose>
+      <xsl:when test="normalize-space(../tei:figDesc[1]) != ''"><xsl:value-of select="normalize-space(../tei:figDesc[1])"/></xsl:when>
+      <xsl:otherwise><xsl:value-of select="normalize-space(../tei:head[1])"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template name="render-graphic-image">
     <xsl:variable name="image-src"><xsl:call-template name="resolved-image-src"><xsl:with-param name="url" select="@url"/></xsl:call-template></xsl:variable>
-    <xsl:variable name="image-alt">
-      <xsl:choose>
-        <xsl:when test="normalize-space(../tei:figDesc[1]) != ''"><xsl:value-of select="normalize-space(../tei:figDesc[1])"/></xsl:when>
-        <xsl:otherwise><xsl:value-of select="normalize-space(../tei:head[1])"/></xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
+    <xsl:variable name="image-alt"><xsl:call-template name="image-alt-text"/></xsl:variable>
+    <xsl:variable name="image-caption"><xsl:call-template name="image-caption-text"/></xsl:variable>
     <button type="button" class="figure-zoom-trigger media-zoom-trigger" aria-label="Agrandir l'image">
       <xsl:attribute name="data-lightbox-src"><xsl:value-of select="$image-src"/></xsl:attribute>
       <xsl:if test="string-length($image-alt) &gt; 0">
         <xsl:attribute name="data-lightbox-alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
-        <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-alt"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="string-length($image-caption) &gt; 0">
+        <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-caption"/></xsl:attribute>
       </xsl:if>
       <img>
         <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
@@ -347,17 +386,15 @@
 
   <xsl:template name="render-media-image">
     <xsl:variable name="image-src"><xsl:call-template name="resolved-image-src"><xsl:with-param name="url" select="@url"/></xsl:call-template></xsl:variable>
-    <xsl:variable name="image-alt">
-      <xsl:choose>
-        <xsl:when test="normalize-space(../tei:figDesc[1]) != ''"><xsl:value-of select="normalize-space(../tei:figDesc[1])"/></xsl:when>
-        <xsl:otherwise><xsl:value-of select="normalize-space(../tei:head[1])"/></xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
+    <xsl:variable name="image-alt"><xsl:call-template name="image-alt-text"/></xsl:variable>
+    <xsl:variable name="image-caption"><xsl:call-template name="image-caption-text"/></xsl:variable>
     <button type="button" class="figure-zoom-trigger media-zoom-trigger" aria-label="Agrandir l'image">
       <xsl:attribute name="data-lightbox-src"><xsl:value-of select="$image-src"/></xsl:attribute>
       <xsl:if test="string-length($image-alt) &gt; 0">
         <xsl:attribute name="data-lightbox-alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
-        <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-alt"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="string-length($image-caption) &gt; 0">
+        <xsl:attribute name="data-lightbox-caption"><xsl:value-of select="$image-caption"/></xsl:attribute>
       </xsl:if>
       <img>
         <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
@@ -609,7 +646,12 @@
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <xsl:choose>
-        <xsl:when test="tei:head"><h2><xsl:apply-templates select="tei:head[1]/node()"/></h2></xsl:when>
+        <xsl:when test="tei:head">
+          <h2>
+            <xsl:if test="tei:head[1]/@xml:id"><xsl:attribute name="id"><xsl:value-of select="tei:head[1]/@xml:id"/></xsl:attribute></xsl:if>
+            <xsl:apply-templates select="tei:head[1]/node()"/>
+          </h2>
+        </xsl:when>
         <xsl:otherwise><h2>Bibliographie</h2></xsl:otherwise>
       </xsl:choose>
       <xsl:if test="node()[not(self::tei:head) and not(self::tei:listBibl)]">
