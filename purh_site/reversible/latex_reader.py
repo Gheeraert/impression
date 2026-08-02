@@ -40,6 +40,7 @@ MACRO_TO_ELEMENT = {
     "teiPlaceName": "placeName",
     "teiPublisher": "publisher",
     "teiQ": "q",
+    "teiQuoteInline": "quote",
     "teiRef": "ref",
     "teiRow": "row",
     "teiSaid": "said",
