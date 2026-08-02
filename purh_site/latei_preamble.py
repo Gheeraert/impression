@@ -57,9 +57,11 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \usepackage{{fontspec}}
 \usepackage[french]{{babel}}
 \usepackage{{csquotes}}
+\usepackage{{amsmath}}
 \usepackage{{microtype}}
 \usepackage{{indentfirst}}
 \usepackage{{emptypage}}
+\usepackage[normalem]{{ulem}}
 
 \IfFontExistsTF{{Chaparral Pro}}
   {{\setmainfont{{Chaparral Pro}}}}

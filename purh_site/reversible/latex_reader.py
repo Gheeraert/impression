@@ -21,9 +21,11 @@ class LatexParseError(ValueError):
 MACRO_TO_ELEMENT = {
     "teiAuthor": "author",
     "teiBiblScope": "biblScope",
+    "teiCell": "cell",
     "teiDate": "date",
     "teiEditor": "editor",
     "teiForeign": "foreign",
+    "teiFormula": "formula",
     "teiHead": "head",
     "teiHi": "hi",
     "teiIdno": "idno",
@@ -39,12 +41,14 @@ MACRO_TO_ELEMENT = {
     "teiPublisher": "publisher",
     "teiQ": "q",
     "teiRef": "ref",
+    "teiRow": "row",
     "teiSaid": "said",
     "teiTerm": "term",
     "teiTitle": "title",
 }
 
 EMPTY_MACRO_TO_ELEMENT = {
+    "teiAnchor": "anchor",
     "teiGraphic": "graphic",
     "teiLb": "lb",
     "teiPb": "pb",
@@ -53,13 +57,11 @@ EMPTY_MACRO_TO_ELEMENT = {
 
 ENVIRONMENT_TO_ELEMENT = {
     "teiBibl": "bibl",
-    "teiCell": "cell",
     "teiCit": "cit",
     "teiDiv": "div",
     "teiFigure": "figure",
     "teiList": "list",
     "teiQuote": "quote",
-    "teiRow": "row",
     "teiTable": "table",
 }
 
@@ -171,6 +173,10 @@ class _Parser:
     def _parse_macro(self, macro_name: str) -> ElementNode:
         self.pos += len(macro_name) + 1
         attrs = self._parse_options()
+        if macro_name == "teiRef":
+            internal_target = attrs.pop("internaltarget", None)
+            if internal_target is not None:
+                attrs["target"] = f"#{internal_target}"
         if macro_name in EMPTY_MACRO_TO_ELEMENT:
             if self.pos < len(self.latex) and self.latex[self.pos] == "{":
                 raise LatexParseError(f"Empty controlled macro \\{macro_name} must not have braced content.")
@@ -178,6 +184,19 @@ class _Parser:
         element_name = MACRO_TO_ELEMENT[macro_name]
         if self.pos >= len(self.latex) or self.latex[self.pos] != "{":
             raise LatexParseError(f"Expected braced content for \\{macro_name}.")
+        if macro_name == "teiFormula":
+            # Formula content is raw LaTeX math source, not controlled TEI
+            # macro grammar (\frac, \partial... are not registered macros) —
+            # read verbatim rather than recursively parsing it as content.
+            content = self._read_group()
+            return make_element_node("formula", attrs, [TextNode(content)], namespace=TEI_NS)
+        if macro_name == "teiRow":
+            # Cells are joined by a literal "&" written straight into the
+            # source (see _write_row/_write_cell in latex_writer), not by
+            # controlled macro grammar — split on top-level "&" instead of
+            # recursively parsing as ordinary content.
+            content = self._read_group()
+            return make_element_node("row", attrs, _parse_row_cells(content), namespace=TEI_NS)
         content = self._read_group()
         children = _Parser(content).parse_nodes()
         return make_element_node(element_name, attrs, children, namespace=TEI_NS)
@@ -197,6 +216,10 @@ class _Parser:
         if env_name not in ENVIRONMENT_TO_ELEMENT:
             raise LatexParseError(f"Unknown controlled environment: {env_name}.")
         attrs = self._parse_options()
+        if env_name == "teiTable":
+            # numcols is synthesized by the writer (_write_table) to size
+            # the longtable's column spec; it has no TEI source counterpart.
+            attrs.pop("numcols", None)
         self._consume_cosmetic_environment_newline()
         children = self.parse_nodes(end_environment=env_name)
         return make_element_node(ENVIRONMENT_TO_ELEMENT[env_name], attrs, children, namespace=TEI_NS)
@@ -302,6 +325,56 @@ class _Parser:
     def _consume_cosmetic_environment_newline(self) -> None:
         if self.pos < len(self.latex) and self.latex[self.pos] == "\n":
             self.pos += 1
+
+
+def _parse_row_cells(content: str) -> list[Node]:
+    return [_parse_row_cell(segment) for segment in _split_top_level_ampersand(content)]
+
+
+def _split_top_level_ampersand(content: str) -> list[str]:
+    segments: list[str] = []
+    depth = 0
+    start = 0
+    pos = 0
+    while pos < len(content):
+        char = content[pos]
+        if char == "\\":
+            pos += 2
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        elif char == "&" and depth == 0:
+            segments.append(content[start:pos])
+            start = pos + 1
+        pos += 1
+    segments.append(content[start:pos])
+    return segments
+
+
+def _parse_row_cell(segment: str) -> ElementNode:
+    text = segment.strip()
+    span = 1
+    if text.startswith(r"\multicolumn{"):
+        parser = _Parser(text, len(r"\multicolumn"))
+        span_raw = parser._read_group()
+        try:
+            span = int(span_raw)
+        except ValueError:
+            raise LatexParseError(f"Invalid \\multicolumn span: {span_raw!r}.") from None
+        parser._read_group()  # column type (always "l"), not reversible content
+        cell_source = parser._read_group()
+    else:
+        cell_source = text
+    cell_parser = _Parser(cell_source)
+    macro_name = cell_parser._controlled_macro_at_pos()
+    if macro_name != "teiCell":
+        raise LatexParseError(f"Expected \\teiCell in table cell, got: {cell_source[:30]!r}.")
+    cell_node = cell_parser._parse_macro(macro_name)
+    if span != 1:
+        cell_node.attrs["cols"] = str(span)
+    return cell_node
 
 
 _BEGIN_LATEI_DOCUMENT = r"\begin{lateiDocument}"

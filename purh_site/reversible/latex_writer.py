@@ -14,16 +14,15 @@ from .nodes import ElementNode, Node, TextNode
 ENVIRONMENT_ELEMENTS = {
     "bibl": "teiBibl",
     "cit": "teiCit",
-    "cell": "teiCell",
     "div": "teiDiv",
     "figure": "teiFigure",
     "list": "teiList",
     "quote": "teiQuote",
-    "row": "teiRow",
     "table": "teiTable",
 }
 
 EMPTY_MACRO_ELEMENTS = {
+    "anchor": "teiAnchor",
     "graphic": "teiGraphic",
     "lb": "teiLb",
     "pb": "teiPb",
@@ -36,6 +35,7 @@ MACRO_ELEMENTS = {
     "date": "teiDate",
     "editor": "teiEditor",
     "foreign": "teiForeign",
+    "formula": "teiFormula",
     "head": "teiHead",
     "hi": "teiHi",
     "idno": "teiIdno",
@@ -87,6 +87,16 @@ def escape_latex(text: str) -> str:
 
 def _write_element(node: ElementNode) -> str:
     name = node.local_name
+    if name == "ref":
+        return _write_ref(node)
+    if name == "formula":
+        return _write_formula(node)
+    if name == "table":
+        return _write_table(node)
+    if name == "row":
+        return _write_row(node)
+    if name == "cell":
+        return _write_cell(node)
     if name in ENVIRONMENT_ELEMENTS:
         return _environment(ENVIRONMENT_ELEMENTS[name], _options(node), _children_latex(node))
     if name in EMPTY_MACRO_ELEMENTS:
@@ -94,6 +104,107 @@ def _write_element(node: ElementNode) -> str:
     if name in MACRO_ELEMENTS:
         return _macro(MACRO_ELEMENTS[name], _options(node), _children_latex(node))
     return _generic_element(node)
+
+
+def _write_ref(node: ElementNode) -> str:
+    """<ref target="#id"> needs internal PDF navigation (\\hyperlink), not an
+    external \\href — but \\# is a character-insertion primitive in LaTeX,
+    not expandable text, so the internal/external distinction cannot be made
+    reliably at the macro level once "#" has been escaped. Made here instead:
+    an internal target is passed as a separate, unescaped "internaltarget"
+    option (leading "#" stripped), and \\teiRef only has to check whether
+    that option is present."""
+    attrs = _latex_attrs(node)
+    target = attrs.pop("target", None)
+    if target is not None:
+        if target.startswith("#"):
+            attrs["internaltarget"] = target[1:]
+        else:
+            attrs["target"] = target
+    return _macro("teiRef", _format_options(attrs), _children_latex(node))
+
+
+def _write_formula(node: ElementNode) -> str:
+    """<formula notation="latex"> content is itself LaTeX math source (its
+    TEI text already includes its own \\(...\\) / \\[...\\] delimiters) — it
+    must reach the compiler verbatim. Escaping it like ordinary prose (the
+    default for every other element) would print the literal escaped source
+    in the PDF instead of a typeset formula, so its raw text is used as-is
+    rather than routed through write_latex()/escape_latex()."""
+    return _macro("teiFormula", _options(node), _raw_text(node))
+
+
+def _raw_text(node: Node) -> str:
+    if isinstance(node, TextNode):
+        return node.text
+    if isinstance(node, ElementNode):
+        return "".join(_raw_text(child) for child in node.children)
+    raise TypeError(f"Unsupported reversible node: {type(node).__name__}")
+
+
+def _write_table(node: ElementNode) -> str:
+    """teiTable builds a real tabular grid (longtable/booktabs), which needs
+    the column count up front to declare its column spec — LaTeX cannot
+    discover this from the row/cell environments as they are typeset one at
+    a time. Computed here, from the tree, and passed as a "numcols" option
+    (a table-level count, not to be confused with a cell's own "cols" —
+    its colspan)."""
+    attrs = dict(_latex_attrs(node))
+    attrs["numcols"] = str(_table_column_count(node))
+    return _environment("teiTable", _format_options(attrs), _children_latex(node))
+
+
+def _table_column_count(node: ElementNode) -> int:
+    max_columns = 1
+    for row in node.children:
+        if not (isinstance(row, ElementNode) and row.local_name == "row"):
+            continue
+        columns = 0
+        for cell in row.children:
+            if not (isinstance(cell, ElementNode) and cell.local_name == "cell"):
+                continue
+            span_raw = cell.get_attr("cols") or "1"
+            try:
+                span = int(span_raw)
+            except ValueError:
+                span = 1
+            columns += max(span, 1)
+        max_columns = max(max_columns, columns)
+    return max_columns
+
+
+def _write_row(node: ElementNode) -> str:
+    """Cells are joined with a literal "&" written directly into the LaTeX
+    source, not inserted conditionally by a macro at compile time: TeX's
+    \\ifnum...\\fi false-branch skipping uses a tokenizer that does not know
+    "&" is special inside an alignment, and corrupts the tabular's column
+    scan ("Incomplete \\ifnum") when a bare "&" only appears inside a
+    conditionally-skipped branch. Non-cell children (stray whitespace text
+    from source indentation) are dropped: TEI rows carry no other content."""
+    cells = [child for child in node.children if isinstance(child, ElementNode) and child.local_name == "cell"]
+    content = " & ".join(_write_cell(cell) for cell in cells)
+    return _macro("teiRow", _options(node), content)
+
+
+def _write_cell(node: ElementNode) -> str:
+    """A spanning cell's \\multicolumn must be the literal, unwrapped first
+    token TeX's alignment scanner sees for that cell: wrapping it inside any
+    macro or environment (even a plain, non-protected one — confirmed by
+    isolated reproduction) makes TeX's \\omit look-ahead miss it, corrupting
+    the whole tabular ("Misplaced \\omit"). So it is written directly here
+    rather than left to a \\teiCell macro, and only for cells that actually
+    span (@cols on <cell>) — plain cells stay a single \\teiCell call, no
+    \\multicolumn wrapper at all."""
+    attrs = dict(_latex_attrs(node))
+    span_raw = attrs.pop("cols", None) or "1"
+    try:
+        span = int(span_raw)
+    except ValueError:
+        span = 1
+    cell_macro = _macro("teiCell", _format_options(attrs), _children_latex(node))
+    if span > 1:
+        return f"\\multicolumn{{{span}}}{{l}}{{{cell_macro}}}"
+    return cell_macro
 
 
 def _generic_element(node: ElementNode) -> str:
@@ -123,11 +234,26 @@ def _options(node: ElementNode) -> str:
     return _format_options(_latex_attrs(node))
 
 
+# xmlid (and internaltarget, an xmlid fragment stripped of its leading "#")
+# are identifiers, not prose: XML NCName syntax already forbids every
+# character escape_latex() would otherwise escape. Escaping them anyway
+# would make \hypertarget/\hyperlink names disagree once expanded (\_ is a
+# command, not literal text, so a hypertarget and the hyperlink meant to
+# reach it can end up with different PDF destination names).
+_UNESCAPED_OPTION_KEYS = {"xmlid", "internaltarget"}
+
+
 def _format_options(attrs: dict[str, str]) -> str:
     if not attrs:
         return ""
-    body = ",".join(f"{key}={{{escape_latex(value)}}}" for key, value in attrs.items())
+    body = ",".join(f"{key}={{{_format_option_value(key, value)}}}" for key, value in attrs.items())
     return f"[{body}]"
+
+
+def _format_option_value(key: str, value: str) -> str:
+    if key in _UNESCAPED_OPTION_KEYS:
+        return value
+    return escape_latex(value)
 
 
 def _latex_attrs(node: ElementNode) -> dict[str, str]:

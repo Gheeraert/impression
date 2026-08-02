@@ -62,13 +62,13 @@ def test_realistic_fragment_latex_uses_specialized_macros_and_generic_fallbacks(
     result = run_tei_latex_tei_roundtrip(etree.fromstring(REALISTIC_FRAGMENT.encode("utf-8")))
     latex = result.latex
 
-    assert "\\begin{teiDiv}[type={chapter},xmlid={ch\\_real\\_001}]" in latex
+    assert "\\begin{teiDiv}[type={chapter},xmlid={ch_real_001}]" in latex
     assert "\\teiHead{Chapitre premier}" in latex
-    assert "\\teiP[xmlid={p\\_real\\_001}]" in latex
+    assert "\\teiP[xmlid={p_real_001}]" in latex
     assert "\\teiHi[rend={italic}]" in latex
-    assert "\\teiNote[place={foot},xmlid={n\\_real\\_001}]" in latex
-    assert "\\teiRef[target={\\#note\\_editoriale}]" in latex
-    assert "\\begin{teiQuote}[xmlid={q\\_real\\_001}]" in latex
+    assert "\\teiNote[place={foot},xmlid={n_real_001}]" in latex
+    assert "\\teiRef[internaltarget={note_editoriale}]" in latex
+    assert "\\begin{teiQuote}[xmlid={q_real_001}]" in latex
     assert "\\begin{teiList}[type={ordered}]" in latex
     assert "\\teiItem[n={1}]" in latex
     assert "\\teiItem[n={2}]" in latex

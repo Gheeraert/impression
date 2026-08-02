@@ -50,9 +50,8 @@ def test_table_latex_uses_semantic_environments_not_generic_fallback() -> None:
     )
 
     assert result.diagnostics == []
-    assert "\\begin{teiTable}[rows={1},cols={1}]" in result.latex
-    assert "\\begin{teiRow}" in result.latex
-    assert "\\begin{teiCell}" in result.latex
+    assert "\\begin{teiTable}[rows={1},cols={1},numcols={1}]" in result.latex
+    assert "\\teiRow{\\teiCell{Valeur}}" in result.latex
     assert "name={table}" not in result.latex
     assert "name={row}" not in result.latex
     assert "name={cell}" not in result.latex
@@ -107,6 +106,27 @@ def test_cell_can_contain_paragraph_and_mixed_content() -> None:
     assert note.get(f"{{{XML_NS}}}id") == "n1"
     assert note.text == "Note"
     assert note.tail == "."
+
+
+def test_cell_with_colspan_round_trips_and_uses_literal_multicolumn() -> None:
+    # @cols (colspan) must be written as a literal, unwrapped \multicolumn in
+    # the LaTeX source (see _write_cell): wrapping it in any macro breaks
+    # TeX's alignment scanner ("Misplaced \omit"), confirmed by isolated
+    # reproduction, so this is also a compile-safety regression test.
+    result = run(
+        '<table xmlns="http://www.tei-c.org/ns/1.0">'
+        '<row><cell>A</cell><cell cols="2">B et C fusionnés</cell></row>'
+        "</table>"
+    )
+    emitted = result.emitted
+    cells = emitted.xpath("./tei:row/tei:cell", namespaces=NS)
+
+    assert result.diagnostics == []
+    assert "\\multicolumn{2}{l}{\\teiCell{B et C fusionnés}}" in result.latex
+    assert len(cells) == 2
+    assert cells[0].get("cols") is None
+    assert cells[1].get("cols") == "2"
+    assert cells[1].text == "B et C fusionnés"
 
 
 def test_table_preserves_row_and_cell_order() -> None:

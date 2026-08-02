@@ -44,7 +44,7 @@ def test_roundtrip_result_exposes_intermediate_steps() -> None:
 
     assert result.source.get(f"{{{XML_NS}}}id") == "p_001"
     assert result.first_tree.xml_id == "p_001"
-    assert "xmlid={p\\_001}" in result.latex
+    assert "xmlid={p_001}" in result.latex
     assert result.second_tree.xml_id == "p_001"
     assert result.emitted.get(f"{{{XML_NS}}}id") == "p_001"
 

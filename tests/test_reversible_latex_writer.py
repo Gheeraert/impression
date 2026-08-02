@@ -29,7 +29,7 @@ def test_paragraph_with_ref_target_preserves_target_option() -> None:
         '<p xmlns="http://www.tei-c.org/ns/1.0">Voir <ref target="#x">référence</ref>.</p>'
     )
 
-    assert latex == r"\teiP{Voir \teiRef[target={\#x}]{référence}.}"
+    assert latex == r"\teiP{Voir \teiRef[internaltarget={x}]{référence}.}"
 
 
 def test_paragraph_with_inline_note_preserves_place_and_xml_id() -> None:
@@ -37,7 +37,7 @@ def test_paragraph_with_inline_note_preserves_place_and_xml_id() -> None:
         '<p xmlns="http://www.tei-c.org/ns/1.0">Une note<note place="foot" xml:id="n_001">Texte</note>.</p>'
     )
 
-    assert latex == r"\teiP{Une note\teiNote[place={foot},xmlid={n\_001}]{Texte}.}"
+    assert latex == r"\teiP{Une note\teiNote[place={foot},xmlid={n_001}]{Texte}.}"
 
 
 def test_div_with_head_and_paragraph_uses_semantic_environment() -> None:
@@ -47,7 +47,7 @@ def test_div_with_head_and_paragraph_uses_semantic_environment() -> None:
     )
 
     assert latex == (
-        "\\begin{teiDiv}[type={chapter},xmlid={ch\\_001}]\n"
+        "\\begin{teiDiv}[type={chapter},xmlid={ch_001}]\n"
         "\\teiHead{Introduction}\\teiP{Texte.}\n"
         "\\end{teiDiv}"
     )
@@ -82,7 +82,7 @@ def test_xml_id_and_xml_lang_are_converted_to_stable_options() -> None:
         '<p xmlns="http://www.tei-c.org/ns/1.0" xml:id="p_001" xml:lang="fr">Texte</p>'
     )
 
-    assert latex == r"\teiP[xmlid={p\_001},xmllang={fr}]{Texte}"
+    assert latex == r"\teiP[xmlid={p_001},xmllang={fr}]{Texte}"
 
 
 def test_list_item_figure_graphic_and_quote_have_controlled_macros() -> None:
@@ -94,7 +94,7 @@ def test_list_item_figure_graphic_and_quote_have_controlled_macros() -> None:
 
     assert "\\begin{teiQuote}\nQ\n\\end{teiQuote}" in latex
     assert "\\begin{teiList}[type={ordered}]\n\\teiItem[n={1}]{Item}\n\\end{teiList}" in latex
-    assert "\\begin{teiFigure}[xmlid={fig\\_1}]\n\\teiGraphic[target={img\\_1.png}]\n\\end{teiFigure}" in latex
+    assert "\\begin{teiFigure}[xmlid={fig_1}]\n\\teiGraphic[target={img\\_1.png}]\n\\end{teiFigure}" in latex
 
 
 def test_write_latex_document_delegates_to_main_writer() -> None:

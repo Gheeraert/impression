@@ -73,9 +73,9 @@ def test_latei_direct_bibliography_body_remains_reversible(
 
     assert bibliography_export.success is True
     assert bibliography_export.diagnostics_count == 0
-    assert r"\begin{teiElement}[name={listBibl},xmlid={bib\_001}]" in body
-    assert r"\begin{teiBibl}[xmlid={bibl\_simple}]" in body
-    assert r"\begin{teiElement}[name={biblStruct},xmlid={bibl\_struct}]" in body
+    assert r"\begin{teiElement}[name={listBibl},xmlid={bib_001}]" in body
+    assert r"\begin{teiBibl}[xmlid={bibl_simple}]" in body
+    assert r"\begin{teiElement}[name={biblStruct},xmlid={bibl_struct}]" in body
     assert r"\begin{teiElement}[name={analytic}]" in body
     assert r"\begin{teiElement}[name={monogr}]" in body
     assert r"\begin{teiElement}[name={imprint}]" in body

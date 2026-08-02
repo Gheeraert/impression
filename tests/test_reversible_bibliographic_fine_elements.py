@@ -72,7 +72,7 @@ def test_bibl_scope_preserves_unit_from_to_and_empty_content_group() -> None:
     )
 
     assert result.diagnostics == []
-    assert result.latex == r"\teiBiblScope[xmlid={bs\_001},unit={page},from={12},to={18}]{}"
+    assert result.latex == r"\teiBiblScope[xmlid={bs_001},unit={page},from={12},to={18}]{}"
     assert result.emitted.get(f"{{{XML_NS}}}id") == "bs_001"
     assert result.emitted.get("unit") == "page"
     assert result.emitted.get("from") == "12"

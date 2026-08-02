@@ -22,7 +22,7 @@ def test_ptr_target_round_trips_with_empty_macro() -> None:
     assert result.emitted.get(f"{{{XML_NS}}}id") == "ptr_001"
     assert result.emitted.text is None
     assert len(result.emitted) == 0
-    assert result.latex == r"\teiPtr[target={\#x},xmlid={ptr\_001}]"
+    assert result.latex == r"\teiPtr[target={\#x},xmlid={ptr_001}]"
     assert "{}" not in result.latex
     assert "teiElement" not in result.latex
 
@@ -91,7 +91,7 @@ def test_milestone_attributes_survive() -> None:
     assert pb.get("facs") == "page12.png"
     assert pb.get("rend") == "recto"
     assert pb.get("rendition") == "#r1"
-    assert "xmlid={pb\\_001}" in result.latex
+    assert "xmlid={pb_001}" in result.latex
     assert "xmllang={fr}" in result.latex
     assert "rendition={\\#r1}" in result.latex
 
