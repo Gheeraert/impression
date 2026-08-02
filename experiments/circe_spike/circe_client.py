@@ -14,7 +14,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-
 INCOMPLETE_CONFIG_MESSAGE = (
     "Configuration Circé incomplète : renseigner les endpoints dans "
     "circe_config.json après inspection de l'API ou de la documentation."
@@ -90,7 +89,7 @@ def upload_file(config: dict[str, Any], input_file: Path, output_dir: Path) -> d
             (
                 'Content-Disposition: form-data; name="file"; '
                 f'filename="{input_file.name}"\r\n'
-            ).encode("utf-8"),
+            ).encode(),
             b"Content-Type: application/xml\r\n\r\n",
             file_bytes,
             b"\r\n",
