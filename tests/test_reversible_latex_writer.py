@@ -69,12 +69,28 @@ def test_unknown_element_is_kept_as_generic_semantic_environment() -> None:
 
 def test_latex_special_characters_are_escaped_in_text_only() -> None:
     latex = latex_from_tei(
-        r'<p xmlns="http://www.tei-c.org/ns/1.0">A \ { } % $ &amp; _ # ^ ~</p>'
+        r'<p xmlns="http://www.tei-c.org/ns/1.0">A \ { } % $ &amp; _ # ^ ~ [ ]</p>'
     )
 
     assert latex == (
-        r"\teiP{A \textbackslash{} \{ \} \% \$ \& \_ \# \textasciicircum{} \textasciitilde{}}"
+        r"\teiP{A \textbackslash{} \{ \} \% \$ \& \_ \# \textasciicircum{} \textasciitilde{} "
+        r"\lbrack{} \rbrack{}}"
     )
+
+
+def test_bracket_right_after_empty_macro_does_not_confuse_the_reader() -> None:
+    # An editorial elision bracket ("[…]", common in scholarly quotations)
+    # directly after an empty macro like \teiLb — no space in between — is
+    # a real case (seen in a real Metopes book): the reader must not
+    # mistake the escaped bracket for that macro's option list, nor for
+    # braced content passed to it (both would be a LatexParseError).
+    latex = latex_from_tei(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte<lb/>[…] la suite.</p>'
+    )
+
+    # \teiLb{} : the empty-macro anti-gluing "{}" (no options here either,
+    # same fix as the letter case) then \lbrack{} for the bracket itself.
+    assert r"\teiLb{}\lbrack{}" in latex
 
 
 def test_xml_id_and_xml_lang_are_converted_to_stable_options() -> None:

@@ -87,6 +87,21 @@ def escape_latex(text: str) -> str:
         "#": r"\#",
         "^": r"\textasciicircum{}",
         "~": r"\textasciitilde{}",
+        # A literal "[" is not special to LaTeX compilation itself, but our
+        # own reader treats "[" right after a controlled macro name as the
+        # start of that macro's option list (see _parse_options) — genuine
+        # prose containing an editorial elision bracket ("[…]", common in
+        # scholarly quotations) directly after an empty macro like \teiLb
+        # would otherwise be misparsed as if it belonged to that macro
+        # ("Expected '=' after option key"). The LaTeX idiom "{[}" avoids
+        # that ambiguity for a *reader's* option-list check, but its own
+        # leading "{" then collides with the separate "must not have
+        # braced content" check empty macros do (\teiLb{[}... looks like
+        # \teiLb is being given an argument). \lbrack{}/\rbrack{} are
+        # ordinary control words (like \textbackslash{}), starting with
+        # neither "{" nor "[", so neither check can ever trip on them.
+        "[": r"\lbrack{}",
+        "]": r"\rbrack{}",
     }
     return "".join(replacements.get(char, char) for char in text)
 
@@ -284,7 +299,17 @@ def _macro(name: str, options: str, content: str) -> str:
 
 
 def _empty_macro(name: str, options: str) -> str:
-    return f"\\{name}{options}"
+    if options:
+        return f"\\{name}{options}"
+    # A control word (multi-letter macro name) glued directly to following
+    # prose that starts with a letter — real case: "<lb/>Parce..." in
+    # poetry, no space in the source — is not "\teiLb" + text "Parce": TeX
+    # consumes all subsequent letters into the control word's own name,
+    # producing a bogus "\teiLbParce" ("Undefined control sequence"). "{}"
+    # is a hard boundary a letter can never extend past; harmless and
+    # invisible otherwise. Only needed without options: "]" already stops
+    # name-consumption, so \teiLb[n={3}]Parce is never at risk.
+    return f"\\{name}{{}}"
 
 
 def _options(node: ElementNode) -> str:

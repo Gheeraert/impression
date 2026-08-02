@@ -5,7 +5,11 @@ from __future__ import annotations
 Politique vérifiée :
 - les xml:id source uniques sont conservés strictement ;
 - les identifiants générés sont déterministes, stables et sans collision ;
-- des xml:id dupliqués provoquent une erreur bloquante ;
+- des xml:id dupliqués mais jamais référencés (cas courant d'un livre
+  assemblé par XInclude à partir de chapitres numérotant chacun leurs
+  propres paragraphes) sont renommés silencieusement, sans bloquer ;
+- des xml:id dupliqués dont un ou plusieurs porteurs SONT la cible d'une
+  référence locale restent, eux, une erreur bloquante (ambiguïté réelle) ;
 - note/@n n'est jamais écrit ni modifié par le normaliseur ;
 - les pointeurs locaux "#id" sont contrôlés (target, corresp, who, ana, wit…) ;
 - les rendus HTML et LaTEI restent fonctionnels avec cette politique.
@@ -113,13 +117,40 @@ def test_generated_id_does_not_collide_with_source_id() -> None:
     assert len(set(all_ids)) == len(all_ids)
 
 
-def test_duplicate_source_xml_ids_raise_a_clear_error() -> None:
-    # libxml2 refuse les xml:id dupliqués dès l'analyse d'un fichier isolé ;
-    # le cas réel apparaît après fusion XInclude : on le construit en mémoire.
+def test_unreferenced_duplicate_ids_are_renamed_not_rejected() -> None:
+    # Cas réel : un livre assemblé par XInclude à partir de chapitres
+    # indépendants, chacun numérotant ses propres paragraphes (p1, p2...)
+    # sans que rien ne pointe explicitement vers ces identifiants une fois
+    # le livre assemblé. Rien n'étant référencé, aucune ambiguïté réelle ne
+    # peut résulter d'un renommage : ce n'est plus une erreur bloquante.
     tree = etree.ElementTree(
         etree.fromstring(tei_document("<p>Premier.</p><p>Second.</p>").encode("utf-8"))
     )
     for paragraph in tree.xpath("//tei:body//tei:p", namespaces=NSMAP):
+        paragraph.set(XMLID, "doublon")
+
+    report = TeiNormalizer().normalize(tree)
+
+    ids = tree.xpath("//tei:body//tei:p/@xml:id", namespaces=NSMAP)
+    assert ids[0] == "doublon"
+    assert ids[1] == "doublon-2"
+    assert len(set(ids)) == len(ids)
+    assert report.renamed_duplicate_ids == 1
+    assert any("doublon" in warning for warning in report.warnings)
+
+
+def test_duplicate_id_that_is_referenced_still_raises_a_clear_error() -> None:
+    # Un xml:id dupliqué qui EST la cible d'une référence locale reste, lui,
+    # une ambiguïté réelle (vers lequel des porteurs le lien pointe-t-il ?) —
+    # aucun renommage automatique ne peut la lever silencieusement.
+    tree = etree.ElementTree(
+        etree.fromstring(
+            tei_document(
+                '<p>Premier.</p><p>Second.</p><p>Voir <ref target="#doublon">ici</ref>.</p>'
+            ).encode("utf-8")
+        )
+    )
+    for paragraph in tree.xpath("//tei:body//tei:p", namespaces=NSMAP)[:2]:
         paragraph.set(XMLID, "doublon")
 
     with pytest.raises(DuplicateXmlIdError) as excinfo:
@@ -128,6 +159,29 @@ def test_duplicate_source_xml_ids_raise_a_clear_error() -> None:
     assert "doublon" in message
     assert "<p>" in message
     assert "/p[" in message  # XPath lisible des porteurs
+
+
+def test_duplicate_id_error_message_stays_bounded_with_many_referenced_duplicates() -> None:
+    # Un livre à nombreux chapitres peut aussi, dans le pire cas, avoir de
+    # nombreux xml:id à la fois dupliqués ET référencés (donc bloquants) —
+    # le message ne doit pas pour autant exploser à des dizaines de milliers
+    # de caractères, impraticable dans une boîte de dialogue. Les totaux
+    # réels doivent rester visibles même si le détail est plafonné.
+    paragraphs = "".join(f"<p>Texte {n}.</p>" for n in range(30))
+    paragraphs += "".join(f'<p>Voir <ref target="#p{n}">ici</ref>.</p>' for n in range(5))
+    tree = etree.ElementTree(etree.fromstring(tei_document(paragraphs).encode("utf-8")))
+    body_paragraphs = tree.xpath("//tei:body//tei:p", namespaces=NSMAP)[:30]
+    for index, paragraph in enumerate(body_paragraphs):
+        paragraph.set(XMLID, f"p{index % 5}")
+
+    with pytest.raises(DuplicateXmlIdError) as excinfo:
+        TeiNormalizer().normalize(tree)
+    message = str(excinfo.value)
+
+    assert len(message) < 10_000
+    assert "5 xml:id dupliqué" in message
+    assert "p0" in message
+    assert "occurrences" in message
 
 
 def test_existing_references_survive_normalization() -> None:

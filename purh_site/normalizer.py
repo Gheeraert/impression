@@ -81,6 +81,7 @@ class NormalizeReport:
     """Journal de normalisation du TEI avant transformation XSLT."""
 
     assigned_ids: int = 0
+    renamed_duplicate_ids: int = 0
     figure_media_resolved: int = 0
     adjacent_hi_merged: int = 0
     unresolved_references: int = 0
@@ -90,6 +91,7 @@ class NormalizeReport:
     def as_lines(self) -> list[str]:
         return [
             f"Identifiants attribués (éléments sans xml:id source) : {self.assigned_ids}",
+            f"xml:id dupliqués (non référencés) renommés : {self.renamed_duplicate_ids}",
             f"Figures/médias explicitement résolus : {self.figure_media_resolved}",
             f"Segments typographiques fusionnés : {self.adjacent_hi_merged}",
             f"Références locales non résolues : {self.unresolved_references}",
@@ -114,7 +116,7 @@ class TeiNormalizer:
 
     def normalize(self, tree: etree._ElementTree) -> NormalizeReport:
         report = NormalizeReport()
-        self._reject_duplicate_ids(tree)
+        self._reject_duplicate_ids(tree, report)
         self._ensure_ids(tree, report)
         self._merge_adjacent_hi(tree, report)
         self._check_local_references(tree, report)
@@ -188,11 +190,31 @@ class TeiNormalizer:
         else:
             element.text = (element.text or "") + text
 
-    def _reject_duplicate_ids(self, tree: etree._ElementTree) -> None:
-        """Refuse tout document dont des xml:id sont dupliqués.
+    # Un livre composé de nombreux chapitres indépendants (assemblés par le
+    # fichier maître via XInclude/group) peut aisément réutiliser les mêmes
+    # xml:id génériques ("p1", "p2"...) dans chaque chapitre : une fois
+    # assemblés, cela peut produire des centaines de doublons, chacun listant
+    # toutes ses occurrences — le message explose sinon à des dizaines de
+    # milliers de caractères, illisible et peu maniable dans une boîte de
+    # dialogue. Bornage : les totaux réels restent toujours indiqués, rien
+    # n'est perdu silencieusement, seul le détail affiché est plafonné.
+    _MAX_DUPLICATE_VALUES_SHOWN = 20
+    _MAX_POSITIONS_SHOWN = 5
 
-        Renommer silencieusement l'un des porteurs rendrait les références
-        internes ambiguës : le document doit être corrigé à la source.
+    def _reject_duplicate_ids(self, tree: etree._ElementTree, report: NormalizeReport) -> None:
+        """Résout les xml:id dupliqués qui ne sont jamais la cible d'une
+        référence locale — le cas courant d'un livre Métopes assemblé par
+        XInclude à partir de chapitres écrits indépendamment, chacun
+        numérotant ses propres paragraphes ("p1", "p2"...) sans que rien,
+        une fois le livre assemblé, ne pointe explicitement vers ces
+        identifiants génériques. La première occurrence garde son
+        identifiant source ; les suivantes sont renommées de façon
+        déterministe, sans collision, et le renommage est journalisé.
+
+        Un xml:id dupliqué qui EST la cible d'un pointeur local reste en
+        revanche bloquant : le renommer silencieusement rendrait cette
+        référence ambiguë (vers lequel des porteurs ?), et seul un
+        correctif à la source peut lever cette ambiguïté.
         """
         carriers: dict[str, list[etree._Element]] = defaultdict(list)
         for element in tree.xpath("//*[@xml:id]", namespaces=NSMAP):
@@ -204,16 +226,65 @@ class TeiNormalizer:
         if not duplicates:
             return
 
-        source = tree.docinfo.URL or "document en mémoire"
-        details: list[str] = []
+        referenced_ids = self._collect_local_pointer_targets(tree)
+        ambiguous = {value: elements for value, elements in duplicates.items() if value in referenced_ids}
+        if ambiguous:
+            self._raise_duplicate_ids_error(tree, ambiguous)
+
+        seen_ids: set[str] = set(carriers.keys())
         for value, elements in duplicates.items():
+            for element in elements[1:]:
+                new_id = self._make_unique_duplicate_id(value, seen_ids)
+                set_xml_id(element, new_id)
+                seen_ids.add(new_id)
+                report.renamed_duplicate_ids += 1
+                report.warnings.append(
+                    f"xml:id \"{value}\" dupliqué (non référencé) sur <{etree.QName(element).localname}> "
+                    f"à {_readable_path(element)} — renommé en \"{new_id}\"."
+                )
+
+    def _collect_local_pointer_targets(self, tree: etree._ElementTree) -> set[str]:
+        targets: set[str] = set()
+        for element in tree.iter(etree.Element):
+            for attribute, raw_value in element.attrib.items():
+                if etree.QName(attribute).localname not in LOCAL_POINTER_ATTRIBUTES:
+                    continue
+                for token in raw_value.split():
+                    if token.startswith("#") and len(token) > 1:
+                        targets.add(token[1:])
+        return targets
+
+    @staticmethod
+    def _make_unique_duplicate_id(base: str, seen_ids: set[str]) -> str:
+        suffix = 2
+        while f"{base}-{suffix}" in seen_ids:
+            suffix += 1
+        return f"{base}-{suffix}"
+
+    def _raise_duplicate_ids_error(
+        self, tree: etree._ElementTree, duplicates: dict[str, list[etree._Element]]
+    ) -> None:
+        source = tree.docinfo.URL or "document en mémoire"
+        shown_values = list(duplicates.items())[: self._MAX_DUPLICATE_VALUES_SHOWN]
+        details: list[str] = []
+        for value, elements in shown_values:
+            shown_positions = elements[: self._MAX_POSITIONS_SHOWN]
             positions = "; ".join(
-                f"<{etree.QName(el).localname}> à {_readable_path(el)}" for el in elements
+                f"<{etree.QName(el).localname}> à {_readable_path(el)}" for el in shown_positions
             )
-            details.append(f"xml:id \"{value}\" porté par : {positions}")
-        raise DuplicateXmlIdError(
-            "xml:id dupliqués dans " + source + " — " + " | ".join(details)
+            omitted_positions = len(elements) - len(shown_positions)
+            if omitted_positions > 0:
+                positions += f"; … et {omitted_positions} autre(s) occurrence(s)"
+            details.append(f"xml:id \"{value}\" ({len(elements)} occurrences) porté par : {positions}")
+
+        omitted_values = len(duplicates) - len(shown_values)
+        summary = (
+            f"{len(duplicates)} xml:id dupliqué(s) et référencé(s) (ambigu) dans " + source + " — "
+            + " | ".join(details)
         )
+        if omitted_values > 0:
+            summary += f" | … et {omitted_values} autre(s) identifiant(s) dupliqué(s) et référencé(s)"
+        raise DuplicateXmlIdError(summary)
 
     def _ensure_ids(self, tree: etree._ElementTree, report: NormalizeReport) -> None:
         """Attribue un identifiant aux seuls éléments qui n'en ont pas.
