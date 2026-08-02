@@ -146,6 +146,34 @@ def test_compare_reports_missing_child() -> None:
     assert diagnostics[0].path == "/p"
 
 
+def test_roundtrip_ignores_trailing_xml_comment_and_stays_clean() -> None:
+    # Un commentaire XML a un .tag qui est une fonction usine lxml (pas une
+    # chaîne) ; il ne doit jamais être traité comme un élément TEI.
+    assert_clean_roundtrip(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte.<!-- commentaire --></p>'
+    )
+
+
+def test_roundtrip_does_not_crash_on_comment_between_elements() -> None:
+    result = run_tei_latex_tei_roundtrip(
+        parse_tei(
+            '<p xmlns="http://www.tei-c.org/ns/1.0">'
+            'Avant <!-- commentaire --><hi rend="italic">mot</hi> après.'
+            "</p>"
+        )
+    )
+    assert "CHILD_COUNT_MISMATCH" not in diagnostic_codes(result.diagnostics)
+
+
+def test_compare_does_not_flag_comment_only_child_as_missing() -> None:
+    diagnostics = compare_tei_elements(
+        parse_tei('<p xmlns="http://www.tei-c.org/ns/1.0">A<!-- commentaire --><hi>B</hi></p>'),
+        parse_tei('<p xmlns="http://www.tei-c.org/ns/1.0">A<hi>B</hi></p>'),
+    )
+
+    assert diagnostics == []
+
+
 def test_compare_reports_tag_namespace_tail_and_child_order_mismatches() -> None:
     diagnostics = compare_tei_elements(
         parse_tei('<p xmlns="http://www.tei-c.org/ns/1.0"><hi>A</hi><ref>B</ref></p>'),
