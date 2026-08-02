@@ -27,7 +27,7 @@
 
   <xsl:template match="tei:group | tei:text | tei:front | tei:body | tei:back">
     <xsl:apply-templates/>
-    <xsl:if test="(self::tei:group or (self::tei:body and not(parent::*))) and .//tei:note">
+    <xsl:if test="(self::tei:group or ((self::tei:body or self::tei:text) and parent::tei:fragment-root)) and .//tei:note">
       <section class="endnotes">
         <h2>Notes</h2>
         <ol>
@@ -69,29 +69,95 @@
 
   <xsl:template match="tei:head"/>
 
+  <!-- Présent dans le fragment uniquement pour permettre aux lookups
+       //tei:rendition[...] (cf. rendition-style-attr) de résoudre les
+       déclarations @rendition ; ne doit jamais produire de sortie visible. -->
+  <xsl:template match="tei:tagsDecl"/>
+
+  <!-- Résout @rendition (un ou plusieurs "#id" séparés par des espaces)
+       vers les déclarations CSS correspondantes dans tagsDecl/rendition
+       [@scheme='css'], et pose l'attribut style="..." résultant sur
+       l'élément courant. Couvre par ex. rendition="#rtl" (direction:rtl)
+       ou rendition="#Cell #rtl" (bordures de cellule + direction). -->
+  <xsl:template name="rendition-style-attr">
+    <xsl:variable name="style">
+      <xsl:call-template name="rendition-style-tokens">
+        <xsl:with-param name="tokens" select="normalize-space(@rendition)"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:if test="normalize-space($style) != ''">
+      <xsl:attribute name="style"><xsl:value-of select="normalize-space($style)"/></xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="rendition-style-tokens">
+    <xsl:param name="tokens"/>
+    <xsl:if test="normalize-space($tokens) != ''">
+      <xsl:variable name="first">
+        <xsl:choose>
+          <xsl:when test="contains($tokens, ' ')"><xsl:value-of select="substring-before($tokens, ' ')"/></xsl:when>
+          <xsl:otherwise><xsl:value-of select="$tokens"/></xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:variable name="rest" select="normalize-space(substring-after($tokens, ' '))"/>
+      <xsl:variable name="id" select="substring-after($first, '#')"/>
+      <xsl:variable name="decl" select="//tei:rendition[@xml:id=$id and @scheme='css'][1]"/>
+      <xsl:if test="$decl">
+        <xsl:value-of select="normalize-space($decl)"/>
+        <xsl:if test="substring(normalize-space($decl), string-length(normalize-space($decl))) != ';'">
+          <xsl:text>; </xsl:text>
+        </xsl:if>
+      </xsl:if>
+      <xsl:if test="$rest != ''">
+        <xsl:call-template name="rendition-style-tokens">
+          <xsl:with-param name="tokens" select="$rest"/>
+        </xsl:call-template>
+      </xsl:if>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template match="tei:p">
     <p>
       <xsl:if test="@xml:id">
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
+      <xsl:call-template name="rendition-style-attr"/>
       <xsl:apply-templates/>
     </p>
   </xsl:template>
 
   <xsl:template match="tei:cit">
-    <div class="cit-block"><xsl:apply-templates/></div>
+    <div class="cit-block">
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:apply-templates/>
+    </div>
   </xsl:template>
 
   <xsl:template match="tei:p/tei:cit" priority="20">
-    <span class="cit-inline"><xsl:apply-templates/></span>
+    <span class="cit-inline">
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:apply-templates/>
+    </span>
   </xsl:template>
 
   <xsl:template match="tei:item/tei:cit" priority="20">
-    <span class="cit-inline"><xsl:apply-templates/></span>
+    <span class="cit-inline">
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:apply-templates/>
+    </span>
   </xsl:template>
 
   <xsl:template match="tei:note//tei:cit" priority="20">
-    <span class="cit-inline"><xsl:apply-templates/></span>
+    <span class="cit-inline">
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="tei:anchor">
+    <span>
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+    </span>
   </xsl:template>
 
   <xsl:template match="tei:q">
@@ -129,18 +195,38 @@
   </xsl:template>
 
   <xsl:template match="tei:row">
-    <tr><xsl:apply-templates/></tr>
+    <tr>
+      <xsl:call-template name="rendition-style-attr"/>
+      <xsl:apply-templates/>
+    </tr>
   </xsl:template>
 
   <xsl:template match="tei:cell">
     <xsl:choose>
       <xsl:when test="@role='label' or @role='header' or @type='head' or @type='header' or parent::tei:row[@role='label' or @role='header' or @type='head' or @type='header']">
-        <th><xsl:apply-templates/></th>
+        <th>
+          <xsl:call-template name="cell-span-attrs"/>
+          <xsl:call-template name="rendition-style-attr"/>
+          <xsl:apply-templates/>
+        </th>
       </xsl:when>
       <xsl:otherwise>
-        <td><xsl:apply-templates/></td>
+        <td>
+          <xsl:call-template name="cell-span-attrs"/>
+          <xsl:call-template name="rendition-style-attr"/>
+          <xsl:apply-templates/>
+        </td>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="cell-span-attrs">
+    <xsl:if test="normalize-space(@cols) != ''">
+      <xsl:attribute name="colspan"><xsl:value-of select="@cols"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="normalize-space(@rows) != ''">
+      <xsl:attribute name="rowspan"><xsl:value-of select="@rows"/></xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="tei:lg">
@@ -169,6 +255,21 @@
     <span class="stage-direction-inline"><xsl:apply-templates/></span>
   </xsl:template>
 
+  <!-- Pas de moteur de rendu mathématique côté site : on préserve la
+       source (LaTeX le plus souvent) comme texte visible plutôt que de
+       la perdre silencieusement. Les délimiteurs \( \) et \[ \] déjà
+       présents dans la source sont conservés tels quels, ce qui rend ce
+       balisage directement compatible avec MathJax si un moteur de
+       rendu est ajouté ultérieurement au site. -->
+  <xsl:template match="tei:formula">
+    <span class="tei-formula">
+      <xsl:if test="@notation">
+        <xsl:attribute name="data-notation"><xsl:value-of select="@notation"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
   <xsl:template match="tei:epigraph">
     <blockquote class="epigraph"><xsl:apply-templates/></blockquote>
   </xsl:template>
@@ -179,6 +280,8 @@
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <xsl:call-template name="render-figure-media"/>
+      <xsl:apply-templates select="tei:table"/>
+      <xsl:apply-templates select="tei:formula"/>
       <xsl:if test="tei:head or tei:p">
         <figcaption>
           <xsl:if test="tei:head">
@@ -265,28 +368,69 @@
     </button>
   </xsl:template>
 
+  <xsl:template name="last-path-segment">
+    <xsl:param name="path"/>
+    <xsl:choose>
+      <xsl:when test="contains($path, '/')">
+        <xsl:call-template name="last-path-segment">
+          <xsl:with-param name="path" select="substring-after($path, '/')"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise><xsl:value-of select="$path"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <!-- Résout une URL de ressource déclarée dans le XML vers son chemin de
+       sortie sous assets/. Une URL déjà absolue/externe/préfixée assets/
+       est utilisée telle quelle. $base (ex. "assets/images") est préfixé
+       normalement — SAUF si l'URL répète déjà littéralement le dernier
+       segment de $base (ex. url="images/fig.jpg" avec base="assets/images")
+       auquel cas ce segment n'est pas dupliqué. Les chemins relatifs du
+       type "../autre-dossier/fig.jpg", destinés à naviguer depuis $base
+       vers un dossier voisin sous assets/, restent donc inchangés. -->
+  <xsl:template name="resolved-asset-src">
+    <xsl:param name="url"/>
+    <xsl:param name="base"/>
+    <xsl:variable name="base-leaf">
+      <xsl:call-template name="last-path-segment">
+        <xsl:with-param name="path" select="$base"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/') or starts-with($url, 'data:')">
+        <xsl:value-of select="$url"/>
+      </xsl:when>
+      <xsl:when test="starts-with($url, concat($base-leaf, '/'))">
+        <xsl:value-of select="concat('assets/', $url)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="concat($base, '/', $url)"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template name="resolved-image-src">
     <xsl:param name="url"/>
-    <xsl:choose>
-      <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/') or starts-with($url, 'data:')"><xsl:value-of select="$url"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="concat($assets_image_base, '/', $url)"/></xsl:otherwise>
-    </xsl:choose>
+    <xsl:call-template name="resolved-asset-src">
+      <xsl:with-param name="url" select="$url"/>
+      <xsl:with-param name="base" select="$assets_image_base"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="resolved-audio-src">
     <xsl:param name="url"/>
-    <xsl:choose>
-      <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/')"><xsl:value-of select="$url"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="concat($assets_audio_base, '/', $url)"/></xsl:otherwise>
-    </xsl:choose>
+    <xsl:call-template name="resolved-asset-src">
+      <xsl:with-param name="url" select="$url"/>
+      <xsl:with-param name="base" select="$assets_audio_base"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="resolved-video-src">
     <xsl:param name="url"/>
-    <xsl:choose>
-      <xsl:when test="contains($url, '://') or starts-with($url, '/') or starts-with($url, 'assets/')"><xsl:value-of select="$url"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="concat($assets_video_base, '/', $url)"/></xsl:otherwise>
-    </xsl:choose>
+    <xsl:call-template name="resolved-asset-src">
+      <xsl:with-param name="url" select="$url"/>
+      <xsl:with-param name="base" select="$assets_video_base"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template match="tei:note">
@@ -464,7 +608,18 @@
       <xsl:if test="normalize-space(@xml:id) != ''">
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
-      <h2>Bibliographie</h2><ol class="bibl-list"><xsl:apply-templates/></ol>
+      <xsl:choose>
+        <xsl:when test="tei:head"><h2><xsl:apply-templates select="tei:head[1]/node()"/></h2></xsl:when>
+        <xsl:otherwise><h2>Bibliographie</h2></xsl:otherwise>
+      </xsl:choose>
+      <xsl:if test="node()[not(self::tei:head) and not(self::tei:listBibl)]">
+        <ol class="bibl-list">
+          <xsl:apply-templates select="node()[not(self::tei:head) and not(self::tei:listBibl)]"/>
+        </ol>
+      </xsl:if>
+      <!-- listBibl imbriqué (ex. sous-parties d'une bibliographie) : sections
+           soeurs après la liste, jamais nichées dans le <ol> ci-dessus. -->
+      <xsl:apply-templates select="tei:listBibl"/>
     </section>
   </xsl:template>
 
@@ -814,8 +969,54 @@
     <cite class="bibl-ref"><xsl:apply-templates/></cite>
   </xsl:template>
 
+  <!-- Numéro de départ d'une liste ordonnée : 1, sauf si @prev pointe vers
+       une liste précédente dont la numérotation doit se poursuivre — auquel
+       cas on part du numéro de départ de cette liste plus son nombre
+       d'éléments (récursif, pour une chaîne prev -> prev -> ...). -->
+  <xsl:template name="list-start-number">
+    <xsl:param name="list"/>
+    <xsl:variable name="prev-id" select="substring-after(normalize-space($list/@prev), '#')"/>
+    <xsl:choose>
+      <xsl:when test="$prev-id != ''">
+        <xsl:variable name="prev-list" select="//tei:list[@xml:id=$prev-id][1]"/>
+        <xsl:choose>
+          <xsl:when test="$prev-list">
+            <xsl:variable name="prev-start">
+              <xsl:call-template name="list-start-number">
+                <xsl:with-param name="list" select="$prev-list"/>
+              </xsl:call-template>
+            </xsl:variable>
+            <xsl:value-of select="$prev-start + count($prev-list/tei:item)"/>
+          </xsl:when>
+          <xsl:otherwise>1</xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>1</xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="tei:list[@type='ordered']">
+    <ol>
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:call-template name="rendition-style-attr"/>
+      <xsl:if test="normalize-space(@prev) != ''">
+        <xsl:variable name="start">
+          <xsl:call-template name="list-start-number">
+            <xsl:with-param name="list" select="."/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:attribute name="start"><xsl:value-of select="$start"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </ol>
+  </xsl:template>
+
   <xsl:template match="tei:list">
-    <ul><xsl:apply-templates/></ul>
+    <ul>
+      <xsl:if test="@xml:id"><xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute></xsl:if>
+      <xsl:call-template name="rendition-style-attr"/>
+      <xsl:apply-templates/>
+    </ul>
   </xsl:template>
 
   <xsl:template match="tei:item">
@@ -823,47 +1024,119 @@
   </xsl:template>
 
     <!-- Typographie locale TEI / Métopes.
-       normalize-space() permet de tolérer les espaces parasites,
-       par exemple rend=" small-caps italic". -->
+       @rend est une liste de valeurs séparées par des espaces (ex.
+       "sup small-caps underline") : chacune est appliquée en l'imbriquant
+       autour des suivantes, plutôt que de ne retenir qu'une seule valeur
+       reconnue parmi plusieurs candidates de même priorité. -->
 
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' bold ') and contains(concat(' ', normalize-space(@rend), ' '), ' italic ')]" priority="30">
-    <strong><em><xsl:apply-templates/></em></strong>
-  </xsl:template>
-
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' small-caps ') and contains(concat(' ', normalize-space(@rend), ' '), ' italic ')] | tei:hi[normalize-space(@rend)='small-caps-ital']" priority="30">
-    <span class="smallcaps"><em><xsl:apply-templates/></em></span>
-  </xsl:template>
-
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' sup ') and contains(concat(' ', normalize-space(@rend), ' '), ' italic ')]" priority="30">
-    <sup class="tei-sup"><em><xsl:apply-templates/></em></sup>
-  </xsl:template>
-
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' italic ')] | tei:emph" priority="20">
+  <xsl:template match="tei:emph">
     <em><xsl:apply-templates/></em>
   </xsl:template>
 
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' bold ')]" priority="20">
-    <strong><xsl:apply-templates/></strong>
+  <xsl:template match="tei:hi">
+    <xsl:variable name="normalized-rend">
+      <xsl:call-template name="normalize-rend-aliases">
+        <xsl:with-param name="rend" select="normalize-space(@rend)"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <!-- @rend est une liste non ordonnée : deux documents qui écrivent
+         "small-caps italic" ou "italic small-caps" doivent produire le
+         même HTML. On fixe donc un ordre d'imbrication canonique
+         (indépendant de l'ordre source) avant de construire les balises. -->
+    <xsl:variable name="canonical-tokens">
+      <xsl:call-template name="canonicalize-hi-tokens">
+        <xsl:with-param name="tokens" select="concat(' ', normalize-space($normalized-rend), ' ')"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:call-template name="render-hi-tokens">
+      <xsl:with-param name="tokens" select="normalize-space($canonical-tokens)"/>
+    </xsl:call-template>
   </xsl:template>
 
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' small-caps ')] | tei:hi[normalize-space(@rend)='smallcaps']" priority="20">
-    <span class="smallcaps"><xsl:apply-templates/></span>
+  <!-- Alias historiques à un seul mot pour des combinaisons courantes. -->
+  <xsl:template name="normalize-rend-aliases">
+    <xsl:param name="rend"/>
+    <xsl:choose>
+      <xsl:when test="$rend = 'small-caps-ital'">small-caps italic</xsl:when>
+      <xsl:when test="$rend = 'smallcaps'">small-caps</xsl:when>
+      <xsl:otherwise><xsl:value-of select="$rend"/></xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' sup ')]" priority="20">
-    <sup class="tei-sup"><xsl:apply-templates/></sup>
+  <!-- $tokens est déjà entouré d'espaces (" a b c ") pour permettre des
+       tests contains(" x ") sûrs sur les limites de mot. Ordre fixe,
+       du plus englobant au plus proche du texte ; italic toujours le
+       plus intérieur. -->
+  <xsl:template name="canonicalize-hi-tokens">
+    <xsl:param name="tokens"/>
+    <xsl:if test="contains($tokens, ' small-caps ')"><xsl:text>small-caps </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' bold ')"><xsl:text>bold </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' sup ')"><xsl:text>sup </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' sub ')"><xsl:text>sub </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' underline ')"><xsl:text>underline </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' strikethrough ')"><xsl:text>strikethrough </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' uppercase ')"><xsl:text>uppercase </xsl:text></xsl:if>
+    <xsl:if test="contains($tokens, ' italic ')"><xsl:text>italic </xsl:text></xsl:if>
   </xsl:template>
 
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' sub ')]" priority="20">
-    <sub class="tei-sub"><xsl:apply-templates/></sub>
+  <xsl:template name="render-hi-tokens">
+    <xsl:param name="tokens"/>
+    <xsl:variable name="first">
+      <xsl:choose>
+        <xsl:when test="contains($tokens, ' ')"><xsl:value-of select="substring-before($tokens, ' ')"/></xsl:when>
+        <xsl:otherwise><xsl:value-of select="$tokens"/></xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="rest" select="normalize-space(substring-after($tokens, ' '))"/>
+    <xsl:choose>
+      <xsl:when test="normalize-space($tokens) = ''">
+        <xsl:apply-templates/>
+      </xsl:when>
+      <xsl:when test="$first = 'italic'">
+        <em><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></em>
+      </xsl:when>
+      <xsl:when test="$first = 'bold'">
+        <strong><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></strong>
+      </xsl:when>
+      <xsl:when test="$first = 'sup'">
+        <sup class="tei-sup"><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></sup>
+      </xsl:when>
+      <xsl:when test="$first = 'sub'">
+        <sub class="tei-sub"><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></sub>
+      </xsl:when>
+      <xsl:when test="$first = 'small-caps'">
+        <span class="smallcaps"><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></span>
+      </xsl:when>
+      <xsl:when test="$first = 'underline'">
+        <span class="tei-underline"><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></span>
+      </xsl:when>
+      <xsl:when test="$first = 'strikethrough'">
+        <span class="tei-strikethrough"><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></span>
+      </xsl:when>
+      <xsl:when test="$first = 'uppercase'">
+        <span class="tei-uppercase"><xsl:call-template name="render-hi-tokens-or-content"><xsl:with-param name="rest" select="$rest"/></xsl:call-template></span>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Valeur de rend non reconnue : ignorée, on poursuit avec le reste. -->
+        <xsl:call-template name="render-hi-tokens">
+          <xsl:with-param name="tokens" select="$rest"/>
+        </xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' underline ')]" priority="20">
-    <span class="tei-underline"><xsl:apply-templates/></span>
-  </xsl:template>
-
-  <xsl:template match="tei:hi[contains(concat(' ', normalize-space(@rend), ' '), ' strikethrough ')]" priority="20">
-    <span class="tei-strikethrough"><xsl:apply-templates/></span>
+  <xsl:template name="render-hi-tokens-or-content">
+    <xsl:param name="rest"/>
+    <xsl:choose>
+      <xsl:when test="normalize-space($rest) != ''">
+        <xsl:call-template name="render-hi-tokens">
+          <xsl:with-param name="tokens" select="$rest"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="tei:lb"><br/></xsl:template>

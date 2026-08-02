@@ -109,19 +109,24 @@ class SiteStructureBuilder:
         tree: etree._ElementTree,
         site_meta: SiteMeta,
     ) -> tuple[list[PageDef], list[NavItem]]:
-        """Construit une page unique pour une unité TEI autonome (<text><body>, sans <group>).
+        """Construit une page unique pour une unité TEI autonome (<text>, sans <group>).
 
         Ce cas couvre les documents TEI Commons Publishing valides dont le
         <text> n'est pas organisé en <group> (ex. unité éditoriale produite
         par Mini-Métopes) : Impressions ne doit pas conclure à un site vide
         uniquement parce que l'organisation ne correspond pas au modèle de
-        livre privilégié.
+        livre privilégié. La page rend <text> entier (donc <front> et
+        <back> en plus de <body>) : le résumé, les notes liminaires,
+        l'épigraphe, la bibliographie et l'annexe font partie intégrante
+        du document, pas seulement son corps.
         """
-        bodies = tree.xpath("/tei:TEI/tei:text/tei:body[1]", namespaces=NSMAP)
-        if not bodies:
+        if not tree.xpath("/tei:TEI/tei:text/tei:body", namespaces=NSMAP):
             return [], []
-        body = bodies[0]
-        node_id = xml_id(body)
+        texts = tree.xpath("/tei:TEI/tei:text[1]", namespaces=NSMAP)
+        if not texts:
+            return [], []
+        text_element = texts[0]
+        node_id = xml_id(text_element)
         if not node_id:
             return [], []
 
@@ -136,14 +141,14 @@ class SiteStructureBuilder:
             subtitle=site_meta.subtitle,
             authors=list(site_meta.creators),
             author_entries=author_entries,
-            group_type="body",
+            group_type="text",
             page_kind="article",
             section_chain=[],
             sequence=1,
         )
         nav_item = NavItem(title=title, href=file_name, page_kind=page.page_kind)
         self.last_diagnostics.append(
-            "Unité TEI autonome détectée : rendu du body sur une page unique."
+            "Unité TEI autonome détectée : rendu de front/body/back sur une page unique."
         )
         return [page], [nav_item]
 

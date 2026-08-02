@@ -54,7 +54,7 @@ def render_raw_tei_fragment(fragment: str) -> str:
   </body>
 </group>""".encode()
     )
-    return SiteBuilder()._render_page_fragment(root)
+    return SiteBuilder()._render_page_fragment(root, etree.ElementTree(root))
 
 
 def test_tei_table_renders_as_html_table(tmp_path: Path) -> None:

@@ -23,8 +23,19 @@ _ABSOLUTE_OR_EXTERNAL_PREFIXES = ("assets/", "/", "data:")
 
 
 def _resolve_image_output(url: str) -> str:
+    """Reproduit exactement la règle de resolved-asset-src dans tei_to_html.xsl.
+
+    "assets/images" est préfixé normalement, sauf si l'URL répète déjà
+    littéralement le segment "images/" (ex. url="images/fig.jpg"), auquel
+    cas ce segment n'est pas dupliqué. Les chemins du type
+    "../autre-dossier/fig.jpg", destinés à naviguer depuis assets/images
+    vers un dossier voisin sous assets/, restent inchangés.
+    """
+
     if "://" in url or url.startswith(_ABSOLUTE_OR_EXTERNAL_PREFIXES):
         return url
+    if url.startswith("images/"):
+        return f"assets/{url}"
     return f"assets/images/{url}"
 
 

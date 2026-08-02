@@ -513,6 +513,14 @@ blockquote .epigraph::before,
   color: #516173;
 }
 
+.tei-formula {
+  display: block;
+  margin: 0.6rem 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 figure {
   margin: 1.8rem 0;
   padding: 1rem;
@@ -650,6 +658,10 @@ sub.tei-sub {
 
 .tei-strikethrough {
   text-decoration: line-through;
+}
+
+.tei-uppercase {
+  text-transform: uppercase;
 }
 
 .credit-box h2 {
