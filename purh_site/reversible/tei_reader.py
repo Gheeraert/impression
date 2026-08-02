@@ -18,6 +18,15 @@ def read_tei_element(element: etree._Element) -> ElementNode:
         children.append(TextNode(element.text))
 
     for child in element:
+        # Commentaires XML et instructions de traitement (ex. <!-- ... -->) :
+        # child.tag n'est alors pas une chaîne mais une fonction usine lxml
+        # (etree.Comment / etree.PI), qui ferait échouer etree.QName() plus
+        # bas. Ce ne sont pas des éléments TEI : ignorés, mais leur tail
+        # (texte réel qui les suit) est conservé.
+        if not isinstance(child.tag, str):
+            if child.tail is not None:
+                children.append(TextNode(child.tail))
+            continue
         children.append(read_tei_element(child))
         if child.tail is not None:
             children.append(TextNode(child.tail))

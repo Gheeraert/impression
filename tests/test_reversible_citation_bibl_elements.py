@@ -50,7 +50,7 @@ def test_cit_with_quote_and_bibl_preserves_child_order() -> None:
     )
 
     assert result.diagnostics == []
-    assert "\\begin{teiCit}[type={example},xmlid={cit\\_001}]" in result.latex
+    assert "\\begin{teiCit}[type={example},xmlid={cit_001}]" in result.latex
     assert "\\begin{teiBibl}[source={\\#src1}]" in result.latex
     assert "name={cit}" not in result.latex
     assert "name={bibl}" not in result.latex

@@ -92,7 +92,7 @@ def test_real_metopes_body_fragment_round_trips() -> None:
     assert "\\teiPersName[ref={\\#pascal}]{Pascal}" in latex
     assert "\\teiTitle[level={m}]{Les Provinciales}" in latex
     assert "\\teiNote[place={foot},xmlid={n-real-001}]" in latex
-    assert "\\teiRef[target={\\#chapitre-2}]{chapitre II}" in latex
+    assert "\\teiRef[internaltarget={chapitre-2}]{chapitre II}" in latex
     assert "\\teiPb[n={12}]" in latex
     assert "\\teiLb[n={4}]" in latex
     assert "\\begin{teiQuote}[xmlid={q-real-001}]" in latex
@@ -114,9 +114,8 @@ def test_real_metopes_complex_structure_fragment_round_trips() -> None:
     assert "\\begin{teiBibl}" in latex
     assert "\\begin{teiFigure}[xmlid={fig-real-001}]" in latex
     assert "\\teiGraphic[url={port-royal.jpg},width={600},height={400}]" in latex
-    assert "\\begin{teiTable}[xmlid={tab-real-001},rows={1},cols={2}]" in latex
-    assert "\\begin{teiRow}[role={label}]" in latex
-    assert "\\begin{teiCell}" in latex
+    assert "\\begin{teiTable}[xmlid={tab-real-001},rows={1},cols={2},numcols={2}]" in latex
+    assert "\\teiRow[role={label}]{\\teiCell{Nom} & \\teiCell{Valeur avec \\teiHi[rend={italic}]{italique}}}" in latex
     assert emitted.xpath("boolean(./tei:list/tei:item[1]/tei:cit/tei:quote)", namespaces=NS)
     assert emitted.xpath("boolean(./tei:figure[@xml:id='fig-real-001']/tei:graphic[@url='port-royal.jpg'])", namespaces=NS)
     assert emitted.xpath("boolean(./tei:table[@xml:id='tab-real-001']/tei:row/tei:cell[2]/tei:hi[@rend='italic'])", namespaces=NS)

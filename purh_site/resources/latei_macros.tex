@@ -53,6 +53,12 @@
   }%
 }
 
+% <formula notation="latex"> : le contenu documentaire porte déjà ses propres
+% délimiteurs de mode mathématique (\(...\) ou \[...\]) — passthrough tel
+% quel, sans échappement, pour que LaTeX le compose réellement au lieu
+% d'afficher le code source échappé comme texte visible.
+\NewDocumentCommand{\teiFormula}{O{} +m}{#2}
+
 % Matter switches and group titles mirror the stable PURH book skeleton while
 % leaving the reversible LaTEI body unchanged.
 \newif\iflateifrontmatterstarted
@@ -91,6 +97,9 @@
 \tl_new:N \l_latei_option_url_tl
 \tl_new:N \l_latei_option_n_tl
 \tl_new:N \l_latei_option_rend_tl
+\tl_new:N \l_latei_option_xmlid_tl
+\tl_new:N \l_latei_option_internaltarget_tl
+\tl_new:N \l_latei_option_numcols_tl
 \tl_new:N \l_latei_graphic_path_tl
 \tl_new:N \l_latei_graphic_local_path_tl
 \tl_new:N \l_latei_running_title_tl
@@ -153,6 +162,9 @@
     url .tl_set:N = \l_latei_option_url_tl,
     n .tl_set:N = \l_latei_option_n_tl,
     rend .tl_set:N = \l_latei_option_rend_tl,
+    xmlid .tl_set:N = \l_latei_option_xmlid_tl,
+    internaltarget .tl_set:N = \l_latei_option_internaltarget_tl,
+    numcols .tl_set:N = \l_latei_option_numcols_tl,
     unknown .code:n = {},
   }
 \cs_new_protected:Npn \latei_extract_options:n #1
@@ -163,7 +175,38 @@
     \tl_clear:N \l_latei_option_url_tl
     \tl_clear:N \l_latei_option_n_tl
     \tl_clear:N \l_latei_option_rend_tl
+    \tl_clear:N \l_latei_option_xmlid_tl
+    \tl_clear:N \l_latei_option_internaltarget_tl
+    \tl_clear:N \l_latei_option_numcols_tl
     \keys_set:nn { latei / options } { #1 }
+  }
+% Pose une cible PDF nommée d'après le xmlid TEI, s'il est présent dans les
+% options déjà extraites par \latei_extract_options:n. Utilisé pour que les
+% ancres/citations restent atteignables depuis \lateiRenderRef (cf. cibles
+% "#id" internes) même quand l'élément lui-même n'a pas de macro de
+% sectionnement propre (qui créerait sinon sa propre destination).
+\cs_new_protected:Npn \latei_hypertarget_if_xmlid:
+  {
+    \tl_if_empty:NF \l_latei_option_xmlid_tl
+      { \hypertarget{\tl_use:N \l_latei_option_xmlid_tl}{} }
+  }
+% Ponts sans "_"/":" : \ExplSyntaxOff plus bas rend ces caractères inaptes
+% à composer un nom de macro hors de cette zone ; \teiHead et \teiCit, définis
+% après \ExplSyntaxOff, doivent donc passer par ces noms classiques.
+\NewDocumentCommand{\lateiExtractOptions}{m}
+  {
+    \latei_extract_options:n { #1 }
+  }
+\NewDocumentCommand{\lateiHypertargetIfXmlid}{}
+  {
+    \latei_hypertarget_if_xmlid:
+  }
+% Nombre de colonnes du tableau en cours (calculé côté Python, cf.
+% _table_column_count dans latex_writer.py — LaTeX ne peut pas le déduire
+% à la volée sans avoir déjà lu toutes les lignes).
+\NewDocumentCommand{\lateiTableNumCols}{}
+  {
+    \tl_use:N \l_latei_option_numcols_tl
   }
 \cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
   {
@@ -214,9 +257,13 @@
 \NewDocumentCommand{\lateiRenderRef}{O{} +m}
   {
     \latei_extract_options:n { #1 }
-    \tl_if_empty:NTF \l_latei_option_target_tl
-      { #2 }
-      { \href{\tl_use:N \l_latei_option_target_tl}{#2} }
+    \tl_if_empty:NTF \l_latei_option_internaltarget_tl
+      {
+        \tl_if_empty:NTF \l_latei_option_target_tl
+          { #2 }
+          { \href{\tl_use:N \l_latei_option_target_tl}{#2} }
+      }
+      { \hyperlink{\tl_use:N \l_latei_option_internaltarget_tl}{#2} }
   }
 \cs_new_protected:Npn \latei_figure_fallback:
   {
@@ -293,7 +340,11 @@
   }%
   }%
 }
-\NewDocumentCommand{\teiHead}{O{} +m}{\lateiRenderHead{#2}}
+\NewDocumentCommand{\teiHead}{O{} +m}{%
+  \lateiExtractOptions{#1}%
+  \lateiHypertargetIfXmlid
+  \lateiRenderHead{#2}%
+}
 
 % Apply rend values predictably, including combined values in any order. This
 % mirrors the stable renderer order: small caps / position / weight / italic.
@@ -313,6 +364,15 @@
 \NewDocumentCommand{\lateiIfRendSub}{m m m}{%
   \IfSubStr{\detokenize{#1}}{\detokenize{sub}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{indice}}{#2}{#3}}%
 }
+\NewDocumentCommand{\lateiIfRendUnderline}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{underline}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{souligne}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendStrikethrough}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{strikethrough}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{barre}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendUppercase}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{uppercase}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{majuscule}}{#2}{#3}}%
+}
 \NewDocumentCommand{\lateiHiSmallCaps}{m +m}{%
   \lateiIfRendSmallCaps{#1}{\textsc{#2}}{#2}%
 }
@@ -327,8 +387,17 @@
 \NewDocumentCommand{\lateiHiItalic}{m +m}{%
   \IfSubStr{\detokenize{#1}}{\detokenize{italic}}{\textit{#2}}{#2}%
 }
+\NewDocumentCommand{\lateiHiUnderline}{m +m}{%
+  \lateiIfRendUnderline{#1}{\underline{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiStrikethrough}{m +m}{%
+  \lateiIfRendStrikethrough{#1}{\sout{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiUppercase}{m +m}{%
+  \lateiIfRendUppercase{#1}{\MakeUppercase{#2}}{#2}%
+}
 \NewDocumentCommand{\teiHi}{O{} +m}{%
-  \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{#2}}}}%
+  \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{\lateiHiUnderline{#1}{\lateiHiStrikethrough{#1}{\lateiHiUppercase{#1}{#2}}}}}}}%
 }
 
 \NewDocumentCommand{\teiForeign}{O{} +m}{\textit{#2}}
@@ -352,6 +421,12 @@
 \NewDocumentCommand{\teiPtr}{O{}}{}
 \NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
 \NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}
+% <anchor xml:id="..."/> : marqueur de position TEI, sans contenu visible —
+% seule sa cible PDF (pour les <ref target="#..."> qui pointent dessus) compte.
+\NewDocumentCommand{\teiAnchor}{O{}}{%
+  \lateiExtractOptions{#1}%
+  \lateiHypertargetIfXmlid
+}
 
 \NewDocumentEnvironment{teiDiv}{O{} +b}{%
   \IfSubStr{#1}{type={titlePage}}{}{%
@@ -383,16 +458,56 @@
   \begin{center}#2\end{center}%
   \endgroup
 }{}
-\NewDocumentEnvironment{teiCit}{O{} +b}{#2}{}
+\NewDocumentEnvironment{teiCit}{O{} +b}{%
+  \lateiExtractOptions{#1}%
+  \lateiHypertargetIfXmlid
+  #2%
+}{}
 \NewDocumentEnvironment{teiBibl}{O{} +b}{\lateiBibliographyEntry{#2}}{}
+
+% Tableau réel (longtable/booktabs), pas une simple suite de paragraphes
+% centrés : le nombre de colonnes (numcols, calculé côté Python — cf.
+% _table_column_count) fixe le gabarit de colonnes. Les teiCell d'une ligne
+% sont déjà séparées par un "&" littéral dans la source (écrit côté Python,
+% cf. _write_row), et teiRow/teiCell sont des macros (pas des environnements) :
+% \multicolumn doit être le tout premier jeton lu par le scanner d'alignement
+% de TeX pour une cellule fusionnée (@cols>1) — même non protégée, l'envelopper
+% dans une macro (et a fortiori un environnement, qui insère un \begingroup
+% avant le corps) le rend invisible à la détection de \omit ("Misplaced
+% \omit", confirmé par reproduction isolée). \multicolumn est donc écrit tel
+% quel côté Python (cf. _write_cell) pour les cellules fusionnées ; teiCell ne
+% gère plus que la mise en forme (gras d'entête), jamais \multicolumn. Une
+% ligne d'entête (role=label/header sur la ligne, cf. TEI) reçoit
+% \toprule/\midrule ; \bottomrule ferme le tableau.
+\newif\iflateirowisheader
+\lateirowisheaderfalse
 \NewDocumentEnvironment{teiTable}{O{} +b}{%
+  \lateiExtractOptions{#1}%
   \begingroup
   \lateiSetHeadContext{table}%
-  \par\begin{center}#2\end{center}\par
+  \par\begin{center}%
+  \begin{longtable}{*{\lateiTableNumCols}{l}}
+  \toprule
+  #2%
+  \bottomrule
+  \end{longtable}%
+  \end{center}\par%
   \endgroup
 }{}
-\NewDocumentEnvironment{teiRow}{O{} +b}{#2\par}{}
-\NewDocumentEnvironment{teiCell}{O{} +b}{#2\quad}{}
+\NewDocumentCommand{\teiRow}{O{} +m}{%
+  \IfSubStr{#1}{role={label}}{\lateirowisheadertrue}{%
+    \IfSubStr{#1}{role={header}}{\lateirowisheadertrue}{\lateirowisheaderfalse}%
+  }%
+  #2%
+  \\%
+  \iflateirowisheader\midrule\lateirowisheaderfalse\fi
+}
+\NewDocumentCommand{\teiCell}{O{} +m}{%
+  \lateiExtractOptions{#1}%
+  \iflateirowisheader\bfseries\fi
+  \IfSubStr{#1}{role={label}}{\bfseries}{\IfSubStr{#1}{role={header}}{\bfseries}{}}%
+  #2%
+}
 % teiHeader is metadata, not running text. Document wrappers pass through;
 % unknown non-header elements keep their content visible rather than vanish.
 \NewDocumentEnvironment{teiElement}{O{} +b}{%

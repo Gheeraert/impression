@@ -25,8 +25,8 @@ def corrected_tei(source_xml: str, expected_latex: str, corrected_latex: str) ->
 def test_simple_text_correction_returns_to_tei() -> None:
     emitted = corrected_tei(
         '<p xmlns="http://www.tei-c.org/ns/1.0" xml:id="p_001">Ancien texte.</p>',
-        r"\teiP[xmlid={p\_001}]{Ancien texte.}",
-        r"\teiP[xmlid={p\_001}]{Nouveau texte.}",
+        r"\teiP[xmlid={p_001}]{Ancien texte.}",
+        r"\teiP[xmlid={p_001}]{Nouveau texte.}",
     )
 
     assert emitted.tag == f"{{{TEI_NS}}}p"
@@ -52,8 +52,8 @@ def test_inline_hi_text_correction_preserves_rend() -> None:
 def test_note_correction_preserves_place_and_xml_id() -> None:
     emitted = corrected_tei(
         '<p xmlns="http://www.tei-c.org/ns/1.0">Texte<note place="foot" xml:id="n_001">Ancienne note.</note>.</p>',
-        r"\teiP{Texte\teiNote[place={foot},xmlid={n\_001}]{Ancienne note.}.}",
-        r"\teiP{Texte\teiNote[place={foot},xmlid={n\_001}]{Nouvelle note.}.}",
+        r"\teiP{Texte\teiNote[place={foot},xmlid={n_001}]{Ancienne note.}.}",
+        r"\teiP{Texte\teiNote[place={foot},xmlid={n_001}]{Nouvelle note.}.}",
     )
     note = emitted.xpath("./tei:note", namespaces=NS)[0]
 
@@ -70,10 +70,10 @@ def test_head_correction_preserves_div_attributes_and_structure() -> None:
         "<head>Ancien titre</head>"
         "<p>Texte.</p>"
         "</div>",
-        "\\begin{teiDiv}[type={chapter},xmlid={ch\\_001}]\n"
+        "\\begin{teiDiv}[type={chapter},xmlid={ch_001}]\n"
         "\\teiHead{Ancien titre}\\teiP{Texte.}\n"
         "\\end{teiDiv}",
-        "\\begin{teiDiv}[type={chapter},xmlid={ch\\_001}]\n"
+        "\\begin{teiDiv}[type={chapter},xmlid={ch_001}]\n"
         "\\teiHead{Nouveau titre}\\teiP{Texte.}\n"
         "\\end{teiDiv}",
     )
@@ -88,8 +88,8 @@ def test_head_correction_preserves_div_attributes_and_structure() -> None:
 def test_controlled_attribute_correction_updates_ref_target() -> None:
     emitted = corrected_tei(
         '<p xmlns="http://www.tei-c.org/ns/1.0">Voir <ref target="#ancien">reference</ref>.</p>',
-        r"\teiP{Voir \teiRef[target={\#ancien}]{reference}.}",
-        r"\teiP{Voir \teiRef[target={\#nouveau}]{reference}.}",
+        r"\teiP{Voir \teiRef[internaltarget={ancien}]{reference}.}",
+        r"\teiP{Voir \teiRef[internaltarget={nouveau}]{reference}.}",
     )
     ref = emitted.xpath("./tei:ref", namespaces=NS)[0]
 

@@ -106,11 +106,13 @@ def _compare_element(
                 path=path,
             )
         )
-    if len(source) != len(emitted):
+    source_children = _element_children(source)
+    emitted_children = _element_children(emitted)
+    if len(source_children) != len(emitted_children):
         diagnostics.append(
             Diagnostic(
                 code="CHILD_COUNT_MISMATCH",
-                message=f"Expected {len(source)} child element(s), got {len(emitted)}.",
+                message=f"Expected {len(source_children)} child element(s), got {len(emitted_children)}.",
                 path=path,
             )
         )
@@ -118,9 +120,17 @@ def _compare_element(
     # strict=False : un décalage de longueur est déjà signalé ci-dessus via
     # CHILD_COUNT_MISMATCH ; on continue de comparer les enfants communs.
     for index, (source_child, emitted_child) in enumerate(
-        zip(source, emitted, strict=False), start=1
+        zip(source_children, emitted_children, strict=False), start=1
     ):
         _compare_element(source_child, emitted_child, _child_path(path, source_child, index), diagnostics)
+
+
+def _element_children(element: etree._Element) -> list[etree._Element]:
+    """Enfants élément de element, en excluant commentaires et instructions
+    de traitement (tag n'est alors pas une chaîne) : read_tei_element les
+    ignore déjà de la même façon, ils ne doivent donc pas être comptés
+    comme une perte de contenu lors de la comparaison du round-trip."""
+    return [child for child in element if isinstance(child.tag, str)]
 
 
 def _element_path(element: etree._Element) -> str:

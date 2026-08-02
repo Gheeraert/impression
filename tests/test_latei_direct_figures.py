@@ -79,7 +79,7 @@ def test_latei_direct_figure_body_remains_reversible(missing_figure_export: Reve
 
     assert missing_figure_export.success is True
     assert missing_figure_export.diagnostics_count == 0
-    assert r"\begin{teiFigure}[xmlid={fig\_001}]" in body
+    assert r"\begin{teiFigure}[xmlid={fig_001}]" in body
     assert r"\teiHead{Figure test}" in body
     assert r"\teiGraphic[url={missing/path\_with\_spaces/figure\_001.jpg}]" in body
     assert r"\teiP[rend={caption}]" in body

@@ -74,7 +74,7 @@ def test_latei_direct_inline_body_remains_reversible(inline_export: ReversibleEx
     assert r"\teiHi[rend={sub}]" in body
     assert r"\teiRef[target={https://example.org?a=1\&b=2}]" in body
     assert r"\teiQ{citation}" in body
-    assert r"\teiNote[place={foot},xmlid={n\_inline}]" in body
+    assert r"\teiNote[place={foot},xmlid={n_inline}]" in body
     assert compare_tei_elements(source, emitted) == []
 
 
