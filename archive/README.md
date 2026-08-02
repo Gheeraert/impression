@@ -33,3 +33,9 @@ se référer à `../README.md`, `../LATEI_LAYOUT_COMMANDS.md`,
 - `AUDIT_TEMPLATE_PURH.md`, `AUDIT_TEMPLATES_PURH.md`
   — audits exploratoires de templates LaTeX antérieurs au préambule PURH
   actuel (`purh_site/latei_preamble.py`).
+- `AUDIT_CODEX_COMPLET.md`, `AUDIT_CODE_ET_RENDUS.md`, `audit.md`
+  — audits généraux datés du 11 et du 12 juillet 2026, antérieurs à la
+  refactorisation de `SiteBuilder` (extraction de `site_credits.py`,
+  `site_zotero.py`, `site_quality.py`, `citation.py`), au câblage du
+  manifeste des ressources (`site_asset_manifest.py`) et à la mise en
+  place de la CI/du lint ruff.
