@@ -546,7 +546,7 @@ class SiteBuilder:
         page_group = self._find_page_group(tree, page.node_id)
         if page_group is None:
             return
-        fragment_html = self._render_page_fragment(page_group)
+        fragment_html = self._render_page_fragment(page_group, tree)
         nav_html = self._render_sidebar(nav, current_file_name=page.file_name)
         page_header = self._render_page_header(page, theme_assets)
         credits = render_credit_block(page, site_meta)
@@ -587,11 +587,18 @@ class SiteBuilder:
         matches = tree.xpath(f"//*[@xml:id='{node_id}']", namespaces=NSMAP)
         return matches[0] if matches else None
 
-    def _render_page_fragment(self, page_group: etree._Element) -> str:
+    def _render_page_fragment(self, page_group: etree._Element, tree: etree._ElementTree) -> str:
         cloned = copy.deepcopy(page_group)
         self._strip_redundant_title_pages(cloned)
         self._renumber_fragment_notes(cloned)
-        fragment_tree = etree.ElementTree(cloned)
+        fragment_root = etree.Element(f"{{{NSMAP['tei']}}}fragment-root", nsmap={"tei": NSMAP["tei"]})
+        tags_decl = tree.xpath(
+            "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:tagsDecl", namespaces=NSMAP
+        )
+        if tags_decl:
+            fragment_root.append(copy.deepcopy(tags_decl[0]))
+        fragment_root.append(cloned)
+        fragment_tree = etree.ElementTree(fragment_root)
         result = self.fragment_xslt(
             fragment_tree,
             assets_image_base=etree.XSLT.strparam('assets/images'),
