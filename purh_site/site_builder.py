@@ -12,6 +12,7 @@ from lxml import html as lxml_html
 
 from .config import BuildConfig
 from .normalizer import NormalizeReport, TeiNormalizer
+from .site_asset_manifest import build_asset_manifest, write_asset_manifest
 from .site_credits import render_credit_block
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
 from .site_quality import run_site_quality_checks
@@ -356,6 +357,8 @@ class SiteBuilder:
         report_lines.extend(self._pdf_site_report_lines(theme_assets, pdf_artifacts))
         if back_cover_source:
             report_lines.append(f"Quatrième de couverture : {back_cover_source}")
+        asset_manifest = build_asset_manifest(config.output_dir, tree, theme_assets, pdf_artifacts)
+        report_lines.extend(write_asset_manifest(config.output_dir, asset_manifest))
         quality_issues = run_site_quality_checks(config.output_dir)
         report_lines.extend(["", "Contrôle qualité du site :"])
         if quality_issues:
