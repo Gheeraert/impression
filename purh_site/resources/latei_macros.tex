@@ -452,6 +452,14 @@
 }{}
 \NewDocumentCommand{\teiItem}{O{} +m}{\item #2}
 \NewDocumentEnvironment{teiQuote}{O{} +b}{\begin{PurhBlockQuote}#2\end{PurhBlockQuote}}{}
+% <quote> utilisée en cours de phrase (dans <p>/<item>, ou n'importe où
+% dans <note> — cf. _write_quote côté Python, qui décide du choix entre
+% teiQuote et teiQuoteInline) : \teiQuote/PurhBlockQuote force un
+% \begin{quote}, qui coupe le paragraphe même en plein milieu d'une phrase.
+% \teiQuoteInline reste une macro simple (aucun \begingroup ni saut de
+% paragraphe) et ajoute les guillemets via \enquote (csquotes), comme
+% \teiQ déjà.
+\NewDocumentCommand{\teiQuoteInline}{O{} +m}{\enquote{#2}}
 \NewDocumentEnvironment{teiFigure}{O{} +b}{%
   \begingroup
   \lateiSetHeadContext{figure}%

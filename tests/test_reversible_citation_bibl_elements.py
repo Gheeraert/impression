@@ -59,6 +59,81 @@ def test_cit_with_quote_and_bibl_preserves_child_order() -> None:
     assert result.emitted.xpath("boolean(./tei:bibl[@source='#src1'])", namespaces=NS)
 
 
+def test_standalone_block_quote_keeps_block_environment_and_straight_quotes() -> None:
+    # A <cit>/<quote> standing alone (not inside <p>/<item>/<note>) is a set-off
+    # block quotation: no automatic marks, indentation carries the meaning —
+    # matching the HTML XSLT's plain tei:cit -> div.cit-block (not span).
+    result = run(
+        '<div xmlns="http://www.tei-c.org/ns/1.0"><cit><quote>"Une citation."</quote></cit></div>'
+    )
+
+    assert result.diagnostics == []
+    assert "\\begin{teiQuote}" in result.latex
+    assert "teiQuoteInline" not in result.latex
+    assert result.emitted.xpath("string(.//tei:quote)", namespaces=NS) == '"Une citation."'
+
+
+def test_inline_quote_in_paragraph_uses_enquote_and_stays_inline() -> None:
+    # <cit>/<quote> used mid-sentence inside <p> must not force LaTeX's
+    # block quote environment (it breaks the paragraph even spliced inside
+    # a \teiP{...} argument) — matching the HTML XSLT's tei:p/tei:cit ->
+    # span.cit-inline (not div.cit-block). A redundant straight quote typed
+    # by hand around the whole quoted text is stripped since \enquote
+    # already supplies proper guillemets and would otherwise double up.
+    result = run(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Comme le disait Jean, '
+        '<cit xml:id="cit1"><quote>"le renard... (La Fontaine)"</quote></cit>, blah.</p>'
+    )
+    quote = result.emitted.xpath(".//tei:quote", namespaces=NS)[0]
+
+    assert "\\teiQuoteInline{le renard... (La Fontaine)}" in result.latex
+    assert "\\begin{teiQuote}" not in result.latex
+    # Stripping the redundant straight quotes is a deliberate, one-way
+    # normalization (matching the tolerated-whitespace diagnostics already
+    # used throughout this pipeline) — reported, not silently discarded.
+    assert len(result.diagnostics) == 1
+    assert result.diagnostics[0].code == "TEXT_MISMATCH"
+    assert quote.text == "le renard... (La Fontaine)"
+
+
+def test_inline_quote_in_list_item_stays_inline() -> None:
+    result = run(
+        '<list xmlns="http://www.tei-c.org/ns/1.0"><item>Comme le disait Jean, '
+        '<cit><quote>"le renard..."</quote></cit>, blah.</item></list>'
+    )
+
+    assert "\\teiQuoteInline{le renard...}" in result.latex
+    assert "\\begin{teiQuote}" not in result.latex
+
+
+def test_inline_quote_anywhere_inside_note_stays_inline() -> None:
+    # note// in the XSLT means any depth, not just a direct child — an extra
+    # wrapping element between <note> and <cit> must still count as inline.
+    result = run(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte'
+        '<note><hi rend="italic"><cit><quote>"Citee"</quote></cit></hi></note>.</p>'
+    )
+
+    assert "\\teiQuoteInline{Citee}" in result.latex
+    assert "\\begin{teiQuote}" not in result.latex
+
+
+def test_inline_quote_only_strips_matching_straight_quote_pair() -> None:
+    # A single stray straight quote on only one side is ambiguous (could be
+    # real content, e.g. a quote-within-the-quote) — leave it untouched
+    # rather than guess.
+    result = run(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">'
+        '<cit><quote>"Guillemet ouvrant seul</quote></cit>'
+        "</p>"
+    )
+    quote = result.emitted.xpath(".//tei:quote", namespaces=NS)[0]
+
+    assert '\\teiQuoteInline{"Guillemet ouvrant seul}' in result.latex
+    assert quote.text == '"Guillemet ouvrant seul'
+    assert result.diagnostics == []
+
+
 def test_bibl_with_structured_children_keeps_children_and_specialized_bibl_macros() -> None:
     result = run(
         '<bibl xmlns="http://www.tei-c.org/ns/1.0" xml:lang="fr" type="book">'
