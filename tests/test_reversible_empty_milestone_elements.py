@@ -38,6 +38,40 @@ def test_lb_n_round_trips_with_empty_macro() -> None:
     assert "{}" not in result.latex
 
 
+def test_lb_followed_by_elision_bracket_round_trips() -> None:
+    # Real bug, found on a genuine Metopes book: a scholarly elision bracket
+    # ("[…]") directly after <lb/> with no separating space made the reader
+    # mistake the escaped bracket for \teiLb's own option list ("Expected
+    # '=' after option key"), then — once "[" was escaped as literal "{[}"
+    # — for braced content passed to it ("must not have braced content").
+    result = run(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">Texte<lb/>[…] la suite.</p>'
+    )
+
+    assert result.diagnostics == []
+    assert result.emitted.xpath("string(.)") == "Texte[…] la suite."
+
+
+def test_bare_lb_glued_to_following_word_round_trips() -> None:
+    # Real bug, found on a genuine Metopes book (poetry, no space before the
+    # next line): "\teiLb" is a control WORD — TeX consumes every letter
+    # immediately following it into the control sequence's own name, so a
+    # bare \teiLb directly before "Parce" becomes the bogus, undefined
+    # "\teiLbParce" ("Undefined control sequence") unless something that
+    # isn't a letter (here "{}") stands between them.
+    result = run(
+        '<p xmlns="http://www.tei-c.org/ns/1.0">'
+        "Et j’aime l’ortie,<lb/>Parce qu’on les hait ;<lb/>Et que rien ne leur plaît"
+        "</p>"
+    )
+
+    assert result.diagnostics == []
+    assert r"\teiLb{}Parce" in result.latex
+    assert "".join(result.emitted.itertext()) == (
+        "Et j’aime l’ortie,Parce qu’on les hait ;Et que rien ne leur plaît"
+    )
+
+
 def test_pb_n_round_trips_with_empty_macro() -> None:
     result = run('<pb xmlns="http://www.tei-c.org/ns/1.0" n="12" facs="page12.png"/>')
 

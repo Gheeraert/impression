@@ -668,9 +668,32 @@ class App(ttk.Frame):
         except Exception as exc:
             self._log(f"Erreur : {exc}")
             self._log(traceback.format_exc())
-            messagebox.showerror("Erreur pendant le build", str(exc))
+            log_path = self._write_build_error_log(output_dir, exc)
+            messagebox.showerror(
+                "Erreur pendant le build",
+                _truncate_for_dialog(str(exc), log_path),
+            )
         finally:
             self._close_build_wait_dialog(wait_dialog)
+
+    def _write_build_error_log(self, output_dir: Path, exc: Exception) -> Path | None:
+        """Conserve le détail complet de l'erreur sur disque.
+
+        Le journal affiché dans l'interface disparaît si la fenêtre se ferme ;
+        et un message d'erreur trop long (des dizaines de milliers de
+        caractères pour un livre à nombreux chapitres, par ex. des xml:id
+        dupliqués partout) reste peu lisible dans une boîte de dialogue. Le
+        détail complet va donc toujours ici, à un emplacement stable que
+        l'utilisatrice peut retrouver même si la boîte de dialogue a été
+        fermée trop vite ou n'a pas semblé s'afficher correctement.
+        """
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            log_path = output_dir / "build_error.log"
+            log_path.write_text(f"{exc}\n\n{traceback.format_exc()}", encoding="utf-8")
+            return log_path
+        except Exception:
+            return None
 
     def _show_build_wait_dialog(self) -> tk.Toplevel:
         if self.build_button is not None:
@@ -796,6 +819,23 @@ class App(ttk.Frame):
         self.log.insert("end", text + "\n")
         self.log.see("end")
         self.log.configure(state="disabled")
+
+
+_MAX_DIALOG_MESSAGE_LENGTH = 2000
+
+
+def _truncate_for_dialog(message: str, log_path: Path | None) -> str:
+    """Cap an error message for display in a modal dialog.
+
+    A message with no practical bound (e.g. a duplicate-xml:id report across
+    a many-chapter book) is not something a dialog box should ever have to
+    render whole — the full text is always in build_error.log regardless."""
+    if len(message) <= _MAX_DIALOG_MESSAGE_LENGTH:
+        pointer = f"\n\nDétail complet : {log_path}" if log_path is not None else ""
+        return message + pointer
+    truncated = message[:_MAX_DIALOG_MESSAGE_LENGTH]
+    pointer = f"\n\n… (message tronqué). Détail complet : {log_path}" if log_path is not None else "\n\n… (message tronqué)."
+    return truncated + pointer
 
 
 def expected_latei_package_artifacts(result) -> list[Path]:

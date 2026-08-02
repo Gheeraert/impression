@@ -70,6 +70,13 @@ def test_reads_ref_target_and_unescapes_option_value() -> None:
     assert text_content(ref) == "reference"
 
 
+def test_reads_lbrack_rbrack_as_literal_brackets() -> None:
+    node = read_latex_document(r"\teiP{Texte \lbrack{}…\rbrack{} la suite.}")
+
+    assert isinstance(node, ElementNode)
+    assert text_content(node) == "Texte […] la suite."
+
+
 def test_reads_inline_note_with_place_and_xml_id() -> None:
     node = read_latex_document(r"\teiP{Une note\teiNote[place={foot},xmlid={n\_001}]{Texte}.}")
     note = node.children[1]

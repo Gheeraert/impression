@@ -106,6 +106,12 @@ KNOWN_TEXT_ESCAPES = {
     r"\&": "&",
     r"\_": "_",
     r"\#": "#",
+    # Written by latex_writer.escape_latex for a literal "["/"]" in prose:
+    # ordinary control words (like \textbackslash{}), chosen so neither
+    # starts with "{" or "[" — either would be ambiguous with an option
+    # list or an empty macro's "must not have braced content" check.
+    r"\lbrack{}": "[",
+    r"\rbrack{}": "]",
 }
 
 
@@ -180,7 +186,13 @@ class _Parser:
                 attrs["target"] = f"#{internal_target}"
         if macro_name in EMPTY_MACRO_TO_ELEMENT:
             if self.pos < len(self.latex) and self.latex[self.pos] == "{":
-                raise LatexParseError(f"Empty controlled macro \\{macro_name} must not have braced content.")
+                # A bare "{}" here isn't content — it's the anti-gluing
+                # terminator the writer adds to keep a following letter
+                # from being swallowed into the control word's own name
+                # (see _empty_macro); genuine content is still rejected.
+                content = self._read_group()
+                if content:
+                    raise LatexParseError(f"Empty controlled macro \\{macro_name} must not have braced content.")
             return make_element_node(EMPTY_MACRO_TO_ELEMENT[macro_name], attrs, [], namespace=TEI_NS)
         element_name = MACRO_TO_ELEMENT[macro_name]
         if self.pos >= len(self.latex) or self.latex[self.pos] != "{":
