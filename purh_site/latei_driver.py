@@ -195,6 +195,38 @@ def _monofile_section(label: str) -> str:
     return f"% {bar}\n% {label}\n% {bar}"
 
 
+# Every family of auxiliary file a LuaLaTeX run for this jobname could have
+# left behind — including from a *previous, unrelated* document that
+# happened to compile under the same jobname/output directory before.
+_LATEI_AUX_SUFFIXES = (
+    ".aux", ".toc", ".out", ".lof", ".lot", ".bbl", ".bcf", ".fls",
+    ".fdb_latexmk", ".synctex.gz", ".run.xml", ".idx", ".ilg", ".ind",
+)
+
+_RERUN_HINT = "Rerun to get"
+
+
+def _purge_stale_latei_aux_files(output_dir: Path, jobname: str) -> None:
+    """Delete this jobname's own leftover aux-family files before compiling.
+
+    \\tableofcontents (and hyperref's bookmarks/cross-references) are
+    resolved from whatever *.toc/*.aux already sits on disk when a pass
+    starts, not from the current document's own content — that file is
+    only overwritten at the very end of a pass. A single \\halt-on-error
+    LuaLaTeX pass never runs long enough to reach that point if anything
+    goes wrong, so a stale file from an earlier, different document under
+    the same jobname can survive indefinitely and get silently bundled
+    into a PDF that otherwise looks like a successful, fresh build (real
+    case: a Beautés vitales table of contents appearing inside a Dissimuler
+    pour mieux régner PDF). Removing them here makes every compile start
+    from a genuinely clean slate regardless of history.
+    """
+    for suffix in _LATEI_AUX_SUFFIXES:
+        stale = output_dir / f"{jobname}{suffix}"
+        if stale.exists():
+            stale.unlink()
+
+
 def compile_latei_pdf(
     main_tex_path: Path,
     pdf_path: Path,
@@ -202,8 +234,18 @@ def compile_latei_pdf(
     log_path: Path | None = None,
     latex_engine: str = "lualatex",
     timeout_seconds: int = 120,
+    passes: int = 2,
 ) -> LateiPdfResult:
-    """Compile an experimental LaTEI driver if the configured engine exists."""
+    """Compile an experimental LaTEI driver if the configured engine exists.
+
+    Runs at least twice: \\tableofcontents and hyperref's cross-references/
+    bookmarks are only correct once a pass can read a .toc/.aux file this
+    same compilation itself just wrote — a single pass can only ever show
+    whatever was on disk *before* it started (nothing, or a stale file from
+    an earlier document; see _purge_stale_latei_aux_files). A further pass
+    is added, up to `passes`, if LaTeX's own rerunfilecheck reports it is
+    still not converged.
+    """
     main_tex_path = Path(main_tex_path)
     pdf_path = Path(pdf_path)
     log_path = Path(log_path) if log_path is not None else pdf_path.with_name(f"{pdf_path.stem}_build.log")
@@ -226,6 +268,8 @@ def compile_latei_pdf(
             message=message,
         )
 
+    _purge_stale_latei_aux_files(pdf_path.parent, pdf_path.stem)
+
     command = [
         engine_path,
         "-interaction=nonstopmode",
@@ -236,55 +280,83 @@ def compile_latei_pdf(
         main_tex_path.resolve().as_posix(),
     ]
     tex_cache_dir = pdf_path.parent / "latei_tex_cache"
+    # luaotfload keeps its own persistent font-name database inside this
+    # cache (rebuilt from the system's currently installed fonts only the
+    # first time it is used) — reusing an old one from an earlier compile
+    # in the same output directory means a font installed *after* that
+    # first compile (real case: Chaparral Pro's italic face) stays
+    # invisible to fontspec's automatic \setmainfont shape lookup, with no
+    # error — \textit silently falls back to upright instead of failing
+    # loudly. Deleting it before every compile forces a fresh scan.
+    shutil.rmtree(tex_cache_dir, ignore_errors=True)
     tex_cache_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     tex_cache_path = str(tex_cache_dir.resolve())
     env["TEXMFVAR"] = tex_cache_path
     env["TEXMFCACHE"] = tex_cache_path
-    try:
-        process = subprocess.run(
-            command,
-            cwd=pdf_path.parent,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=timeout_seconds,
-            check=False,
-            env=env,
-        )
-    except subprocess.TimeoutExpired as exc:
-        message = f"LaTEI PDF compilation timed out after {timeout_seconds} seconds."
-        _write_latei_log(
-            log_path,
-            command=command,
-            stdout=exc.stdout or "",
-            stderr=exc.stderr or "",
-            returncode=None,
-            message=message,
-        )
-        return LateiPdfResult(
-            pdf_path=pdf_path,
-            log_path=log_path,
-            success=False,
-            message=message,
-        )
 
+    passes = max(passes, 1)
+    process: subprocess.CompletedProcess[str] | None = None
+    pass_number = 0
+    while pass_number < passes:
+        pass_number += 1
+        try:
+            process = subprocess.run(
+                command,
+                cwd=pdf_path.parent,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=timeout_seconds,
+                check=False,
+                env=env,
+            )
+        except subprocess.TimeoutExpired as exc:
+            message = f"LaTEI PDF compilation timed out after {timeout_seconds} seconds (pass {pass_number}/{passes})."
+            _write_latei_log(
+                log_path,
+                command=command,
+                stdout=exc.stdout or "",
+                stderr=exc.stderr or "",
+                returncode=None,
+                message=message,
+            )
+            return LateiPdfResult(
+                pdf_path=pdf_path,
+                log_path=log_path,
+                success=False,
+                message=message,
+            )
+
+        if process.returncode != 0:
+            _write_latei_log(
+                log_path,
+                command=command,
+                stdout=process.stdout,
+                stderr=process.stderr,
+                returncode=process.returncode,
+                message=f"LaTEI PDF compilation failed (pass {pass_number}/{passes}).",
+            )
+            return LateiPdfResult(
+                pdf_path=pdf_path,
+                log_path=log_path,
+                success=False,
+                message=f"LaTEI PDF compilation failed; see log: {log_path}.",
+            )
+
+        if pass_number == passes and passes < 4 and _RERUN_HINT in process.stdout:
+            passes += 1
+
+    assert process is not None
     _write_latei_log(
         log_path,
         command=command,
         stdout=process.stdout,
         stderr=process.stderr,
         returncode=process.returncode,
-        message="LaTEI PDF compilation finished.",
+        message=f"LaTEI PDF compilation finished ({passes} pass(es)).",
     )
-    if process.returncode != 0:
-        return LateiPdfResult(
-            pdf_path=pdf_path,
-            log_path=log_path,
-            success=False,
-            message=f"LaTEI PDF compilation failed; see log: {log_path}.",
-        )
     if not pdf_path.exists():
         return LateiPdfResult(
             pdf_path=pdf_path,

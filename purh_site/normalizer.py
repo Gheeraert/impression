@@ -121,7 +121,41 @@ class TeiNormalizer:
         self._merge_adjacent_hi(tree, report)
         self._check_local_references(tree, report)
         self._resolve_figure_media(tree, report)
+        self._check_metadata_integrity(tree, report)
         return report
+
+    _LITERAL_MARKUP_RE = re.compile(r"</?(em|i|b|strong|sup|sub|span|br)\b[^>]*>", re.IGNORECASE)
+
+    def _check_metadata_integrity(self, tree: etree._ElementTree, report: NormalizeReport) -> None:
+        """Signale des défauts déjà présents dans la source XML, en amont de
+        ce pipeline (ex. un export d'un outil d'édition tiers) : du balisage
+        HTML resté littéral dans du texte au lieu d'être interprété (souvent
+        `<em>...</em>` dans un sous-titre), ou un·e même auteur·rice listé·e
+        plusieurs fois dans les métadonnées. Ni l'un ni l'autre ne doit être
+        corrigé ou masqué silencieusement par une rustine de rendu : ces
+        défauts sont dans la donnée elle-même et doivent remonter jusqu'à
+        l'éditrice pour correction à la source.
+        """
+        for title in tree.xpath("//tei:title | //tei:head", namespaces=NSMAP):
+            text = "".join(title.itertext())
+            if self._LITERAL_MARKUP_RE.search(text):
+                report.warnings.append(
+                    f"Balisage HTML littéral dans le texte de <{etree.QName(title).localname}> "
+                    f"à {_readable_path(title)} : {text[:100]!r}"
+                )
+
+        seen_authors: dict[str, list[etree._Element]] = defaultdict(list)
+        for author in tree.xpath("//tei:titleStmt/tei:author", namespaces=NSMAP):
+            name = re.sub(r"\s+", " ", " ".join(author.itertext())).strip()
+            if name:
+                seen_authors[name].append(author)
+        for name, elements in seen_authors.items():
+            if len(elements) > 1:
+                positions = ", ".join(_readable_path(el) for el in elements)
+                report.warnings.append(
+                    f"Auteur·rice dupliqué·e dans les métadonnées : {name!r} "
+                    f"apparaît {len(elements)} fois ({positions})."
+                )
 
     def _merge_adjacent_hi(self, tree: etree._ElementTree, report: NormalizeReport) -> None:
         """

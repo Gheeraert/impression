@@ -184,6 +184,75 @@ def test_duplicate_id_error_message_stays_bounded_with_many_referenced_duplicate
     assert "occurrences" in message
 
 
+# ---------------------------------------------------------------------------
+# Défauts de métadonnées déjà présents en amont (non introduits par ce
+# pipeline, mais qui doivent remonter jusqu'à l'éditrice au lieu d'être
+# masqués silencieusement dans le rendu final)
+# ---------------------------------------------------------------------------
+
+def test_literal_html_markup_in_subtitle_is_reported() -> None:
+    # Cas réel observé : un sous-titre exporté depuis un autre outil garde
+    # "<em>...</em>" comme texte littéral au lieu d'un balisage interprété.
+    tree = etree.ElementTree(
+        etree.fromstring(
+            b"""<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns='http://www.tei-c.org/ns/1.0'>
+  <teiHeader><fileDesc>
+    <titleStmt>
+      <title type='main'>Titre principal</title>
+      <title type='sub'>&lt;em&gt;Sous-titre&lt;/em&gt; complet</title>
+    </titleStmt>
+    <publicationStmt><p/></publicationStmt>
+    <sourceDesc><p/></sourceDesc>
+  </fileDesc></teiHeader>
+  <text><body><p>Texte.</p></body></text>
+</TEI>"""
+        )
+    )
+
+    report = TeiNormalizer().normalize(tree)
+
+    matches = [w for w in report.warnings if "Balisage HTML littéral" in w]
+    assert len(matches) == 1
+    assert "<em>Sous-titre</em>" in matches[0]
+    assert "title[2]" in matches[0]
+
+
+def test_duplicate_author_in_metadata_is_reported() -> None:
+    # Cas réel observé : la même personne listée deux fois dans titleStmt.
+    tree = etree.ElementTree(
+        etree.fromstring(
+            """<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns='http://www.tei-c.org/ns/1.0'>
+  <teiHeader><fileDesc>
+    <titleStmt>
+      <title type='main'>Titre</title>
+      <author><persName><forename>Anaïs</forename><surname>Lebreton</surname></persName></author>
+      <author><persName><forename>Anaïs</forename><surname>Lebreton</surname></persName></author>
+    </titleStmt>
+    <publicationStmt><p/></publicationStmt>
+    <sourceDesc><p/></sourceDesc>
+  </fileDesc></teiHeader>
+  <text><body><p>Texte.</p></body></text>
+</TEI>""".encode()
+        )
+    )
+
+    report = TeiNormalizer().normalize(tree)
+
+    matches = [w for w in report.warnings if "Auteur" in w and "dupliqué" in w]
+    assert len(matches) == 1
+    assert "Anaïs" in matches[0]
+    assert "Lebreton" in matches[0]
+    assert "2 fois" in matches[0]
+
+
+def test_single_author_is_not_reported_as_duplicate() -> None:
+    tree, report = normalize_document("<p>Texte.</p>")
+
+    assert not [w for w in report.warnings if "dupliqué" in w and "Auteur" in w]
+
+
 def test_existing_references_survive_normalization() -> None:
     tree, report = normalize_document(
         '<p xml:id="cible">Texte cible.</p>'
