@@ -466,6 +466,53 @@ blockquote .epigraph::before,
   content: none;
 }
 
+/* Le texte édité porte déjà, le cas échéant, ses propres guillemets ;
+   on désactive les guillemets automatiques du navigateur pour éviter
+   qu'ils ne se doublent avec ceux du texte source. */
+.cit-inline q,
+.cit-block q {
+  quotes: none;
+}
+
+.verse-line {
+  position: relative;
+}
+
+/* Numéro de vers en marge, hors du flux de lecture. */
+.verse-line > .tei-num:first-child {
+  position: absolute;
+  right: 100%;
+  margin-right: 0.9rem;
+  font-size: 0.85em;
+  color: #7c8a99;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.caesura {
+  display: inline-block;
+  width: 1em;
+}
+
+.speaker {
+  margin: 0 0 0.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.stage-direction {
+  margin: 0 0 0.72rem;
+  font-style: italic;
+  color: #516173;
+}
+
+.stage-direction-inline {
+  font-style: italic;
+  color: #516173;
+}
+
 figure {
   margin: 1.8rem 0;
   padding: 1rem;

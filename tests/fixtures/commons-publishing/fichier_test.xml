@@ -1,0 +1,916 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://www.lodel.org/ns/tei/commons-publishing/1.0.0/commons-publishing-openedition.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title type="main">Titre principal du document</title>
+				<title type="sup">Surtitre</title>
+				<title type="sub">Sous-titre</title>
+				<title type="trl" xml:lang="en">English Translated Title</title>
+				<author role="aut"> 
+					<persName>
+						<forename>Prénom_1</forename>
+						<surname>Nom_1</surname>
+					</persName>
+					<idno type="ORCID">0000-0000-0000-0000</idno>
+					<idno type="IDREF">111222333</idno>
+					<affiliation>
+						<orgName>CNRS</orgName>
+					<!--	<idno type="ROR">02feahw73</idno>
+						<ref target="URL" type="site">http://wwtrlw.cnrs.fr</ref>
+					-->
+					</affiliation>
+					<note type="biography">
+						<p>Premier paragraphe de biographie de l'auteur <hi rend="italic">(peut contenir des mise en forme)</hi></p>
+						<p>Deuxième paragraphe</p>
+					</note>
+					<email>prenom_1.nom_1@cnrs.fr</email>
+				</author>
+				<author role="aut">
+					<name>Prénom_2 Nom_2</name>
+				</author>
+				<editor role="trl">
+					<persName>
+						<forename>Prénom_traducteur</forename>
+						<surname>Nom_traducteur</surname>
+					</persName>
+					<idno type="IDREF">000000000</idno>
+					<affiliation><orgName>Université Aix-Marseille</orgName></affiliation>
+				</editor>
+				<editor role="edt">
+					<persName>
+						<forename>Prénom_éditeur_scientifique</forename>
+						<surname>Nom_éditeur_scientifique</surname>
+					</persName>
+				</editor>
+				<editor role="fld"><!-- OpenEdition Journals seulement -->
+					<persName>
+						<forename>Prénom_directeur_de_fouille_archéologique</forename>
+						<surname>Nom_directeur_de_fouille_archéologique</surname>
+					</persName>
+				</editor>
+				<editor role="ctb">
+					<persName>
+						<forename>Prénom_collaborateur</forename>
+						<surname>Nom_collaborateur</surname>
+					</persName>
+				</editor>
+				<funder> <!-- Crossref Funder Registry-->
+					<idno type="funder_registry">10.13039/501100001871</idno>
+					<orgName type="funder_registry">Fundação para a Ciência e a Tecnologia</orgName>
+					<idno type="funder_registry" subtype="grant_number">PTDC/2006</idno><!-- Texte libre -->
+				</funder>
+			</titleStmt>            
+			<publicationStmt>
+				<publisher>Nom de l'éditeur</publisher><!-- export TEI seulement -->
+				<distributor>OpenEdition</distributor><!-- export TEI seulement -->
+				
+				<date type="received">2019-06-01</date><!-- OpenEdition Journals seulement -->
+				<date type="accepted">2020-01-01</date><!-- OpenEdition Journals seulement -->
+				<date type="published">2021-02-01</date><!-- export TEI seulement -->
+				<idno type="documentnumber">108</idno>
+				<idno type="DOI">10.4000/remi.7777</idno><!-- export TEI seulement -->
+				<idno type="URL">https://journals.openedition.org/remi/7777</idno><!-- export TEI seulement -->
+				<availability><!-- export TEI seulement -->
+					<licence target="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC-BY-NC-ND-4.0</licence>
+				</availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct type="chapter">
+					<analytic>
+						<title level="a" type="main">Titre principal du document</title>
+						<title level="a" type="sup">Surtitre</title>
+						<title level="a" type="sub">Sous-titre</title>
+						<title level="a" type="trl" xml:lang="en">English Translated Title</title>
+						<author role="aut"> 
+							<persName>
+								<forename>Prénom_1</forename>
+								<surname>Nom_1</surname>
+							</persName>
+							<idno type="ORCID">0000-0000-0000-0000</idno>
+							<idno type="IDREF">111222333</idno>
+							<affiliation>
+								<orgName>CNRS</orgName>
+							</affiliation>
+							<note type="biography">
+								<p>Premier paragraphe de biographie de l'auteur <hi rend="italic">(peut contenir des mise en forme)</hi></p>
+								<p>Deuxième paragraphe</p>
+							</note>
+							<email>prenom_1.nom_1@cnrs.fr</email>
+						</author>
+						<author role="aut">
+							<name>Prénom_2 Nom_2</name>
+						</author>
+						<editor role="trl">
+							<persName>
+								<forename>Prénom_traducteur</forename>
+								<surname>Nom_traducteur</surname>
+							</persName>
+							<idno type="IDREF">000000000</idno>
+							<affiliation><orgName>Université Aix-Marseille</orgName></affiliation>
+						</editor>
+						<editor role="edt">
+							<persName>
+								<forename>Prénom_éditeur_scientifique</forename>
+								<surname>Nom_éditeur_scientifique</surname>
+							</persName>
+						</editor>
+						<editor role="fld">
+							<persName>
+								<forename>Prénom_directeur_de_fouille_archéologique</forename>
+								<surname>Nom_directeur_de_fouille_archéologique</surname>
+							</persName>
+						</editor>
+						<editor role="ctb">
+							<persName>
+								<forename>Prénom_collaborateur</forename>
+								<surname>Nom_collaborateur</surname>
+							</persName>
+						</editor>
+					</analytic>
+					<monogr>
+						<title level="m">Titre du livre dans lequel le chapitre est paru</title>
+						<idno type="pISBN">ISBN de l'édition papier du livre</idno>
+						<idno type="eISBN">ISBN de l'édition électronique du livre</idno>
+						<idno type="DOI" subtype="book">DOI du livre</idno>
+						<idno type="URL" subtype="book">URL du livre</idno>
+						<imprint>
+							<publisher>Nom de l'éditeur</publisher>
+							<biblScope unit="page">13-22</biblScope>
+							<date type="published">2021</date>
+						</imprint>
+					</monogr>
+					<series >
+						<title level="s">Titre de la collection dans laquelle est paru le livre</title>
+						<idno type="pISSN">ISSN de la collection</idno>
+						<idno type="URL">URL de la collection</idno>
+					</series>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.0.0" ident="circe">
+					<label>Nom de l'application qui a servi à produire ce fichier</label>
+					<desc>Description de l'application</desc>
+					<ref target="https://url_source_app"></ref>
+				</application>
+			</appInfo>
+			<tagsDecl>
+				<rendition xml:id="rendition_list1" scheme="css">list-style-type:upper-roman</rendition>
+				<rendition xml:id="rendition_list2" scheme="css">list-style-type:decimal</rendition>
+				<rendition xml:id="rendition_list3" scheme="css">list-style-type:lower-alpha</rendition>
+				<rendition xml:id="rendition_list4" scheme="css">list-style-type:upper-alpha</rendition>
+				<rendition xml:id="rendition_list5" scheme="css">list-style-type:lower-roman</rendition>
+				<rendition xml:id="rendition_list6" scheme="css">list-style-type:disc</rendition>
+				<rendition xml:id="rendition_list7" scheme="css">list-style-type:circle</rendition>
+				<rendition xml:id="rendition_list8" scheme="css">list-style-type:square</rendition>
+				<rendition scheme="css" xml:id="Cell">border-top:2.25pt solid #000000; border-right:0.5pt
+					solid #ffffff; border-bottom:1pt solid #93c571; border-left:1pt solid #93c571; </rendition>
+				<rendition xml:id="rtl" scheme="css">direction:rtl;</rendition>
+			</tagsDecl>
+		</encodingDesc>
+		<profileDesc>
+			<langUsage>
+				<language ident="fr-FR"/>
+			</langUsage>
+			<textClass>
+				<keywords scheme="keyword" xml:lang="fr">
+					<list >
+						<item>humanités numériques</item>
+						<item>politique</item>
+						<item>science</item>
+					</list>
+				</keywords>
+				<keywords scheme="keyword" xml:lang="en">
+					<list>
+						<item>digital humanities</item>
+						<item>political</item>
+						<item>science</item>
+					</list>
+				</keywords>
+				<!-- d'autres langues sont supportées pour les keywords -->	
+				<keywords scheme="geography">
+					<list>
+						<item>Paris</item>
+						<item>Texas</item>
+					</list>
+				</keywords>
+				<keywords scheme="chronology">
+					<list>
+						<item>XIXe siècle</item>
+					</list>
+				</keywords>
+				<keywords scheme="subject">
+					<list>
+						<item>famille</item>
+					</list>
+				</keywords>
+				<keywords scheme="excavationyear"><!-- OpenEdition Journals seulement -->
+					<list>
+						<item>2012</item>
+					</list>
+				</keywords>
+				
+				<keywords scheme="work"><!-- OpenEdition Journals seulement -->
+					<list>
+						<item>Titre d'une oeuvre</item>
+					</list>
+				</keywords>
+				<keywords scheme="propernoun"><!-- OpenEdition Journals seulement -->
+					<list>
+						<item>Nom propre</item>
+					</list>
+				</keywords>
+				<keywords scheme="disciplines">
+					<list>
+						<item>Anthropologie</item>
+					</list>
+				</keywords>
+				<keywords scheme="personcited">
+					<list>
+						<item>
+							<persName>
+								<forename>Prénom_Personne_citée</forename>
+								<surname>Nom_Personne_citée</surname>
+							</persName>
+						</item>
+					</list>
+				</keywords>
+				<!--Exemple d'indexation Référentiel Pactols / OpenEdition Journals seulement -->
+				<keywords scheme="pactolssubjects">
+					<term ref="https://ark.frantiq.fr/ark:/26678/pcrtNb90Egda4H" >
+						<term xml:lang="en">death</term>
+						<term xml:lang="nl">dood</term>
+						<term xml:lang="fr">mort</term>
+						<term xml:lang="it">morte</term>
+						<term xml:lang="es">muerte</term>
+						<term xml:lang="de">Tod</term>
+						<term xml:lang="ar">موت</term>
+					</term>
+					<term    ref="https://ark.frantiq.fr/ark:/26678/pcrtsIm3RuNMGu">
+						<term xml:lang="fr">nécropole</term>
+						<term xml:lang="it">necropoli</term>
+						<term xml:lang="en">necropolis</term>
+						<term xml:lang="es">necrópolis</term>
+						<term xml:lang="nl">necropool</term>
+						<term xml:lang="de">Nekropole</term>
+						<term xml:lang="ar">مدينة الموتى</term>
+					</term>
+				</keywords>
+				<keywords scheme="pactolschronology">
+					<term ref="https://ark.frantiq.fr/ark:/26678/crtxhXbaDgYSc">
+						<term xml:lang="fr">périodisation</term>
+						<term xml:lang="nl">periodisering</term>
+						<term xml:lang="de">Periodisierung</term>
+						<term xml:lang="es">periodización</term>
+						<term xml:lang="en">periodization</term>
+						<term xml:lang="it">periodizzazione</term>
+					</term>
+				</keywords>
+				<!-- valeur de l'attribut scheme possible pour Pactols
+					- "pactolssubjects"
+					- "pactolsplaces"
+					- "pactolsanthroponymy"
+					- "pactolsworks"
+					- "pactolschronology"
+					- "pactolspeoples"
+					- "pactolstypeop"
+				-->
+			</textClass>
+		</profileDesc>
+	</teiHeader>
+
+	<text>
+		
+		<front>
+			<div type="abstract" xml:lang="fr">
+				<p>Résumé en français, avec <hi rend="italic">des mises en forme</hi>.</p>
+			</div>
+			<div type="abstract" xml:lang="en">
+				<p>English abstract, several paragraphs</p>
+				<p>Second paragraph</p>
+			</div>
+			<note type="aut">
+				<p>Note de l’auteur, premier paragraphe.</p>
+				<p>Note de l’auteur, second paragraphe.</p>
+			</note>
+			<note type="trl">
+				<p>Note du traducteur</p>
+			</note>
+			<note type="pbl">
+				<p>Note de l’éditeur, de la rédaction.</p>
+			</note>
+			<div type="correction">
+				<p>Erratum, premier paragraphe.</p>
+				<p>Erratum, second paragraphe.</p>
+			</div>
+			<div type="ack">
+				<p>Remerciements.</p>
+			</div>
+			<div type="dedication">
+				<p>Dédicace, premier paragraphe.</p>
+				<p>Dédicace, second paragraphe.</p>
+			</div>
+			<div type="reviewed"><!-- OpenEdition Journals seulement -->
+				<listBibl>
+					<bibl type="display">Darío G. <hi rend="small-caps">Barriera</hi>, Ouvrir des portes sur la terre. <hi rend="italic">Microanalyse de la construction d’un espace politique. Santa Fe (1573-1640)</hi>, trad. de François <hi rend="small-caps">Godicheau</hi>, Toulouse, Presses Universitaires du Midi, 2016, 527 p.
+					</bibl>
+					<bibl type="semantic">
+						<author>
+							<persName>
+								<forename>Darío G.</forename>
+								<surname>Barriera</surname>
+							</persName>
+						</author>
+						<title>Microanalyse de la construction d’un espace politique. Santa Fe (1573-1640)</title>
+						<date>2016</date>
+					</bibl>	
+				</listBibl>
+				<listBibl>
+					<bibl type="display">Franz Kafka, <hi rend="italic">La métaporphose</hi> [1938], trad. de l'allemand par Alexandre Vialatte, 224 pages, 140 x 205 mm. Collection Du monde entier, Gallimard-nouv. ISBN 2070235157.
+					</bibl>
+					<bibl type="semantic">
+						<author>
+							<persName>
+								<forename>Franz</forename>
+								<surname>Kafka</surname>
+							</persName>
+						</author>
+						<title>La métaporphose</title>
+						<date>1938</date>
+					</bibl>
+				</listBibl>
+			</div>
+			<argument><!-- OpenEdition Journals seulement -->
+				<p>Chapô 1.</p>
+				<p>Chapô 2.</p>
+			</argument>
+			<epigraph>
+				<cit>
+					<quote>Epigraphe placé dans le front. Porte sur l’ensemble du document.<lb/>
+						Second paragraphe d’épigraphe.</quote>
+					<bibl><hi rend="italic">Réf bibliographique</hi>, source de l’épigraphe.</bibl>
+				</cit>
+			</epigraph>
+		</front>
+		<body>
+			<div type="section1">
+				<head>1. Titre 1</head>
+				<div type="section2">
+					<head>1.1. Titre 2</head>
+					<p>Mises en forme de texte simples : 
+						<hi rend="italic">italique</hi>, 
+						<hi rend="bold">gras</hi>, 
+						<hi rend="sup">exposant</hi>, 
+						<hi rend="sub">indice</hi>, 
+						<hi rend="small-caps">petites capitales</hi>,
+						<hi rend="uppercase">majuscule</hi>, 
+						<hi rend="strikethrough">barré</hi>, 
+						<hi rend="underline">souligné</hi>.
+					</p>
+					<p>Mises en forme de texte imbriquées : 
+						<hi rend="italic"><hi rend="bold">italique et gras</hi></hi>, 
+						<hi rend="bold"><hi rend="small-caps">XX</hi><hi rend="sup">e</hi> siècle</hi>.
+					</p>
+					<p>Mises en forme combinées : 
+						<hi rend="bold italic">gras et italique</hi>, 
+						<hi rend="sup small-caps underline">exposant, petites capitales et souligné</hi>.
+					</p>
+					<p>Direction du texte RTL</p>
+					<p rendition="#rtl">هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل</p>
+					<div type="section3">
+						<head>1.1.1. Titre 3</head>
+						<p>...</p>
+					</div>
+					<div type="section3">
+						<head>1.1.2. Titre 3</head>
+						<p>...</p>
+					</div>
+				</div>
+				<div type="section2">
+					<head>1.2. Titre 2</head>
+					<p>...</p>
+				</div>
+			</div>
+			<div type="section1">
+				<head>2. Titre 1 : notes</head>
+				<p>Texte <note place="foot" n="1"
+					xml:id="mon_id_num_4">
+						<p>Paragraphe</p>
+						<list type="unordered">
+							<item>Elément de liste 1</item>
+							<item>Elément de liste 2</item>
+						</list>
+					</note>. </p>
+				<p>Texte<note place="end" n="a">
+					<p>Nulla consequat massa quis enim.</p>
+					<list type="unordered">
+						<item>Aenean auctor sapien quis nibh tincidunt</item>
+						<item>eget varius elit maximus</item>
+					</list>
+					<p>Phasellus at eros imperdiet, efficitur nisi vitae.</p>
+				</note>.</p>
+					
+			</div>
+			<div type="section1">
+				<head>Listes</head>
+				<p>Une liste avec une numérotation décimale</p>
+				<list type="ordered" xml:id="list01" rendition="#rendition_list2">
+					<item>premièrement</item>
+					<item>deuxièmement</item>
+					<item>troisièmement</item>
+				</list>
+				<p>suivi d'une autre liste avec numérotation continue</p>
+				<list type="ordered" xml:id="list02" prev="#list01" rendition="#rendition_list2">
+					<item>quatrièmement</item>
+					<item>cinquièmement</item>
+				</list>
+				<p>Puis une autre liste avec le style de numérotation upper-roman</p>
+				<list type="ordered" xml:id="list03" rendition="#rendition_list1">
+					<item>en 1</item>
+					<item>en 2</item>
+				</list>
+				<p>Exemple d'imbrication de liste ordonnées</p>
+				<list type="ordered" xml:id="list04" rendition="#rendition_list4">
+					<item>Item A</item>
+					<item>Item B</item>
+					<item>Item C
+						<list type="ordered" xml:id="list05" rendition="#rendition_list3">
+							<item>sous item a</item>
+							<item>sous item b</item>
+						</list>
+					</item>
+				</list>
+				<p>Pour les listes non ordonnées on a le choix entre 3 styles de puces : disc, square, circle</p>
+				<list type="unordered" xml:id="list06" rendition="#rendition_list6">
+					<item>petit 1</item>
+					<item>petit 2</item>
+					<item>petit 3</item>
+				</list>
+				<list type="unordered" xml:id="list07" rendition="#rendition_list7">
+					<item>Thé sans sucre et sans lait </item>
+					<item>Un jus d'ananas</item>
+					<item>Un yaourt</item>
+					<item>Trois biscuits de seigle avec
+						<list type="unordered" xml:id="list08" rendition="#rendition_list8">
+							<item>Carottes râpées</item>
+							<item>Côtelettes d'agneau</item>
+							<item>Courgettes</item>
+							<item>Chèvre frais </item>
+							<item>Coings</item>
+						</list>
+					</item>
+				</list>
+				
+			</div>
+			<div type="section1">
+				<head>Les citations</head>
+				<div type="section2">
+					<head>Citations simples avec plusieurs paragraphes</head>
+					<p>Un paragraphe de texte Normal avant la citation.</p>
+					<cit xml:id="cit1">
+						<quote>Une citation en plusieurs paragraphe.</quote>
+						<quote>Second paragraphe.</quote>
+						<bibl>Référence biblio de ma citation</bibl>
+					</cit>
+					<p>Un autre paragraphe Normal, suivi d’une autre citation avec un style différent (pas de distinction sémantique mais une mise en forme différente des citations classiques) :</p>
+					<cit xml:id="cit2">
+						<quote type="quotation2">Une citation avec mise en forme différente.</quote>
+						<bibl>Référence biblio de ma deuxième citation</bibl>
+					</cit>
+				</div>
+				<div type="section2">
+					<head>Traductions</head>
+					<p>Une citation suivie de sa traduction :</p>
+					<cit xml:id="cit3">
+						<quote>Une citation avec le style citation (TEI_quote) ou citation 2 (TEI_quote2)</quote>
+						<quote>La citation peut avoir plusieurs paragraphes.</quote>
+						<quote xml:lang="en" type="trl">La même citation traduite dans une autre langue.</quote>
+						<quote xml:lang="en" type="trl">La citation traduite peut avoir plusieurs paragraphe elle aussi.</quote>
+						<bibl>Référence biblio de la citation</bibl>
+					</cit>
+					<p>Une citation dans une langue différente de l'article, ici en espagnol.</p>
+					<cit xml:id="cit4">
+						<quote xml:lang="es">De gustibus et coloribus non disputandum</quote>
+					</cit>
+				</div>
+				<div type="section2">
+					<head>Citations consécutives (sourcées ou non)</head>
+					<p>Ici il s’agit de deux citation consécutives, mais distinctes. Dans ce cas, on utilise 2 éléments &lt;cit&gt;</p>
+					<cit xml:id="cit5">
+						<quote>Txt 1ère citation</quote>
+					</cit>
+					<cit xml:id="cit6">
+						<quote>Txt 2e citation</quote>
+						<bibl>Ref biblio 2e citation</bibl>
+					</cit>
+				</div>
+				<div type="section2">
+					<head>Citation inline</head>
+					<p>Un paragraĥe peut contenir du texte avec une citation inline.</p>
+					<p>Comme le disait Jean, <cit xml:id="cit7">
+						<quote>"le renard... (La Fontaine)"</quote>
+					</cit>, blah.</p>
+					<p>Même chose dans un liste.</p>
+					<list rendition="rendition_list7" type="unordered">
+						<item>Comme le disait Jean, <cit xml:id="cit8">
+							<quote>"le renard... (La Fontaine)"</quote>
+						</cit>, blah.</item>
+					</list>
+					<p>On ne peut pas ajouter de référence biblio aux citations inline.</p>
+				</div>
+				<div type="section2">
+					<head>Citations imbriquées</head>
+					<cit xml:id="cit9">
+						<quote>Ma citation principale qui cite une citation</quote>
+						<cit>
+							<quote>Ici la citation dans la citation</quote>
+							<quote>qui peut être composée de plusieurs paragraphes</quote>
+						</cit>
+						<quote>On reprend la suite du texte de la citation principale.</quote>
+						<bibl>Ref biblio de la citation principale</bibl>
+					</cit>
+				</div>
+
+			</div>
+			<div type="section1">
+				<head>Paragraphe de suite, séparateur, liens, ancres</head>
+				<p>Début du paragraphe</p>
+				<cit xml:id="ref_cit1">
+					<quote>Citation</quote>
+				</cit>
+				<p rend="consecutive">suite du paragraphe précédant la citation.</p>
+				<cit>
+					<quote>Citation <anchor xml:id="anchor_ref2"/>lorem ispum</quote>
+				</cit>
+				<p rend="break">* * *</p>
+				<p>Paragraphe suivant.</p>
+				<p>Ici <ref target="#ref_cit1">un lien vers la citation</ref> ; là <ref target="http://www.openedition.org">un lien vers un site web</ref> et un <ref target="#anchor_ref2">lien vers une ancre</ref>.</p>
+			</div>
+			
+			<div type="section1">
+				<head>Code</head>
+				<!-- Code avec CDATA -->
+				<p>
+					<code lang="xml">
+						<![CDATA[<ref target="http://www.openedition.org/​">OpenEdition : portail de ressources électroniques en sciences humaines & sociales</ref>]]>
+					</code>
+				</p>
+				<!--Le même code sans CDATA -->
+				<p><code lang="xml">&lt;ref target="http://www.openedition.org/​"&gt; OpenEdition : portail de ressources électroniques en sciences humaines &amp; sociales&lt;/ref&gt; </code></p>
+				<!--Ajout de code inline -->
+				<p>En TEI, <code rend="inline" lang="xml">&lt;ref&gt;</code>(référence) définit une référence vers un autre emplacement, elle s'utilise de la façon suivante :
+					<code rend="inline" lang="xml">&lt;ref target="http://www.openedition.org/​"&gt;OpenEdition : portail de ressources électroniques en sciences humaines &amp; sociales&lt;/ref&gt;</code> et elle peut être contenu dans la plupart des éléments</p>
+			</div>
+			<div type="section1">
+				<head>Poésie</head>
+				<div type="section2">
+					<head>Exemple simple</head>
+					<lg>
+						<l>Les amoureux fervents et les savants austères</l>
+						<l>Aiment également, dans leur mûre saison,</l>
+						<l>Les chats puissants et doux, orgueil de la maison,</l>
+						<l>Qui comme eux sont frileux et comme eux sédentaires.</l>
+					</lg>
+				</div>
+				<div type="section2">
+					<head>Exemple avec numérotation des vers</head>
+					<lg>
+						<l n="1"><num>(1)</num> Ils prennent en songeant les nobles attitudes</l>
+						<l>Des grands sphinx allongés au fond des solitudes</l>
+						<l>Qui semblent s'endormir dans un rêve sans fin ;</l>
+					</lg>
+					<lg>
+						<l n="4"><num>(4)</num> Leurs reins féconds sont pleins d'étincelles magiques,</l>
+						<l>Et des parcelles d'or, ainsi qu'un sable fin,</l>
+						<l>Etoilent vaguement leurs prunelles mystiques.</l>
+					</lg>
+				</div>
+				<div type="section2">
+					<head>Exemple avec des répliques versifiées et source</head>
+					<sp>
+						<l>Dis-moi donc, je te prie, une seconde fois </l>
+						<l>Ce qui te fait juger qu'il approuve mon choix. </l>
+					</sp>
+					<bibl>(<hi rend="italic">Le Cid, </hi>Chimène vv.7-8)</bibl>
+				</div>
+				<div type="section2">
+					<head>Avec césure et source</head>
+					<lg>
+						<l>Souvent sur la montagne, <caesura/>à l'ombre du vieux chêne,</l>
+						<l>Au coucher du soleil, <caesura/>tristement je m'assieds ;</l>
+					</lg>
+					<bibl>Alphonse de LaMartine, <hi rend="italic">L'isolement</hi></bibl>
+				</div>
+			</div>
+			
+			<div type="section1">
+				<head>Figures</head>
+				<div type="section2">
+					<head>Un bloc figure avec métadonnées</head>
+					<p>Un paragraphe</p>
+					<figure>
+						<head>Le titre illustration </head>
+						<graphic url="images/image3.jpg"/>
+						<figDesc>La description d'une image dans un bloc Figure</figDesc>
+						<p rend="caption">La légende.</p>
+						<p rend="caption">La suite de la légende.</p>
+						<p rend="credits">Les crédits</p>
+					</figure>
+				</div>
+				<div type="section2">
+					<head>Images inline</head>
+					<p>Un paragraphe Normal avec une image <figure rend="inline"><graphic url="images/image5.jpg"/></figure>dans le paragraphe.</p>
+				</div>
+				<div type="section2">
+					<head>Une planche (série d'images)</head>
+		
+					<figure>
+						<head>Le titre de la planche </head>
+						<graphic url="images/image4-1.jpg"/>
+						<figDesc>La description de l'image qui précède</figDesc>
+						<graphic url="images/image4-2.jpg"/>
+						<figDesc>La description de l'image qui précède</figDesc>
+						<graphic url="images/image4-3.jpg"/>
+						<figDesc>La description de l'image qui précède</figDesc>
+						<graphic url="images/image4-4.jpg"/>
+						<figDesc>La description de l'image qui précède</figDesc>
+						<p rend="caption">La légende de la planche</p>
+						<p rend="credits">Les crédits</p>
+					</figure>
+				</div>
+				<div type="section2">
+					<head>Tableau</head>
+					<figure xml:id="figure9">
+						<head>Titre du tableau</head>
+						<table>
+							<row role="label">
+								<cell rendition="#Cell">Entête A</cell>
+								<cell rendition="#Cell">Entête B</cell>
+								<cell rendition="#Cell">Entête C</cell>
+							</row>
+							<row>
+								<cell rendition="#Cell" role="label">A1 : titre ligne</cell>
+								<cell rendition="#Cell">B1</cell>
+								<cell rendition="#Cell #rtl">للنص أو شكل</cell>
+							</row>
+							<row>
+								<cell rendition="#Cell" role="label">A2 : titre ligne</cell>
+								<cell rendition="#Cell" cols="2">B2, C2</cell>
+							</row>
+						</table>
+						<graphic url="images/image7.png"/><!-- Image alternative du tableau -->
+						<p rend="caption">Légende du tableau</p>
+						<p rend="credits">Crédits du tableau</p>
+					</figure>
+				</div>
+				<div type="section2">
+					<head>Formule</head>
+					<div type="section3" xml:id="div7">
+						<head>Formule inline</head>
+						<p>Une formule mathématique inline <figure rend="inline">
+							<formula notation="latex">\(\frac{{{\partial ^2}v}}{{\partial {z^2}}} = 0\)</formula>
+						</figure> suivi de mon texte.</p>
+					</div>
+					<div type="section3" >
+						<head>Formule block avec métadonnées et image alternative</head>
+						<figure>
+							<head>Titre formule </head>
+							<formula notation="latex">\[\displaystyle \frac {d^2x^a}{ds^2}+\Gamma_{bc}^{a} \frac {dx^b}{ds}\frac {dx^c}{ds}=0\]</formula>
+							<graphic url="images/image2.png"/><!-- Image alternative de la formule -->
+							<p rend="caption">Légende Formule</p>
+						</figure>
+					</div>
+					<div type="section3" >
+						<head>Formule avec caractères html-encodés ou avec utilisation de CDATA</head>
+						<figure>
+							<head>Caractères html-encodés</head>
+							<formula notation="latex">\[\tag{2}n&gt;{{n}_{i}}\;\text{ et }\;{{\alpha }_{n}}\text{ est entre }{{\alpha }_{{{n}_{i-1}}}}\text{ et }{{\alpha }_{{{n}_{i}}}}\text{ (strictement)}\text{,}\]</formula>
+						</figure>
+						<figure>
+							<head>Utilisation de CDATA</head>
+							<formula notation="latex"><![CDATA[\[\tag{2}n>{{n}_{i}}\;\text{ et }\;{{\alpha }_{n}}\text{ est entre }{{\alpha }_{{{n}_{i-1}}}}\text{ et }{{\alpha }_{{{n}_{i}}}}\text{ (strictement)}\text{,}\]]]></formula>
+						</figure>
+					</div>  
+				</div>
+			</div>			
+			<div type="section1">
+				<head>Théätre</head>
+				
+				<p>Exemple simple</p>
+				<sp>
+					<speaker>Locuteur 1</speaker>
+					<p>Replique. Ut nisi libero, fermentum nec suscipit a, ultricies sit
+						amet odio. Nulla non sem sed dui semper maximus. Aliquam hendrerit odio arcu.
+						Quisque vitae egestas justo. Nulla non iaculis massa. </p>
+				</sp>
+				<stage>Didascalie</stage>
+				<sp>
+					<p><name type="speaker">Locuteur 2</name> : réplique.</p>
+				</sp>
+				<sp>
+					<p>Nulla non iaculis massa. Nulla posuere libero mauris, non dignissim
+						sem porttitor lacinia. In tempus arcu sed mollis varius. Etiam a felis risus.
+						Vestibulum vestibulum metus vitae lacus imperdiet vehicula.</p>
+				</sp>
+				<sp>
+					<p><name type="speaker">Locuteur 1</name>— <stage>(didascalie
+						inline)</stage> Vestibulum vulputate, diam tincidunt laoreet aliquet, mi
+						odio egestas ex, sit amet scelerisque metus nulla vitae massa.</p>
+				</sp>
+				<p>Exemple avec ligne versifiée avec une source</p>
+				<sp>
+					<speaker>Locuteur 3</speaker>
+					<l n="1"><num>1</num> Nunc eget ligula vestibulum, ultrices felis eu, tincidunt
+						ante.</l>
+				</sp>
+				<sp>
+					<speaker>Locuteur 4</speaker>
+					<l n="2"><num>2</num> In nunc justo, malesuada quis auctor rutrum,</l>
+				</sp>
+				<bibl>Référence de l'oeuvre</bibl>
+			</div>
+			<div type="section1">
+				<head>Floating Text</head>
+				<p>Un encadré ici :</p>
+				<floatingText>
+					<body>
+						<div type="section1" xml:id="floatingText1div1">
+							<head>Les blocs dans les encadrés</head>
+							<div type="section2" xml:id="floatingText1div2">
+								<head>Un bloc citation dans l’encadré</head>
+								<cit xml:id="floatingText1cit1">
+									<quote>« En tant que randonneur, l’expérience de la marche, ça a beaucoup marqué les
+										choses, notre façon de percevoir le paysage. Il y a eu la question du sol qui change. Au
+										départ, il est très mou, très feutré. Puis on change de côte, et là il se fait bien plus
+										dur avec les racines des arbres ».</quote>
+									<quote>« En termes de sons, ça semblait bien plus dilué ».</quote>
+									<quote>« On voit différentes hostilités selon les côtes, la chaleur, le
+										glissement ».</quote>
+									<bibl>Relevés de verbatims extraits du carnet de terrain, Fonticelli, 2020.</bibl>
+								</cit>
+							</div>
+							<div type="section2" xml:id="floatingText1div3">
+								<head>Un bloc figure dans l’encadré</head>
+								<figure xml:id="floatingText1figure1">
+									<head>Figure 3 : Les attentes des étudiant(e)s au début du module « Atlas ».</head>
+									<graphic url="images/Image3.png"/>
+								</figure>
+							</div>
+						</div>
+						<div type="section1" xml:id="floatingText1div4">
+							<head>D’autres styles dans l’encadré</head>
+							<div type="section2" xml:id="floatingText1div5">
+								<head>Du code</head>
+								<p xml:id="floatingText1p1"><code lang="xml" xml:space="preserve">&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Idée d'occupation&lt;/title&gt;
+&lt;script language="javascript"&gt;
+function afficheMessage() {
+								</code></p>
+							</div>
+							<div type="section2" xml:id="floatingText1div6">
+								<head>Des questions et des réponses </head>
+								<sp rend="question">
+									<p xml:id="floatingText1p2">Bonjour, vous allez bien ?</p>
+								</sp>
+								<sp rend="answer">
+									<p xml:id="floatingText1p3">Bien, merci.</p>
+								</sp>
+							</div>
+						</div>
+					</body>
+				</floatingText>
+				
+			</div>
+			<div type="section1">
+				<head>Exemples de linguistique</head>
+				<div type="section2">
+					<head>Exemple simple avec label</head>
+					<p>Lorem ipsum</p>
+					<cit type="linguistic" xml:id="cit12">
+						<quote n="1">
+							<label>
+								<num>(1)</num>
+								<hi rend="italic">The ship sank</hi>.</label>
+							<quote type="example">
+								<seg>a. role frame:</seg>
+								<seg>Y</seg>
+								<seg>s<hi rend="italic">ank</hi>
+								</seg>
+							</quote>
+							<quote type="example">
+								<seg/>
+								<seg>|</seg>
+							</quote>
+							<quote type="example">
+								<seg>b. coding frame: </seg>
+								<seg>Arg1-<hi rend="small-caps">nom</hi>
+								</seg>
+								<seg>V.<hi rend="small-caps">sbj</hi>[1]</seg>
+							</quote>
+						</quote>
+					</cit>
+					<p>Lorem ipsum</p>
+				</div>
+				<div type="section2">
+					<head>Exemple complet avec label, glose, traduction, numérotations et références bibliographiques</head>
+					<p>Lorem ipsum</p>
+					<cit type="linguistic" xml:id="cit04">
+						<quote>
+							<label><num>(7)</num> <lang>French</lang> [Contexte : Lorem Ipsum]</label>
+							<num>a.</num>
+							<quote type="example">
+								<seg>M</seg>
+								<seg>d</seg>
+								<seg>J</seg>
+								<seg>a</seg>
+								<seg>w</seg>
+								<seg>J</seg>
+							</quote>
+							<gloss>
+								<seg>1</seg>
+								<seg>d</seg>
+								<seg>J</seg>
+								<seg>A</seg>
+								<seg>v</seg>
+								<seg>J</seg>
+							</gloss>
+							<quote type="trl">‘Lorem ipsum dolor sit amet’<bibl rend="inline">reference</bibl></quote>
+							<num>b.</num>
+							<quote type="example">
+								<seg>E</seg>
+								<seg>J</seg>
+								<seg>a</seg>
+								<seg>w</seg>
+								<seg>J</seg>
+							</quote>
+							<gloss>
+								<seg>E</seg>
+								<seg>q</seg>
+								<seg>J</seg>
+								<seg>A</seg>
+								<seg>v</seg>
+								<seg>J</seg>
+							</gloss>
+							<quote type="trl">‘consectetur adipiscing elit’</quote>
+							<bibl>My bibliographic reference</bibl>
+						</quote>
+					</cit>
+					<p>Lorem ipsum</p>
+				</div>
+			</div>
+		</body>
+		<back>
+			<div type="bibliography">
+				<listBibl type="section1">
+					<head>Partie 1</head>
+					<listBibl type="section2">
+						<head>Partie 1.1</head>
+						<bibl>Bennett, Francis et Michael Holdsworth.<hi rend="italic">Embracing the Digital Age. An Opportunity for Booksellers and the Book Trade</hi>. Londres : The Booksellers Association of the United Kingdom &amp; Ireland, 2007</bibl>
+						<bibl>Carrérot, Olivier, éd. <hi rend="italic">Qu’est-ce qu’un livre aujourd’hui ? Pages, marges, écrans</hi>. Les Cahiers de la Librairie. Paris : La Découverte, 2009</bibl>
+					</listBibl>
+					<listBibl type="section2">
+						<head>Partie 1.2</head>
+						<bibl>Chartier, Roger. « La mort du livre ? », <hi rend="italic">Communication &amp; Langages,</hi> 159 (mars 2009) : 57-66</bibl>
+						<bibl>Clémente, Hélène, et Caroline C. Tachon. <hi rend="italic" >Accueillir le numérique ? Une mutation pour la 
+							librairie et le commerce du livre.</hi> <ref target="http://www.accueillirlenumerique.com/">http://www.accueillirlenumerique.com/</ref></bibl>
+					</listBibl>
+				</listBibl>
+				<listBibl type="section1">
+					<head>Partie 2</head>
+					<bibl>Darnton, Robert. « The New Age of the Book », <hi rend="italic" xml:lang="en">The New York Review of Books,</hi> 46, no. 5 (mars 18, 1999)</bibl>
+					<bibl>Fogel, Jean-François <hi rend="italic">Une presse sans Gutenberg. Pourquoi Internet a bouleversé le journalisme</hi> Paris : Points, 2007</bibl>
+				</listBibl>
+			</div>
+			<div type="appendix">
+				<div type="section1">
+					<head>Vivamus laoreet</head>
+					<p>
+						Nullam tincidunt adipiscing enim. Phasellus tempus. Proin viverra, ligula sit amet ultrices semper, ligula arcu tristique sapien, a accumsan nisi mauris ac eros. Fusce neque. Suspendisse faucibus, nunc et pellentesque egestas, lacus ante convallis tellus, vitae iaculis lacus elit id tortor. Vivamus aliquet elit ac nisl. Fusce fermentum odio nec arcu. Vivamus euismod mauris. In ut quam vitae odio lacinia tincidunt. Praesent ut ligula non mi varius sagittis. Cras sagittis. Praesent ac sem eget est egestas volutpat. Vivamus consectetuer hendrerit lacus. Cras non dolor. Vivamus in erat ut urna cursus vestibulum.
+						<hi rend="italic">Fusce commodo aliquam arcu. Nam commodo suscipit quam. Quisque id odio.</hi>
+					</p>
+					<div type="section2">
+						<head>Lorem ipsum dolor sit amet, consectetuer adipiscing elit</head>
+						<p> Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.
+						</p>
+						<figure>
+							<head>Titre de la figure</head>
+							<graphic url="relative/path/to/image/img-1.jpg" />
+							<p rend="caption">Schéma réalisé en septembre 2009</p>
+							<p rend="credits">Surletoit</p>
+						</figure>
+						<p>Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Fusce vulputate eleifend sapien.</p>
+						<cit >
+							<quote>Vestibulum purus quam, scelerisque ut, mollis sed, nonummy id, metus. N</quote>
+						</cit>
+						<p>Nunc nonummy metus.</p>
+					</div>
+				</div>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -151,6 +151,24 @@
     <div class="verse-line"><xsl:apply-templates/></div>
   </xsl:template>
 
+  <xsl:template match="tei:caesura">
+    <span class="caesura"></span>
+  </xsl:template>
+
+  <xsl:template match="tei:speaker">
+    <p class="speaker"><xsl:apply-templates/></p>
+  </xsl:template>
+
+  <!-- Didascalie autonome (soeur de <sp>) : bloc à part. -->
+  <xsl:template match="tei:stage">
+    <p class="stage-direction"><xsl:apply-templates/></p>
+  </xsl:template>
+
+  <!-- Didascalie inline, à l'intérieur d'un paragraphe ou d'un vers. -->
+  <xsl:template match="tei:p/tei:stage | tei:l/tei:stage" priority="20">
+    <span class="stage-direction-inline"><xsl:apply-templates/></span>
+  </xsl:template>
+
   <xsl:template match="tei:epigraph">
     <blockquote class="epigraph"><xsl:apply-templates/></blockquote>
   </xsl:template>
