@@ -23,5 +23,20 @@ Thumbs.db
 _audit_runtime/
 _pass_normalizer/
 
+# Artefacts d'audit/comparaison LaTeX (logs, caches de polices, PDF intermédiaires)
+.audit_f1/
+
+# Artefacts de compilation LaTeX (régénérés à chaque build)
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+docs/*.log
+
 # Sorties locales de compilation Nuitka
 build_nuitka/
+dist/main.build/
+dist/main.exe
+dist/main.cmd
