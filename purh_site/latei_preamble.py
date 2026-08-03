@@ -195,14 +195,21 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{0pt}}
   {{\MakeUppercase}}
 
+% Sous-section (référentiel v0.6 §4.3 : seul le niveau "section" — c'est-à-
+% dire section1 — est chiffré ; aucune valeur propre à section2/section3
+% n'est fournie). Correctif ciblé : même famille Thin que le titre de
+% section, sans le gras ni les capitales (confirmé sur le livre réel —
+% <div type="section2"> y porte de vrais sous-titres phrastiques, jamais
+% des libellés courts). Tailles conservées telles quelles (\large/
+% \normalsize) faute de mesure référentiel à ce niveau ; police corrigée.
 \titleformat{{\subsection}}[block]
-  {{\PURHTitleFont\large\bfseries\raggedright}}
+  {{\PURHTitreFont\large\raggedright}}
   {{}}
   {{0pt}}
   {{}}
 
 \titleformat{{\subsubsection}}[block]
-  {{\PURHTitleFont\normalsize\bfseries\raggedright}}
+  {{\PURHTitreFont\normalsize\raggedright}}
   {{}}
   {{0pt}}
   {{}}
@@ -259,7 +266,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   \renewcommand{{\footrulewidth}}{{0pt}}%
 }}
 
-\usepackage[hang,flushmargin]{{footmisc}}
+\usepackage[flushmargin]{{footmisc}}
 
 \setlength{{\footnotesep}}{{0.6\baselineskip}}
 \setlength{{\skip\footins}}{{1.2\baselineskip}}
@@ -327,6 +334,29 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   pdfcreator={{Impressions}},
   pdfproducer={{LuaLaTeX}}
 }}
+
+% Numéro calé à gauche avec retrait négatif de première ligne (observé
+% directement sur le PDF imprimeur — le référentiel indiquait un point
+% après le numéro, contredit par cette observation directe, suivie ici) :
+% \leftskip aligne toutes les lignes de la note sur la même marge gauche ;
+% \parindent négatif ramène uniquement la première ligne (celle du numéro)
+% en deçà de cette marge, jusqu'au bord. \@thefnmark seul, sans point.
+% \AtBeginDocument, pas une simple redéfinition de préambule : hyperref/
+% bookmark redéfinissent eux-mêmes \@makefntext pour y ajouter leurs
+% ancres, mais le font via leur propre \AtBeginDocument — un
+% \renewcommand direct ici, même placé après leur \usepackage, se faisait
+% donc encore écraser au début du document (bug réel rencontré et vérifié :
+% le correctif n'avait aucun effet tant qu'il n'était pas, lui aussi,
+% différé). Étant chargés plus haut, leur crochet s'exécute avant celui-ci.
+\makeatletter
+\AtBeginDocument{{%
+  \renewcommand{{\@makefntext}}[1]{{%
+    \setlength{{\leftskip}}{{1.2em}}%
+    \setlength{{\parindent}}{{-1.2em}}%
+    \noindent\@thefnmark\enskip#1%
+  }}%
+}}
+\makeatother
 
 % -----------------------------------------------------------------
 % Macros utilitaires PURH
