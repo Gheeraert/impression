@@ -128,7 +128,7 @@ def test_real_metopes_fixture_full_latei_export_package(export_result: Reversibl
     main = result.latei_main_path.read_text(encoding="utf-8")
 
     assert r"\documentclass" not in body
-    assert r"\documentclass[12pt,twoside,openany]{book}" in main
+    assert r"\documentclass[11pt,twoside,openany]{book}" in main
     assert rf'\input{{"{result.latei_macros_path.name}"}}' in main
     assert rf'\input{{"{result.latei_body_path.name}"}}' in main
     assert "purh_site/resources/latei_macros.tex" not in main.replace("\\", "/")

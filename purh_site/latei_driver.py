@@ -15,6 +15,7 @@ from pathlib import Path
 
 from .latei_metadata import LateiMetadata
 from .latei_preamble import PurhPreambleData, render_purh_latex_preamble
+from .purh_layout_profiles import DEFAULT_LAYOUT_PROFILE_NAME, get_layout_profile
 
 LATEI_MACROS_PATH = Path(__file__).resolve().parent / "resources" / "latei_macros.tex"
 
@@ -36,6 +37,7 @@ def build_latei_driver(
     running_titles_map_tex_path: Path | None = None,
     metadata: LateiMetadata | None = None,
     title: str | None = None,
+    layout_profile_name: str = DEFAULT_LAYOUT_PROFILE_NAME,
 ) -> Path:
     """Write a PURH LaTEI main file that inputs the reversible body file."""
     body_tex_path = Path(body_tex_path)
@@ -68,6 +70,7 @@ def build_latei_driver(
             year=metadata.publication_year or "",
             doi=metadata.doi or "",
             isbn=metadata.isbn_pdf or metadata.isbn_print or "",
+            profile=get_layout_profile(layout_profile_name),
         )),
         rf"\input{{{macros_input}}}",
     ]
@@ -108,6 +111,7 @@ def build_latei_monofile(
     running_titles_map_content: str | None = None,
     metadata: LateiMetadata | None = None,
     title: str | None = None,
+    layout_profile_name: str = DEFAULT_LAYOUT_PROFILE_NAME,
 ) -> Path:
     """Write a single compilable LaTEI file with everything inline (no \\input{})."""
     monofile_path = Path(monofile_path)
@@ -118,6 +122,7 @@ def build_latei_monofile(
         metadata=metadata,
         graphics_map_content=graphics_map_content,
         running_titles_map_content=running_titles_map_content,
+        layout_profile_name=layout_profile_name,
     )
     monofile_path.write_text(content, encoding="utf-8")
     return monofile_path
@@ -129,6 +134,7 @@ def _monofile_content(
     metadata: LateiMetadata,
     graphics_map_content: str | None,
     running_titles_map_content: str | None,
+    layout_profile_name: str = DEFAULT_LAYOUT_PROFILE_NAME,
 ) -> str:
     macros_content = LATEI_MACROS_PATH.read_text(encoding="utf-8")
     preamble = render_purh_latex_preamble(PurhPreambleData(
@@ -139,6 +145,7 @@ def _monofile_content(
         year=metadata.publication_year or "",
         doi=metadata.doi or "",
         isbn=metadata.isbn_pdf or metadata.isbn_print or "",
+        profile=get_layout_profile(layout_profile_name),
     ))
 
     parts: list[str] = [

@@ -67,7 +67,7 @@ def test_render_purh_latex_preamble_contains_essential_elements() -> None:
     )
     preamble = render_purh_latex_preamble(data)
 
-    assert r"\documentclass[12pt,twoside,openany]{book}" in preamble
+    assert r"\documentclass[11pt,twoside,openany]{book}" in preamble
     assert r"\usepackage[french]{babel}" in preamble
     assert "]{geometry}" in preamble
     assert r"\usepackage{fancyhdr}" in preamble
@@ -102,5 +102,24 @@ def test_render_purh_latex_preamble_empty_authors() -> None:
     data = PurhPreambleData(title="Sans auteur")
     preamble = render_purh_latex_preamble(data)
     assert r"\PURHBookAuthor}{}" in preamble
+
+
+def test_render_purh_latex_preamble_defaults_to_production_2025_profile() -> None:
+    from purh_site.latei_preamble import PurhPreambleData, render_purh_latex_preamble
+    from purh_site.purh_layout_profiles import PURH_155X230_PRODUCTION_2025
+    preamble = render_purh_latex_preamble(PurhPreambleData())
+    assert PurhPreambleData().profile == PURH_155X230_PRODUCTION_2025
+    assert "inner=20mm" in preamble
+    assert "outer=30mm" in preamble
+    assert r"\renewcommand{\normalsize}{\fontsize{11pt}{13.5pt}\selectfont}" in preamble
+    assert r"\renewcommand{\footnotelayout}{\fontsize{8.5pt}{10.2pt}\selectfont}" in preamble
+
+
+def test_render_purh_latex_preamble_honors_explicit_profile() -> None:
+    from purh_site.latei_preamble import PurhPreambleData, render_purh_latex_preamble
+    from purh_site.purh_layout_profiles import PURH_155X230_CURRENT_2026
+    preamble = render_purh_latex_preamble(PurhPreambleData(profile=PURH_155X230_CURRENT_2026))
+    assert "inner=25mm" in preamble
+    assert "outer=23mm" in preamble
 
 

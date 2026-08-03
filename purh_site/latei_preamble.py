@@ -6,14 +6,18 @@ Deliberately independent of LatexRenderer, LatexRenderOptions, semantic_model,
 tei_to_model, and pdf_builder. Depends only on the Python standard library.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from .purh_layout_profiles import DEFAULT_LAYOUT_PROFILE_NAME, PurhLayoutProfile, get_layout_profile
 
 
 @dataclass(frozen=True, slots=True)
 class PurhPreambleData:
     """Plain-data container for PURH preamble rendering.
 
-    All fields are plain strings. The caller resolves model-level choices
+    All fields are plain strings, except ``profile`` which selects the
+    versioned page-layout profile (format, margins, body/note grid) defined
+    in ``purh_layout_profiles``. The caller resolves model-level choices
     (e.g. isbn_pdf vs isbn_print, contributors list) before constructing
     this object. Fields unused by the template (collection, issn) are
     intentionally absent.
@@ -26,6 +30,19 @@ class PurhPreambleData:
     year: str = ""
     doi: str = ""
     isbn: str = ""
+    profile: PurhLayoutProfile = field(
+        default_factory=lambda: get_layout_profile(DEFAULT_LAYOUT_PROFILE_NAME)
+    )
+
+
+def _pt(value: float) -> str:
+    """Format a point size without a spurious trailing ``.0`` (11 -> "11pt")."""
+    return f"{value:g}pt"
+
+
+def _mm(value: float) -> str:
+    """Format a millimeter dimension without a spurious trailing ``.0``."""
+    return f"{value:g}mm"
 
 
 def render_purh_latex_preamble(data: PurhPreambleData) -> str:
@@ -37,17 +54,22 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
     year = _escape(data.year)
     doi = _escape(data.doi)
     isbn = _escape(data.isbn)
+    profile = data.profile
+    body_class_pt = _pt(profile.body_font_size_pt)
+    body_leading = _pt(profile.body_leading_pt)
+    note_font_size = _pt(profile.note_font_size_pt)
+    note_leading = _pt(profile.note_leading_pt)
 
     return rf"""
-\documentclass[12pt,twoside,openany]{{book}}
+\documentclass[{body_class_pt},twoside,openany]{{book}}
 
 \usepackage[
-  paperwidth=155mm,
-  paperheight=230mm,
-  top=30mm,
-  bottom=19mm,
-  inner=23mm,
-  outer=23mm,
+  paperwidth={_mm(profile.paper_width_mm)},
+  paperheight={_mm(profile.paper_height_mm)},
+  top={_mm(profile.margin_top_mm)},
+  bottom={_mm(profile.margin_bottom_mm)},
+  inner={_mm(profile.margin_inner_mm)},
+  outer={_mm(profile.margin_outer_mm)},
   headheight=14pt,
   headsep=8mm,
   footskip=10mm
@@ -76,6 +98,13 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{\setmonofont{{TeX Gyre Cursor}}}}
 
 \newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}
+
+% Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
+% de la table de tailles du \documentclass{{book}} choisi : elle donne un
+% pas voisin mais pas identique au pas de grille cible (référentiel PURH
+% §2.4, §5.3 : corps 11 pt sur une grille de 13,5 pt).
+\renewcommand{{\normalsize}}{{\fontsize{{{body_class_pt}}}{{{body_leading}}}\selectfont}}
+\normalsize
 
 \newcommand{{\PURHBookTitle}}{{{title}}}
 \newcommand{{\PURHBookSubtitle}}{{{subtitle}}}
@@ -199,7 +228,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 \setlength{{\footnotesep}}{{0.6\baselineskip}}
 \setlength{{\skip\footins}}{{1.2\baselineskip}}
-\renewcommand{{\footnotelayout}}{{\fontsize{{9.5pt}}{{10.5pt}}\selectfont}}
+\renewcommand{{\footnotelayout}}{{\fontsize{{{note_font_size}}}{{{note_leading}}}\selectfont}}
 
 \usepackage{{etoolbox}}
 
