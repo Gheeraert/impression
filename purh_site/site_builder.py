@@ -18,6 +18,7 @@ from .site_credits import render_credit_block
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
 from .site_quality import run_site_quality_checks
 from .site_sitemap import write_sitemap_and_robots
+from .site_social_meta import render_social_meta
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .site_structured_data import render_canonical_link, render_json_ld
 from .site_zotero import build_page_description, render_zotero_meta
@@ -1069,14 +1070,21 @@ class SiteBuilder:
         canonical_link = render_canonical_link(site_meta, page)
         description_text = build_page_description(abstract_html) if abstract_html else ""
         json_ld = render_json_ld(site_meta, page, description=description_text)
+        social_meta = render_social_meta(
+            site_meta,
+            page,
+            description=description_text,
+            cover_href=theme_assets.cover_href,
+        )
         return f'''<!DOCTYPE html>
-<html lang="fr">
+<html lang="{html.escape(site_meta.language or 'fr', quote=True)}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(page_title)}</title>
   <link rel="stylesheet" href="assets/site.css">
   {canonical_link}
+  {social_meta}
   {zotero_meta}
   {json_ld}
 </head>

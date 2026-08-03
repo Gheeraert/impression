@@ -42,6 +42,13 @@ def build_page_description(html_content: str) -> str:
     return _truncate_description(_strip_html(html_content))
 
 
+def _citation_language(site_meta: SiteMeta) -> str:
+    """Highwire Press citation_language expects a short code (e.g. "fr"),
+    while SiteMeta.language may carry a fuller BCP-47 tag (e.g. "fr-FR",
+    used as-is for the HTML lang attribute) — keep only the primary subtag."""
+    return (site_meta.language or "fr").split("-")[0]
+
+
 def _meta_tag(name: str, content: str) -> str:
     content = (content or "").strip()
     if not content:
@@ -75,7 +82,7 @@ def render_zotero_meta(
             _meta_tag("citation_series_title", site_meta.collection_title),
             _meta_tag("citation_series_number", site_meta.collection_number),
             _meta_tag("citation_doi", site_meta.doi),
-            _meta_tag("citation_language", "fr"),
+            _meta_tag("citation_language", _citation_language(site_meta)),
             _meta_tag("citation_pdf_url", build_public_asset_url(citation_pdf_href, site_meta) if citation_pdf_href else ""),
             _meta_tag("citation_abstract_html_url", page_url),
             _meta_tag("DC.Title", citation_title),
@@ -107,7 +114,7 @@ def render_zotero_meta(
             _meta_tag("citation_issn", site_meta.issn),
             _meta_tag("citation_series_title", site_meta.collection_title),
             _meta_tag("citation_series_number", site_meta.collection_number),
-            _meta_tag("citation_language", "fr"),
+            _meta_tag("citation_language", _citation_language(site_meta)),
             _meta_tag("citation_abstract_html_url", page_url),
             _meta_tag("DC.Title", citation_title),
             _meta_tag("DC.Type", "bookSection"),

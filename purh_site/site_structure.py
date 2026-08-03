@@ -45,6 +45,7 @@ class SiteMeta:
     collection_issn: str = ""
     isbn: str = ""
     issn: str = ""
+    language: str = "fr"
 
 
 @dataclass(slots=True)
@@ -290,6 +291,10 @@ class SiteStructureBuilder:
                 "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:seriesStmt//tei:idno[@type='ISSN'][1]",
             ],
         )
+        language = tree.xpath(
+            "normalize-space((/tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language/@ident)[1])",
+            namespaces=NSMAP,
+        ) or "fr"
 
         return SiteMeta(
             title=title or "Livre PURH",
@@ -305,6 +310,7 @@ class SiteStructureBuilder:
             collection_issn=collection_issn,
             isbn=isbn,
             issn=issn,
+            language=language,
         )
 
     def _first_nonempty(self, tree: etree._ElementTree, xpaths: list[str]) -> str:
