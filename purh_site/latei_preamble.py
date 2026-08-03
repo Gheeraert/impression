@@ -261,11 +261,14 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 \usepackage{{etoolbox}}
 
+% Citations observées : 9/11 pt, retrait gauche 10 mm (pas de retrait
+% droit), ~4 mm avant/après (référentiel PURH §5.3 ; état antérieur :
+% 11/14 pt, retraits gauche ET droit ≈1,5em, 8pt avant/après).
 \renewenvironment{{quote}}
   {{%
     \par\begingroup
-    \fontsize{{11pt}}{{14pt}}\selectfont
-    \list{{}}{{\leftmargin=1.5em\rightmargin=1.5em}}%
+    \fontsize{{9pt}}{{11pt}}\selectfont
+    \list{{}}{{\leftmargin=10mm\rightmargin=0pt}}%
     \item\relax
   }}
   {{%
@@ -273,8 +276,8 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
     \endgroup
   }}
 
-\AtBeginEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
-\AtEndEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
+\AtBeginEnvironment{{quote}}{{\vspace*{{4mm plus 1pt minus 1pt}}}}
+\AtEndEnvironment{{quote}}{{\vspace*{{4mm plus 1pt minus 1pt}}}}
 
 \usepackage{{graphicx}}
 \usepackage{{caption}}

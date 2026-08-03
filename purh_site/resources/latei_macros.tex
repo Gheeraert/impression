@@ -557,6 +557,17 @@
 % paragraphe) et ajoute les guillemets via \enquote (csquotes), comme
 % \teiQ déjà.
 \NewDocumentCommand{\teiQuoteInline}{O{} +m}{\enquote{#2}}
+% Poésie (référentiel PURH v0.5, "Poésie") : de vrais <lg>/<l> TEI passent
+% par l'environnement `verse` (aligné à gauche, une ligne par \\, jamais
+% justifié) — pas le bloc de citation, qui produisait des blancs excessifs
+% en forçant des \linebreak dans un paragraphe justifié. <lg> imbriqués
+% (strophes) s'emboîtent naturellement, `verse` gère leur espacement.
+\NewDocumentEnvironment{teiLg}{O{} +b}{%
+  \begin{verse}
+  #2%
+  \end{verse}
+}{}
+\NewDocumentCommand{\teiL}{O{} +m}{#2\\}
 \NewDocumentEnvironment{teiFigure}{O{} +b}{%
   \begingroup
   \lateiSetHeadContext{figure}%
