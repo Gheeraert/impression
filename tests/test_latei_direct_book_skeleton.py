@@ -56,9 +56,9 @@ def test_latei_direct_driver_and_macros_have_book_skeleton_invariants(
 
     assert "teiHeader is metadata, not running text" in macros
     assert "name={teiHeader}" in macros
-    assert r"\frontmatter" in macros
-    assert r"\mainmatter" in macros
-    assert r"\backmatter" in macros
+    assert r"\lateiEnsureFrontMatter" in macros
+    assert r"\lateiEnsureMainMatter" in macros
+    assert r"\lateiEnsureBackMatter" in macros
     assert r"\tableofcontents" in main
     assert r"\part*{#1}" in macros
     assert r"\chapter{#1}" in macros

@@ -59,36 +59,62 @@
 % d'afficher le code source échappé comme texte visible.
 \NewDocumentCommand{\teiFormula}{O{} +m}{#2}
 
-% Matter switches and group titles mirror the stable PURH book skeleton while
-% leaving the reversible LaTEI body unchanged.
+% Matter switches keep book.cls's structural side effects (cleardoublepage,
+% numbered vs unnumbered chapters via \@mainmatterfalse/true) but not its
+% page-numbering side effect. PURH pagination is arabe continue from the
+% first page to the last (référentiel PURH v0.5 §5.5/§5.6, P0 — état de
+% pagination) : liminaries are never roman-numbered, and the switch to the
+% body never restarts the counter at 1. \pagenumbering resets the page
+% counter every time it is called, so it must be called at most once for
+% the whole document, on whichever of front/main/back matter starts first.
+% Every "started" flag is set with \global: each group/chapter is rendered
+% from inside its own TeX group (teiElement's xparse "+b" body argument,
+% IfSubStr's branch braces...), and a *local* \xxxtrue would revert the
+% instant that group closes — silently re-arming the guard and making
+% \lateiEnsureMainMatter re-run \cleardoublepage + reset the page counter
+% on every single chapter instead of only the first one.
 \newif\iflateifrontmatterstarted
 \newif\iflateimainmatterstarted
 \newif\iflateibackmatterstarted
 \newif\iflateiinbibliography
+\newif\iflateipagenumberinginitialized
 \lateifrontmatterstartedfalse
 \lateimainmatterstartedfalse
 \lateibackmatterstartedfalse
 \lateiinbibliographyfalse
+\lateipagenumberinginitializedfalse
+\NewDocumentCommand{\lateiEnsureContinuousArabicPagination}{}{%
+  \iflateipagenumberinginitialized\else
+    \pagenumbering{arabic}%
+    \global\lateipagenumberinginitializedtrue
+  \fi
+}
+\makeatletter
 \NewDocumentCommand{\lateiEnsureFrontMatter}{}{%
   \iflateifrontmatterstarted\else
-    % Match the stable renderer: book-class frontmatter gives liminaries their
-    % separate numbering policy; mainmatter starts the body numbering again.
-    \frontmatter
-    \lateifrontmatterstartedtrue
+    \cleardoublepage
+    \global\@mainmatterfalse
+    \lateiEnsureContinuousArabicPagination
+    \global\lateifrontmatterstartedtrue
   \fi
 }
 \NewDocumentCommand{\lateiEnsureMainMatter}{}{%
   \iflateimainmatterstarted\else
-    \mainmatter
-    \lateimainmatterstartedtrue
+    \cleardoublepage
+    \global\@mainmattertrue
+    \lateiEnsureContinuousArabicPagination
+    \global\lateimainmatterstartedtrue
   \fi
 }
 \NewDocumentCommand{\lateiEnsureBackMatter}{}{%
   \iflateibackmatterstarted\else
-    \backmatter
-    \lateibackmatterstartedtrue
+    \if@openright\cleardoublepage\else\clearpage\fi
+    \global\@mainmatterfalse
+    \lateiEnsureContinuousArabicPagination
+    \global\lateibackmatterstartedtrue
   \fi
 }
+\makeatother
 
 \ExplSyntaxOn
 \tl_new:N \l_latei_option_type_tl
