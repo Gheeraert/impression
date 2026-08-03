@@ -81,7 +81,7 @@ def build_latei_driver(
     parts.extend(
         [
             r"\begin{document}",
-            _title_page(metadata),
+            _front_matter_sequence(metadata),
             rf"\input{{{body_input}}}",
             r"\cleardoublepage",
             r"\tableofcontents",
@@ -174,7 +174,7 @@ def _monofile_content(
             running_titles_map_content.rstrip(),
         ])
 
-    title_page = _title_page(metadata)
+    title_page = _front_matter_sequence(metadata)
 
     parts.extend([
         "",
@@ -379,28 +379,83 @@ def compile_latei_pdf(
     )
 
 
-def _title_page(metadata: LateiMetadata) -> str:
-    lines = [
-        r"\begin{titlepage}",
-        r"\thispagestyle{empty}",
-        r"\centering",
-        r"\vspace*{0.15\textheight}",
-        r"{\Huge\bfseries \PURHBookTitle\par}",
+def _front_matter_sequence(metadata: LateiMetadata) -> str:
+    """Séquence complète des liminaires (référentiel PURH v0.6 §8.1) : deux
+    pages blanches, faux-titre, crédits, page de titre, page blanche —
+    bâtie uniquement depuis les métadonnées déjà extraites, jamais depuis
+    le corps LaTEI réversible. Initialise la pagination arabe continue
+    avant tout contenu, pour que ces six pages soient comptées (sans folio
+    visible, \\PURH*Page étant toutes en pagestyle empty) avant que
+    l'introduction ne devienne la première page numérotée visible.
+    """
+    parts = [
+        r"\lateiEnsureContinuousArabicPagination",
+        r"\PURHBlankPage",
+        r"\PURHBlankPage",
+        _false_title(metadata),
+        _credits_page(metadata),
+        _full_title_page(metadata),
+        r"\PURHBlankPage",
     ]
+    return "\n".join(part for part in parts if part)
+
+
+def _false_title(metadata: LateiMetadata) -> str:
+    return rf"\PURHFalseTitle{{{_latex_text(metadata.title)}}}"
+
+
+def _credits_lines(metadata: LateiMetadata) -> list[str]:
+    """Lignes réelles de la page de crédits, à partir des métadonnées
+    disponibles uniquement — aucun texte légal générique (licence, mentions
+    "tous droits réservés") n'est inventé : ce champ n'existe pas encore
+    dans LateiMetadata au-delà de `rights`, repris tel quel s'il est
+    renseigné plutôt que complété par une formule fixe non vérifiée."""
+    lines: list[str] = []
+    if metadata.directors:
+        lines.append(_latex_text("Sous la direction de " + " et ".join(metadata.directors)))
+    elif metadata.editors:
+        lines.append(_latex_text(" ; ".join(metadata.editors)))
+    if metadata.collection_title:
+        collection = metadata.collection_title
+        if metadata.collection_number:
+            collection = f"{collection}, n° {metadata.collection_number}"
+        lines.append(_latex_text(collection))
+    publisher_bits = [bit for bit in (metadata.publisher, metadata.publication_place, metadata.publication_year) if bit]
+    if publisher_bits:
+        lines.append(_latex_text(", ".join(publisher_bits)))
+    for label, value in (
+        ("ISBN", metadata.isbn_print),
+        ("ISBN (PDF)", metadata.isbn_pdf),
+        ("ISBN (ePub)", metadata.isbn_epub),
+        ("ISSN", metadata.issn),
+        ("DOI", metadata.doi),
+    ):
+        if value:
+            lines.append(_latex_text(f"{label} : {value}"))
+    if metadata.rights:
+        lines.append(_latex_text(metadata.rights))
+    return lines
+
+
+def _credits_page(metadata: LateiMetadata) -> str:
+    lines = _credits_lines(metadata)
+    if not lines:
+        return ""
+    body = r"\vspace{0.4\baselineskip}".join(rf"{line}\par" for line in lines)
+    return rf"\PURHCreditsPage{{{body}}}"
+
+
+def _full_title_page(metadata: LateiMetadata) -> str:
+    lines = [r"{\Huge\bfseries \PURHBookTitle\par}"]
     if metadata.subtitle:
         lines.append(r"\PurhSubtitle{\PURHBookSubtitle}")
     if metadata.contributor_line:
         lines.append(r"\PurhContributors{\PURHBookAuthor}")
-    lines.append(r"\vfill")
+    lines.append(r"\vspace{2\baselineskip}")
     if metadata.publisher:
         lines.append(rf"\PurhTitleExtra{{{_latex_text(metadata.publisher)}}}")
-    lines.extend(
-        [
-            r"\end{titlepage}",
-            r"\clearpage",
-        ]
-    )
-    return "\n".join(lines)
+    body = "\n".join(lines)
+    return rf"\PURHTitlePage{{{body}}}"
 
 
 def _latex_input_path(path: Path, *, relative_to: Path) -> str:

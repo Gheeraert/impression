@@ -399,7 +399,55 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   }}
   {{%
     \par
-  }}""".strip()
+  }}
+
+% -----------------------------------------------------------------
+% Liminaires PURH (référentiel v0.6 §8.1, P0 — "construire la séquence
+% complète des liminaires") : pages blanches, faux-titre, crédits, page de
+% titre. Construites depuis les métadonnées du livre par latei_driver.py,
+% jamais depuis le corps LaTEI réversible. Toutes en pagestyle empty (ni
+% folio ni titre courant), mais comptées dans la pagination — jamais
+% \begin{{titlepage}} (dont le mode de compatibilité LaTeX 2.09 remet parfois
+% \c@page à 1, un risque inutile ici où le compte doit au contraire
+% continuer sans interruption depuis la toute première page physique).
+% -----------------------------------------------------------------
+\newcommand{{\PURHBlankPage}}{{%
+  \clearpage
+  \thispagestyle{{empty}}%
+  \mbox{{}}%
+  \clearpage
+}}
+
+\newcommand{{\PURHFalseTitle}}[1]{{%
+  \clearpage
+  \thispagestyle{{empty}}%
+  \begin{{center}}
+  \vspace*{{0.35\textheight}}
+  {{\PURHTitreFont\fontsize{{14pt}}{{17pt}}\selectfont #1\par}}
+  \end{{center}}
+  \clearpage
+}}
+
+\newcommand{{\PURHCreditsPage}}[1]{{%
+  \clearpage
+  \thispagestyle{{empty}}%
+  \begin{{center}}
+  \vspace*{{0.3\textheight}}
+  \small
+  #1
+  \end{{center}}
+  \clearpage
+}}
+
+\newcommand{{\PURHTitlePage}}[1]{{%
+  \clearpage
+  \thispagestyle{{empty}}%
+  \begin{{center}}
+  \vspace*{{0.15\textheight}}
+  #1
+  \end{{center}}
+  \clearpage
+}}""".strip()
 
 
 def _escape(value: str | None) -> str:

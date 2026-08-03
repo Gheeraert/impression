@@ -91,11 +91,14 @@ def test_every_part_and_article_starts_on_an_odd_recto_page(two_parts_export) ->
     assert len(entries) == 4, f"Expected 4 TOC entries (2 parts, 2 articles), got: {toc!r}"
 
     pages_by_title = {title: int(page) for title, page in entries}
+    # Décalées de 6 pages depuis l'ajout des liminaires (référentiel PURH
+    # v0.6 §8.1 : 2 pages blanches, faux-titre, crédits, page de titre,
+    # page blanche avant tout contenu) — voir test_latei_front_matter_sequence.py.
     assert pages_by_title == {
-        "Premiere Partie": 1,
-        "Article Un": 3,
-        "Seconde Partie": 5,
-        "Article Deux": 7,
+        "Premiere Partie": 7,
+        "Article Un": 9,
+        "Seconde Partie": 11,
+        "Article Deux": 13,
     }
     for title, page in pages_by_title.items():
         assert page % 2 == 1, f"{title!r} opens on an even (verso) page {page}, expected odd (recto)."
