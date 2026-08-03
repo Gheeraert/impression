@@ -19,6 +19,7 @@ from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pd
 from .site_quality import run_site_quality_checks
 from .site_sitemap import write_sitemap_and_robots
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
+from .site_structured_data import render_canonical_link, render_json_ld
 from .site_zotero import build_page_description, render_zotero_meta
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
@@ -1065,6 +1066,9 @@ class SiteBuilder:
             abstract_html=abstract_html,
             citation_pdf_href=citation_pdf_href,
         )
+        canonical_link = render_canonical_link(site_meta, page)
+        description_text = build_page_description(abstract_html) if abstract_html else ""
+        json_ld = render_json_ld(site_meta, page, description=description_text)
         return f'''<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1072,7 +1076,9 @@ class SiteBuilder:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(page_title)}</title>
   <link rel="stylesheet" href="assets/site.css">
+  {canonical_link}
   {zotero_meta}
+  {json_ld}
 </head>
 <body>
   {banner}
