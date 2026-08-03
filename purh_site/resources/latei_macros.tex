@@ -13,9 +13,20 @@
 \newunicodechar{ }{\,}
 \newunicodechar{‑}{\nobreak\hbox{-}}
 \newunicodechar{″}{\ensuremath{\prime\prime}}
+% Titres courants recto/verso distincts (référentiel PURH v0.5, "Titres
+% courants") : verso (pages paires, RE) porte le titre du livre ou, à
+% l'intérieur d'une partie, celui de la partie ; recto (pages impaires, LO)
+% porte le titre court de la contribution en cours. Les deux commandes sont
+% ré-exécutées à chaque page par fancyhdr — elles doivent donc rester des
+% noms de macro, jamais leur valeur expansée au moment de cet \input.
 \newcommand{\lateiCurrentRunningTitle}{}
-\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}
-\AtBeginDocument{\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}}
+\newcommand{\lateiVersoRunningTitle}{}
+\fancyhead[RE]{\PURHHeaderFont\nouppercase{\lateiVersoRunningTitle}}
+\fancyhead[LO]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}
+\AtBeginDocument{%
+  \fancyhead[RE]{\PURHHeaderFont\nouppercase{\lateiVersoRunningTitle}}%
+  \fancyhead[LO]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}%
+}
 
 % Ouverture de contribution (référentiel PURH v0.5, "Ouvertures de
 % contribution") : titre, sous-titre, auteur et traducteur viennent des
@@ -163,12 +174,24 @@
 \tl_new:N \l_latei_graphic_local_path_tl
 \tl_new:N \l_latei_running_title_tl
 \tl_new:N \g_latei_current_running_title_tl
+\tl_new:N \g_latei_verso_running_title_tl
 \prop_new:N \g_latei_graphics_map_prop
 \prop_new:N \g_latei_running_titles_map_prop
 \cs_generate_variant:Nn \prop_get:NnNTF { NVNTF }
+% Le verso par défaut est le titre du livre ; \latei_markboth_verso:n le
+% remplace par le titre de la partie en cours tant qu'aucune autre partie
+% ne l'écrase (référentiel : "verso : titre du livre ou de la partie").
+% \PURHBookTitle est déjà défini à ce stade (préambule inséré avant ce
+% fichier), mais on stocke le nom de macro, pas sa valeur expansée : la
+% même robustesse que pour \lateiCurrentRunningTitle plus haut.
+\tl_gset:Nn \g_latei_verso_running_title_tl { \PURHBookTitle }
 \RenewDocumentCommand{\lateiCurrentRunningTitle}{}
   {
     \tl_use:N \g_latei_current_running_title_tl
+  }
+\RenewDocumentCommand{\lateiVersoRunningTitle}{}
+  {
+    \tl_use:N \g_latei_verso_running_title_tl
   }
 \NewDocumentCommand{\lateiDeclareGraphic}{m m}
   {
@@ -178,21 +201,30 @@
   {
     \prop_gput:Nnn \g_latei_running_titles_map_prop { #1 } { #2 }
   }
-\cs_new_protected:Npn \latei_markboth:n #1
+% Recto (titre court de la contribution) et verso (titre du livre ou de la
+% partie) sont mis à jour indépendamment — jamais la même valeur des deux
+% côtés (référentiel : "passe deux fois la même valeur à \markboth").
+\cs_new_protected:Npn \latei_markboth_recto:n #1
   {
     \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
-      {
-        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
-        \markboth{\tl_use:N \l_latei_running_title_tl}{\tl_use:N \l_latei_running_title_tl}
-      }
-      {
-        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
-        \markboth{#1}{#1}
-      }
+      { \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl }
+      { \tl_gset:Nn \g_latei_current_running_title_tl { #1 } }
+    \markboth{\tl_use:N \g_latei_verso_running_title_tl}{\tl_use:N \g_latei_current_running_title_tl}
+  }
+\cs_new_protected:Npn \latei_markboth_verso:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      { \tl_gset_eq:NN \g_latei_verso_running_title_tl \l_latei_running_title_tl }
+      { \tl_gset:Nn \g_latei_verso_running_title_tl { #1 } }
+    \markboth{\tl_use:N \g_latei_verso_running_title_tl}{\tl_use:N \g_latei_current_running_title_tl}
   }
 \NewDocumentCommand{\lateiMarkBoth}{m}
   {
-    \latei_markboth:n { #1 }
+    \latei_markboth_recto:n { #1 }
+  }
+\NewDocumentCommand{\lateiMarkBothVerso}{m}
+  {
+    \latei_markboth_verso:n { #1 }
   }
 \RenewDocumentCommand{\chaptermark}{m}{\lateiMarkBoth{#1}}
 \cs_new_protected:Npn \latei_chapter:n #1
@@ -280,7 +312,7 @@
         \clearpage
         \phantomsection
         \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
-        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
+        \exp_args:NV \latei_markboth_recto:n \l_latei_option_page_title_tl
       }
   }
 \NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
@@ -378,7 +410,7 @@
 \newcommand{\lateiHeadContext}{fallback}
 \newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
 \NewDocumentCommand{\lateiRenderHead}{m}{%
-  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{part}{#1}}{%
+  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBothVerso{#1}\addcontentsline{toc}{part}{#1}}{%
   \IfStrEq{\lateiHeadContext}{chapter}{\lateiChapter{#1}}{%
     \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
     \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%

@@ -97,7 +97,11 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{\setmonofont{{Latin Modern Mono}}}}
   {{\setmonofont{{TeX Gyre Cursor}}}}
 
-\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}
+% Romain, pas italique (référentiel PURH §2.3 : titres courants "Josefin
+% Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
+% un défaut confirmé, pas un choix). Taille/graisse Josefin exactes hors
+% périmètre de cette passe (micropasse titraille).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
@@ -210,13 +214,15 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 \pagestyle{{fancy}}
 \fancyhf{{}}
+% Folios à l'extérieur (référentiel PURH §2.3) : LE (verso) et RO (recto).
+% Les titres courants intérieurs (RE, LO) et \chaptermark sont pris en
+% charge par latei_macros.tex, qui distingue verso (livre/partie) et recto
+% (contribution en cours) — les définir ici aussi serait dupliqué et, pire,
+% écrasé silencieusement puisque ce fichier est \input après ce préambule.
 \fancyhead[LE]{{\PURHHeaderFont\thepage}}
-\fancyhead[RE]{{\PURHHeaderFont\nouppercase{{\PURHBookTitle}}}}
-\fancyhead[LO]{{\PURHHeaderFont\nouppercase{{\leftmark}}}}
 \fancyhead[RO]{{\PURHHeaderFont\thepage}}
 \renewcommand{{\headrulewidth}}{{0pt}}
 \renewcommand{{\footrulewidth}}{{0pt}}
-\renewcommand{{\chaptermark}}[1]{{\markboth{{#1}}{{}}}}
 
 \fancypagestyle{{plain}}{{%
   \fancyhf{{}}%
