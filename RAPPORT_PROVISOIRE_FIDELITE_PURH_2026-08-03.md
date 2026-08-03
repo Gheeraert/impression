@@ -18,6 +18,27 @@ Branche dédiée `purh-fidelite-profil-et-tests`, poussée sur origin :
 **Les 9 micropasses de la consigne d'origine sont traitées ; travail complémentaire en cours au-delà.** Voir la
 section "Livraison" pour le rapport de synthèse en 9 points (couvre les micropasses 1-9 uniquement).
 
+## Addendum — arbitrage résolu : cas transitoire poésie (`<quote>`+`<lb/>`)
+
+Point laissé hors périmètre à la micropasse 8 : comment distinguer une citation en prose d'un poème encodé sans
+`<lg>/<l>` réels. Arbitrage demandé à l'utilisateur, réponse tranchée : **la source de vérité est la
+spécification Commons-Publishing/Métopes**, pas une heuristique de rendu.
+
+L'échantillon de référence Commons-Publishing (`tests/fixtures/commons-publishing/fichier_test.xml`) documente
+explicitement l'encodage prescrit de la poésie — plusieurs exemples de vrais `<lg>/<l>`, y compris strophes
+multiples, numérotation de vers via `<num>` enfant, et césure interne via `<caesura/>`. Le cas "poésie en
+`<quote>`+`<lb/>`" **n'est pas une variante légitime** selon cette spécification : si un livre réel encode un
+poème ainsi, c'est un défaut de la source XML à corriger en amont, pas un cas à deviner côté rendu.
+
+**Conclusion : rien à faire.** Le support `<lg>/<l>` ajouté en micropasse 8 (environnement `verse`) couvre déjà
+l'intégralité de ce que la spécification prescrit pour la poésie. Point fermé, aucun correctif de code
+supplémentaire nécessaire.
+
+**Écart connexe repéré, non traité à la demande de l'utilisateur** : `<caesura/>` (marque de césure interne à un
+vers, documentée dans le même exemple de référence) n'a aucune prise en charge côté LaTeX — gérée pour le HTML
+(`tei_to_html.xsl`) mais tombe silencieusement dans le passthrough générique côté LaTeX (aucune erreur, mais
+aucun signe typographique). Petit ajout bien spécifié pour une suite éventuelle.
+
 ## Addendum — ouvertures à droite (belle page), au-delà des 9 micropasses d'origine
 
 Classe `openany` ne garantissait aucune politique fiable d'ouverture à droite (référentiel §5.2, défaut
