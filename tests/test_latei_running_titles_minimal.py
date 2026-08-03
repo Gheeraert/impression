@@ -60,13 +60,17 @@ def test_minimal_latei_running_title_uses_short_mark_without_touching_body(tmp_p
     # Diagnostic: chapter titles remain complete, but marks go through the short-title resolver.
     assert r"\lateiChapter{#1}" in macros
     assert r"\lateiCurrentRunningTitle" in macros
-    assert r"\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}" in macros
+    assert r"\fancyhead[LO]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}" in macros
+    assert r"\fancyhead[RE]{\PURHHeaderFont\nouppercase{\lateiVersoRunningTitle}}" in macros
     assert r"\RenewDocumentCommand{\chaptermark}{m}{\lateiMarkBoth{#1}}" in macros
     assert r"\chapter[\tl_use:N \l_latei_running_title_tl]{#1}" not in macros
     assert r"\chapter{#1}" in macros
     assert r"\addcontentsline{toc}{chapter}{#1}" in macros
-    assert r"\addcontentsline{toc}{part}{#1}" in macros
-    assert r"\latei_markboth:n" in macros
+    # No manual \addcontentsline{toc}{part}{...}: \part* already registers
+    # its own TOC entry under our [display] shape — adding one here would
+    # duplicate every part in the table of contents (see
+    # test_latei_recto_openings.py::test_part_star_toc_entry_is_not_duplicated).
+    assert r"\latei_markboth_recto:n" in macros
     assert r"\prop_get:NnNTF \g_latei_running_titles_map_prop { #1 }" in macros
     assert rf"\markboth{{{LONG_CHAPTER_TITLE}}}{{{LONG_CHAPTER_TITLE}}}" not in macros
     assert rf"\markboth{{{LONG_CHAPTER_TITLE}}}{{{LONG_CHAPTER_TITLE}}}" not in main

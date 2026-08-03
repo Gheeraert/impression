@@ -16,6 +16,7 @@ ENVIRONMENT_ELEMENTS = {
     "cit": "teiCit",
     "div": "teiDiv",
     "figure": "teiFigure",
+    "lg": "teiLg",
     "list": "teiList",
     "table": "teiTable",
 }
@@ -46,6 +47,7 @@ MACRO_ELEMENTS = {
     "hi": "teiHi",
     "idno": "teiIdno",
     "item": "teiItem",
+    "l": "teiL",
     "label": "teiLabel",
     "name": "teiName",
     "note": "teiNote",

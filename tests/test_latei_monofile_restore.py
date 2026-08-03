@@ -102,7 +102,7 @@ def test_extract_latei_document_zone_raises_on_multiple_zones() -> None:
 @pytest.fixture(scope="module")
 def monofile_export(tmp_path_factory: pytest.TempPathFactory):
     output_dir = tmp_path_factory.mktemp("latei_monofile_restore")
-    return run_reversible_export_for_file(FIXTURE_PATH, output_dir)
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=False)
 
 
 # ---------------------------------------------------------------------------

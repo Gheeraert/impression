@@ -6,14 +6,18 @@ Deliberately independent of LatexRenderer, LatexRenderOptions, semantic_model,
 tei_to_model, and pdf_builder. Depends only on the Python standard library.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from .purh_layout_profiles import DEFAULT_LAYOUT_PROFILE_NAME, PurhLayoutProfile, get_layout_profile
 
 
 @dataclass(frozen=True, slots=True)
 class PurhPreambleData:
     """Plain-data container for PURH preamble rendering.
 
-    All fields are plain strings. The caller resolves model-level choices
+    All fields are plain strings, except ``profile`` which selects the
+    versioned page-layout profile (format, margins, body/note grid) defined
+    in ``purh_layout_profiles``. The caller resolves model-level choices
     (e.g. isbn_pdf vs isbn_print, contributors list) before constructing
     this object. Fields unused by the template (collection, issn) are
     intentionally absent.
@@ -26,6 +30,19 @@ class PurhPreambleData:
     year: str = ""
     doi: str = ""
     isbn: str = ""
+    profile: PurhLayoutProfile = field(
+        default_factory=lambda: get_layout_profile(DEFAULT_LAYOUT_PROFILE_NAME)
+    )
+
+
+def _pt(value: float) -> str:
+    """Format a point size without a spurious trailing ``.0`` (11 -> "11pt")."""
+    return f"{value:g}pt"
+
+
+def _mm(value: float) -> str:
+    """Format a millimeter dimension without a spurious trailing ``.0``."""
+    return f"{value:g}mm"
 
 
 def render_purh_latex_preamble(data: PurhPreambleData) -> str:
@@ -37,17 +54,22 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
     year = _escape(data.year)
     doi = _escape(data.doi)
     isbn = _escape(data.isbn)
+    profile = data.profile
+    body_class_pt = _pt(profile.body_font_size_pt)
+    body_leading = _pt(profile.body_leading_pt)
+    note_font_size = _pt(profile.note_font_size_pt)
+    note_leading = _pt(profile.note_leading_pt)
 
     return rf"""
-\documentclass[12pt,twoside,openany]{{book}}
+\documentclass[{body_class_pt},twoside,openany]{{book}}
 
 \usepackage[
-  paperwidth=155mm,
-  paperheight=230mm,
-  top=30mm,
-  bottom=19mm,
-  inner=23mm,
-  outer=23mm,
+  paperwidth={_mm(profile.paper_width_mm)},
+  paperheight={_mm(profile.paper_height_mm)},
+  top={_mm(profile.margin_top_mm)},
+  bottom={_mm(profile.margin_bottom_mm)},
+  inner={_mm(profile.margin_inner_mm)},
+  outer={_mm(profile.margin_outer_mm)},
   headheight=14pt,
   headsep=8mm,
   footskip=10mm
@@ -71,11 +93,32 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{\newfontfamily\PURHTitleFont{{Josefin Sans}}}}
   {{\newfontfamily\PURHTitleFont{{TeX Gyre Heros}}}}
 
+% Titraille PURH (référentiel §2.3-§2.5) : partie, article et section
+% observés en Josefin Sans Thin, capitales, distinct du \PURHTitleFont
+% "normal weight" ci-dessus utilisé ailleurs. Chargée comme famille à part
+% (et non via \bfseries sur \PURHTitleFont) car "Thin" n'est pas une série
+% NFSS standard que fontspec puisse sélectionner automatiquement — "Josefin
+% Sans Thin" existe en revanche comme nom de famille indépendant portant
+% elle-même ses propres graisses Thin (romain) et Thin Italic.
+\IfFontExistsTF{{Josefin Sans Thin}}
+  {{\newfontfamily\PURHTitreFont{{Josefin Sans Thin}}}}
+  {{\newfontfamily\PURHTitreFont{{TeX Gyre Heros}}}}
+
 \IfFontExistsTF{{Latin Modern Mono}}
   {{\setmonofont{{Latin Modern Mono}}}}
   {{\setmonofont{{TeX Gyre Cursor}}}}
 
-\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}
+% Romain, pas italique (référentiel PURH §2.3 : titres courants "Josefin
+% Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
+% un défaut confirmé, pas un choix).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small}}
+
+% Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
+% de la table de tailles du \documentclass{{book}} choisi : elle donne un
+% pas voisin mais pas identique au pas de grille cible (référentiel PURH
+% §2.4, §5.3 : corps 11 pt sur une grille de 13,5 pt).
+\renewcommand{{\normalsize}}{{\fontsize{{{body_class_pt}}}{{{body_leading}}}\selectfont}}
+\normalsize
 
 \newcommand{{\PURHBookTitle}}{{{title}}}
 \newcommand{{\PURHBookSubtitle}}{{{subtitle}}}
@@ -122,17 +165,35 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \setcounter{{secnumdepth}}{{0}}
 \setcounter{{tocdepth}}{{2}}
 
+% Même traitement typographique que la titraille de contribution (Josefin
+% Sans Thin, 16 pt, capitales — référentiel §2.5, §5.3), pour le chemin
+% <div type="chapter"> resté en Chaparral/Bold à la micropasse 7 (chemin
+% distinct de l'ouverture de contribution corrigée en micropasse 5 : ce
+% \chapter est un vrai \chapter numéroté, avec son propre libellé
+% "Chapitre N" que cette passe ne modifie pas — seule la police change).
 \titleformat{{\chapter}}[display]
-  {{\PURHTitleFont\huge\bfseries\raggedright}}
+  {{\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\raggedright}}
   {{\chaptertitlename~\thechapter}}
   {{10pt}}
-  {{}}
+  {{\MakeUppercase}}
 
-\titleformat{{\section}}[block]
-  {{\PURHTitleFont\Large\bfseries\raggedright}}
+% Titre de partie observé : Josefin Sans Thin 16 pt, capitales, centré
+% (référentiel PURH §2.5, §5.3). Toujours \part* (pas de numéro affiché) :
+% le label reste vide plutôt que d'exposer un numéro de partie non requis.
+\titleformat{{\part}}[display]
+  {{\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\centering}}
   {{}}
   {{0pt}}
+  {{\MakeUppercase}}
+
+% Titre de section observé : Josefin Sans Thin 12 pt, capitales (référentiel
+% §2.5). Alignement et espacement non chiffrés par le référentiel pour ce
+% niveau : conservés tels quels (raggedright, séparations existantes).
+\titleformat{{\section}}[block]
+  {{\PURHTitreFont\fontsize{{12pt}}{{14pt}}\selectfont\raggedright}}
   {{}}
+  {{0pt}}
+  {{\MakeUppercase}}
 
 \titleformat{{\subsection}}[block]
   {{\PURHTitleFont\large\bfseries\raggedright}}
@@ -146,6 +207,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{0pt}}
   {{}}
 
+\titlespacing*{{\part}}{{0pt}}{{0pt}}{{30pt}}
 \titlespacing*{{\chapter}}{{0pt}}{{20pt}}{{18pt}}
 \titlespacing*{{\section}}{{0pt}}{{18pt}}{{10pt}}
 \titlespacing*{{\subsection}}{{0pt}}{{14pt}}{{8pt}}
@@ -181,13 +243,15 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 \pagestyle{{fancy}}
 \fancyhf{{}}
+% Folios à l'extérieur (référentiel PURH §2.3) : LE (verso) et RO (recto).
+% Les titres courants intérieurs (RE, LO) et \chaptermark sont pris en
+% charge par latei_macros.tex, qui distingue verso (livre/partie) et recto
+% (contribution en cours) — les définir ici aussi serait dupliqué et, pire,
+% écrasé silencieusement puisque ce fichier est \input après ce préambule.
 \fancyhead[LE]{{\PURHHeaderFont\thepage}}
-\fancyhead[RE]{{\PURHHeaderFont\nouppercase{{\PURHBookTitle}}}}
-\fancyhead[LO]{{\PURHHeaderFont\nouppercase{{\leftmark}}}}
 \fancyhead[RO]{{\PURHHeaderFont\thepage}}
 \renewcommand{{\headrulewidth}}{{0pt}}
 \renewcommand{{\footrulewidth}}{{0pt}}
-\renewcommand{{\chaptermark}}[1]{{\markboth{{#1}}{{}}}}
 
 \fancypagestyle{{plain}}{{%
   \fancyhf{{}}%
@@ -199,15 +263,18 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 \setlength{{\footnotesep}}{{0.6\baselineskip}}
 \setlength{{\skip\footins}}{{1.2\baselineskip}}
-\renewcommand{{\footnotelayout}}{{\fontsize{{9.5pt}}{{10.5pt}}\selectfont}}
+\renewcommand{{\footnotelayout}}{{\fontsize{{{note_font_size}}}{{{note_leading}}}\selectfont}}
 
 \usepackage{{etoolbox}}
 
+% Citations observées : 9/11 pt, retrait gauche 10 mm (pas de retrait
+% droit), ~4 mm avant/après (référentiel PURH §5.3 ; état antérieur :
+% 11/14 pt, retraits gauche ET droit ≈1,5em, 8pt avant/après).
 \renewenvironment{{quote}}
   {{%
     \par\begingroup
-    \fontsize{{11pt}}{{14pt}}\selectfont
-    \list{{}}{{\leftmargin=1.5em\rightmargin=1.5em}}%
+    \fontsize{{9pt}}{{11pt}}\selectfont
+    \list{{}}{{\leftmargin=10mm\rightmargin=0pt}}%
     \item\relax
   }}
   {{%
@@ -215,8 +282,8 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
     \endgroup
   }}
 
-\AtBeginEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
-\AtEndEnvironment{{quote}}{{\vspace*{{8pt plus 2pt minus 2pt}}}}
+\AtBeginEnvironment{{quote}}{{\vspace*{{4mm plus 1pt minus 1pt}}}}
+\AtEndEnvironment{{quote}}{{\vspace*{{4mm plus 1pt minus 1pt}}}}
 
 \usepackage{{graphicx}}
 \usepackage{{caption}}

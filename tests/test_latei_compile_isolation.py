@@ -71,9 +71,15 @@ def test_stale_toc_from_another_document_does_not_survive_recompilation(tmp_path
     # \tableofcontents to resolve its own entries — not just avoid stale
     # content, but genuinely reflect this document on the very first build.
     fresh_pdf_text = _extract_pdf_text(result.latei_monofile_pdf_path)
-    assert "Table des mati" in fresh_pdf_text
-    assert fresh_pdf_text.count("Premier chapitre authentique") >= 2
-    assert fresh_pdf_text.count("Second chapitre authentique") >= 2
+    # Case-insensitive: the chapter-opening heading is uppercase (titraille,
+    # \titleformat{\chapter} — see tests/test_latei_titraille_chapter_div.py)
+    # while the TOC entry and running-title headers stay in original case;
+    # this test only cares that both titles are genuinely present, not
+    # which of those two renderings carries which occurrence.
+    fresh_pdf_text_upper = fresh_pdf_text.upper()
+    assert "TABLE DES MATI" in fresh_pdf_text_upper
+    assert fresh_pdf_text_upper.count("PREMIER CHAPITRE AUTHENTIQUE") >= 2
+    assert fresh_pdf_text_upper.count("SECOND CHAPITRE AUTHENTIQUE") >= 2
 
     # Simulate the real-world contamination: a .toc left behind by a wholly
     # different, previous document, sitting under this exact jobname.

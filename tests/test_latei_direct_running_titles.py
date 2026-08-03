@@ -77,7 +77,7 @@ def test_latei_running_titles_map_is_generated_without_touching_body(tmp_path: P
     assert r"\lateiDeclareRunningTitle" in running_map
     assert short in running_map
     assert r"\lateiMarkBoth" in macros
-    assert r"\latei_markboth:n" in macros
+    assert r"\latei_markboth_recto:n" in macros
     assert r"\prop_new:N \g_latei_running_titles_map_prop" in macros
 
 

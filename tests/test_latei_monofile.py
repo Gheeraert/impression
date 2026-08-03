@@ -13,7 +13,13 @@ FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 @pytest.fixture(scope="module")
 def monofile_result(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
     output_dir = tmp_path_factory.mktemp("latei_monofile")
-    return run_reversible_export_for_file(FIXTURE_PATH, output_dir)
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=False)
+
+
+@pytest.fixture(scope="module")
+def monofile_result_with_pdf(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
+    output_dir = tmp_path_factory.mktemp("latei_monofile_pdf")
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=True)
 
 
 def test_monofile_is_created(monofile_result: ReversibleExportResult) -> None:
@@ -110,17 +116,18 @@ def test_legacy_body_unchanged_from_monofile_zone(monofile_result: ReversibleExp
     assert zone == body
 
 
-def test_monofile_compiles_when_lualatex_is_available(monofile_result: ReversibleExportResult) -> None:
+@pytest.mark.full_book
+def test_monofile_compiles_when_lualatex_is_available(monofile_result_with_pdf: ReversibleExportResult) -> None:
     if shutil.which("lualatex") is None:
         pytest.skip("LuaLaTeX is unavailable.")
 
-    if not monofile_result.latei_monofile_pdf_success:
-        log_path = monofile_result.latei_monofile_log_path
+    if not monofile_result_with_pdf.latei_monofile_pdf_success:
+        log_path = monofile_result_with_pdf.latei_monofile_log_path
         if log_path is not None and log_path.exists():
             excerpt = "\n".join(log_path.read_text(encoding="utf-8", errors="replace").splitlines()[:160])
             pytest.fail(f"LaTEI monofile did not compile.\n{excerpt}")
         else:
-            pytest.fail(f"LaTEI monofile did not compile: {monofile_result.latei_monofile_pdf_message}")
+            pytest.fail(f"LaTEI monofile did not compile: {monofile_result_with_pdf.latei_monofile_pdf_message}")
 
-    assert monofile_result.latei_monofile_pdf_path.exists()
-    assert monofile_result.latei_monofile_pdf_path.stat().st_size > 0
+    assert monofile_result_with_pdf.latei_monofile_pdf_path.exists()
+    assert monofile_result_with_pdf.latei_monofile_pdf_path.stat().st_size > 0

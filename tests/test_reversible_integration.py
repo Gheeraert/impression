@@ -66,7 +66,7 @@ def test_latei_body_is_reversible_and_latei_main_is_driver_only(tmp_path: Path) 
     main = result.latei_main_path.read_text(encoding="utf-8")
 
     assert r"\documentclass" not in body
-    assert r"\documentclass[12pt,twoside,openany]{book}" in main
+    assert r"\documentclass[11pt,twoside,openany]{book}" in main
     assert "latei_macros.tex" in main
     assert "purh_site/resources/latei_macros.tex" not in main.replace("\\", "/")
     assert "book.latei_body.tex" in main

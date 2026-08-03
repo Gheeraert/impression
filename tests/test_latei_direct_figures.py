@@ -170,6 +170,7 @@ def test_latei_direct_figure_with_missing_image_compiles_when_lualatex_is_availa
     assert missing_figure_export.latei_pdf_path.stat().st_size > 0
 
 
+@pytest.mark.full_book
 def test_latei_direct_real_fixture_figures_still_round_trip_and_compile(
     fixture_export: ReversibleExportResult,
 ) -> None:

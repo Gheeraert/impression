@@ -28,7 +28,13 @@ def roundtrip_result(source_root: etree._Element):
 @pytest.fixture(scope="module")
 def export_result(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
     output_dir = tmp_path_factory.mktemp("heraldique_latei_export")
-    return run_reversible_export_for_file(FIXTURE_PATH, output_dir)
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=False)
+
+
+@pytest.fixture(scope="module")
+def export_result_with_pdf(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
+    output_dir = tmp_path_factory.mktemp("heraldique_latei_export_pdf")
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=True)
 
 
 def test_real_metopes_fixture_exists() -> None:
@@ -119,8 +125,8 @@ def test_real_metopes_fixture_full_latei_export_package(export_result: Reversibl
     assert result.latei_body_path.exists()
     assert result.latei_main_path.exists()
     assert result.latei_macros_path.exists()
-    assert result.latei_log_path is not None
-    assert result.latei_log_path.exists()
+    # Compiled separately (see test_real_metopes_fixture_latei_compilation_status_is_explicit,
+    # marked full_book): this fixture skips PDF compilation, so no build log is produced here.
     assert result.roundtrip_xml_path.exists()
     assert result.diagnostics_path.exists()
 
@@ -128,7 +134,7 @@ def test_real_metopes_fixture_full_latei_export_package(export_result: Reversibl
     main = result.latei_main_path.read_text(encoding="utf-8")
 
     assert r"\documentclass" not in body
-    assert r"\documentclass[12pt,twoside,openany]{book}" in main
+    assert r"\documentclass[11pt,twoside,openany]{book}" in main
     assert rf'\input{{"{result.latei_macros_path.name}"}}' in main
     assert rf'\input{{"{result.latei_body_path.name}"}}' in main
     assert "purh_site/resources/latei_macros.tex" not in main.replace("\\", "/")
@@ -181,8 +187,9 @@ def test_real_metopes_running_titles_map_preserves_nbsp_in_keys(export_result: R
         )
 
 
-def test_real_metopes_fixture_latei_compilation_status_is_explicit(export_result: ReversibleExportResult) -> None:
-    log_path = export_result.latei_log_path
+@pytest.mark.full_book
+def test_real_metopes_fixture_latei_compilation_status_is_explicit(export_result_with_pdf: ReversibleExportResult) -> None:
+    log_path = export_result_with_pdf.latei_log_path
 
     assert log_path is not None
     assert log_path.exists()
@@ -191,14 +198,14 @@ def test_real_metopes_fixture_latei_compilation_status_is_explicit(export_result
     assert "Command:" in log
 
     if shutil.which("lualatex") is None:
-        assert export_result.latei_pdf_success is False
-        assert "engine not found" in export_result.latei_pdf_message
+        assert export_result_with_pdf.latei_pdf_success is False
+        assert "engine not found" in export_result_with_pdf.latei_pdf_message
         assert "LaTeX engine not found: lualatex" in log
         return
 
-    if not export_result.latei_pdf_success:
+    if not export_result_with_pdf.latei_pdf_success:
         excerpt = "\n".join(log.splitlines()[:120])
         pytest.fail(f"LaTEI PDF compilation failed on the real Metopes fixture.\n{excerpt}")
 
-    assert export_result.latei_pdf_path.exists()
-    assert export_result.latei_pdf_path.stat().st_size > 0
+    assert export_result_with_pdf.latei_pdf_path.exists()
+    assert export_result_with_pdf.latei_pdf_path.stat().st_size > 0

@@ -14,7 +14,13 @@ FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 @pytest.fixture(scope="module")
 def latei_result(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
     output_dir = tmp_path_factory.mktemp("latei_direct_title_page")
-    return run_reversible_export_for_file(FIXTURE_PATH, output_dir / "latei")
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir / "latei", compile_pdf=False)
+
+
+@pytest.fixture(scope="module")
+def latei_result_with_pdf(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
+    output_dir = tmp_path_factory.mktemp("latei_direct_title_page_pdf")
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir / "latei", compile_pdf=True)
 
 
 def test_latei_title_page_structure_and_publisher(latei_result: ReversibleExportResult) -> None:
@@ -64,14 +70,15 @@ def test_latei_title_page_keeps_metadata_available_but_not_printed(latei_result:
     assert "979-10-240-1855-3" not in title_page
 
 
-def test_latei_title_page_export_compiles_or_reports_status(latei_result: ReversibleExportResult) -> None:
-    assert isinstance(latei_result, ReversibleExportResult)
-    assert latei_result.latei_main_path.exists()
-    assert latei_result.latei_log_path is not None
-    assert latei_result.latei_log_path.exists()
-    if latei_result.latei_pdf_success:
-        assert latei_result.latei_pdf_path is not None
-        assert latei_result.latei_pdf_path.exists()
+@pytest.mark.full_book
+def test_latei_title_page_export_compiles_or_reports_status(latei_result_with_pdf: ReversibleExportResult) -> None:
+    assert isinstance(latei_result_with_pdf, ReversibleExportResult)
+    assert latei_result_with_pdf.latei_main_path.exists()
+    assert latei_result_with_pdf.latei_log_path is not None
+    assert latei_result_with_pdf.latei_log_path.exists()
+    if latei_result_with_pdf.latei_pdf_success:
+        assert latei_result_with_pdf.latei_pdf_path is not None
+        assert latei_result_with_pdf.latei_pdf_path.exists()
 
 
 def _title_page_from_path(path: Path) -> str:
