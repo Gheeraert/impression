@@ -17,15 +17,48 @@
 \fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}
 \AtBeginDocument{\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}}
 
+% Ouverture de contribution (référentiel PURH v0.5, "Ouvertures de
+% contribution") : titre, sous-titre, auteur et traducteur viennent des
+% <p rend="..."> du <div type="titlePage">, seule source de vérité visible —
+% ne pas les dupliquer ailleurs. Styles provisoires : le calibrage exact de
+% la titraille PURH (Josefin Sans Thin, corps ciblés) est hors périmètre de
+% cette passe et relève d'une micropasse dédiée.
+\newcommand{\lateiContributionTitle}[1]{%
+  \par\vspace{0.5\baselineskip}%
+  {\PURHTitleFont\huge\bfseries\raggedright #1\par}%
+  \vspace{0.3\baselineskip}%
+}
+\newcommand{\lateiContributionSubtitle}[1]{%
+  {\PURHTitleFont\Large\itshape\raggedright #1\par}%
+  \vspace{0.4\baselineskip}%
+}
+\newcommand{\lateiContributionAuthor}[1]{%
+  {\normalsize\scshape #1\par}%
+  \vspace{0.3\baselineskip}%
+}
+\newcommand{\lateiContributionTranslator}[1]{%
+  {\small\itshape #1\par}%
+  \vspace{0.6\baselineskip}%
+}
 \NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
   \iflateiinfootnote
     #2\unskip\space
   \else
-    \IfStrEq{\lateiHeadContext}{figure}{%
-      \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
-        \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+    \IfStrEq{\lateiHeadContext}{titlePage}{%
+      \IfSubStr{#1}{rend={title-main}}{\lateiContributionTitle{#2}}{%
+        \IfSubStr{#1}{rend={title-sub}}{\lateiContributionSubtitle{#2}}{%
+          \IfSubStr{#1}{rend={author-aut}}{\lateiContributionAuthor{#2}}{%
+            \IfSubStr{#1}{rend={editor-trl}}{\lateiContributionTranslator{#2}}{\par #2\par}%
+          }%
+        }%
       }%
-    }{\par #2\par}%
+    }{%
+      \IfStrEq{\lateiHeadContext}{figure}{%
+        \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
+          \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+        }%
+      }{\par #2\par}%
+    }%
   \fi
 }
 \NewDocumentCommand{\teiP}{O{} +m}{\lateiRenderParagraph[#1]{#2}}
@@ -234,20 +267,19 @@
   {
     \tl_use:N \l_latei_option_numcols_tl
   }
-\cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
+% Rupture structurante d'ouverture de contribution : saut de page, entrée de
+% TDM et titre courant à partir de data-page-title — mais aucun titre visible
+% ni numérotation de chapitre ici (référentiel PURH v0.5, "Ouvertures de
+% contribution" : « sans libellé ni numérotation de chapitre »). Le titre
+% réellement affiché vient du <div type="titlePage"> rendu par ailleurs
+% (\lateiContributionTitle) ; le dupliquer ici romprait cette règle.
+\cs_new_protected:Npn \latei_add_contribution_opening_break:
   {
     \tl_if_empty:NF \l_latei_option_page_title_tl
       {
-        \chapter*{\tl_use:N \l_latei_option_page_title_tl}
-        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
+        \clearpage
+        \phantomsection
         \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
-      }
-  }
-\cs_new_protected:Npn \latei_add_numbered_chapter_from_title:
-  {
-    \tl_if_empty:NF \l_latei_option_page_title_tl
-      {
-        \chapter{\tl_use:N \l_latei_option_page_title_tl}
         \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
       }
   }
@@ -255,14 +287,14 @@
   {
     \lateiEnsureFrontMatter
     \latei_extract_options:n { #1 }
-    \latei_add_unnumbered_chapter_from_title:
+    \latei_add_contribution_opening_break:
     #2
   }
 \NewDocumentCommand{\lateiRenderChapterGroup}{O{} +m}
   {
     \lateiEnsureMainMatter
     \latei_extract_options:n { #1 }
-    \latei_add_numbered_chapter_from_title:
+    \latei_add_contribution_opening_break:
     #2
   }
 \NewDocumentCommand{\lateiRenderPartGroup}{O{} +m}
@@ -277,7 +309,7 @@
   {
     \lateiEnsureBackMatter
     \latei_extract_options:n { #1 }
-    \latei_add_unnumbered_chapter_from_title:
+    \latei_add_contribution_opening_break:
     #2
   }
 \NewDocumentCommand{\lateiRenderRef}{O{} +m}
@@ -455,7 +487,12 @@
 }
 
 \NewDocumentEnvironment{teiDiv}{O{} +b}{%
-  \IfSubStr{#1}{type={titlePage}}{}{%
+  \IfSubStr{#1}{type={titlePage}}{%
+    \begingroup
+    \lateiSetHeadContext{titlePage}%
+    #2%
+    \endgroup
+  }{%
     \begingroup
     \lateiSetHeadContext{fallback}%
     \IfSubStr{#1}{type={chapter}}{\lateiSetHeadContext{chapter}}{}%

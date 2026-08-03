@@ -73,7 +73,7 @@ def test_latei_frontmatter_direct_pdf_compiles_on_minimal_liminaires(tmp_path: P
     toc_path = result.latei_pdf_path.with_suffix(".toc")
     assert toc_path.exists(), f"No .toc file next to {result.latei_pdf_path}"
     toc = toc_path.read_text(encoding="utf-8", errors="replace")
-    page_numbers = [int(n) for n in re.findall(r"\\contentsline\s*\{chapter\}.*?\{(\d+)\}\{chapter", toc)]
+    page_numbers = [int(n) for n in re.findall(r"\\contentsline\s*\{chapter\}\{[^{}]*\}\{(\d+)\}", toc)]
     assert len(page_numbers) == 3, f"Expected 3 chapter entries in the .toc, got: {toc!r}"
     assert page_numbers == sorted(set(page_numbers)), (
         f"Page numbering is not strictly increasing without repeats (a reset was detected): {page_numbers!r}"
