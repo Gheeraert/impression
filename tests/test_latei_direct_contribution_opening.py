@@ -106,7 +106,10 @@ def test_contribution_opening_compiles_without_chapitre_label_and_keeps_toc(
     text = process.stdout
 
     assert "Chapitre" not in text
-    assert "Titre article" in text
+    # title-main is rendered in capitals (référentiel §2.5, §5.3: titraille);
+    # the TOC entry below keeps the original case since it comes from
+    # data-page-title, a different (metadata) path than the visible heading.
+    assert "TITRE ARTICLE" in text
     assert "Un sous-titre" in text  # accented word itself skipped: pdftotext/apostrophe interaction is unrelated to this fix
     assert "Prénom Nom" in text
     assert "Traduit de l anglais par Quelqu un." in text

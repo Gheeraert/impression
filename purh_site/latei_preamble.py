@@ -93,15 +93,25 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{\newfontfamily\PURHTitleFont{{Josefin Sans}}}}
   {{\newfontfamily\PURHTitleFont{{TeX Gyre Heros}}}}
 
+% Titraille PURH (référentiel §2.3-§2.5) : partie, article et section
+% observés en Josefin Sans Thin, capitales, distinct du \PURHTitleFont
+% "normal weight" ci-dessus utilisé ailleurs. Chargée comme famille à part
+% (et non via \bfseries sur \PURHTitleFont) car "Thin" n'est pas une série
+% NFSS standard que fontspec puisse sélectionner automatiquement — "Josefin
+% Sans Thin" existe en revanche comme nom de famille indépendant portant
+% elle-même ses propres graisses Thin (romain) et Thin Italic.
+\IfFontExistsTF{{Josefin Sans Thin}}
+  {{\newfontfamily\PURHTitreFont{{Josefin Sans Thin}}}}
+  {{\newfontfamily\PURHTitreFont{{TeX Gyre Heros}}}}
+
 \IfFontExistsTF{{Latin Modern Mono}}
   {{\setmonofont{{Latin Modern Mono}}}}
   {{\setmonofont{{TeX Gyre Cursor}}}}
 
 % Romain, pas italique (référentiel PURH §2.3 : titres courants "Josefin
 % Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
-% un défaut confirmé, pas un choix). Taille/graisse Josefin exactes hors
-% périmètre de cette passe (micropasse titraille).
-\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small}}
+% un défaut confirmé, pas un choix).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
@@ -161,11 +171,23 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{10pt}}
   {{}}
 
-\titleformat{{\section}}[block]
-  {{\PURHTitleFont\Large\bfseries\raggedright}}
+% Titre de partie observé : Josefin Sans Thin 16 pt, capitales, centré
+% (référentiel PURH §2.5, §5.3). Toujours \part* (pas de numéro affiché) :
+% le label reste vide plutôt que d'exposer un numéro de partie non requis.
+\titleformat{{\part}}[display]
+  {{\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\centering}}
   {{}}
   {{0pt}}
+  {{\MakeUppercase}}
+
+% Titre de section observé : Josefin Sans Thin 12 pt, capitales (référentiel
+% §2.5). Alignement et espacement non chiffrés par le référentiel pour ce
+% niveau : conservés tels quels (raggedright, séparations existantes).
+\titleformat{{\section}}[block]
+  {{\PURHTitreFont\fontsize{{12pt}}{{14pt}}\selectfont\raggedright}}
   {{}}
+  {{0pt}}
+  {{\MakeUppercase}}
 
 \titleformat{{\subsection}}[block]
   {{\PURHTitleFont\large\bfseries\raggedright}}
@@ -179,6 +201,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{0pt}}
   {{}}
 
+\titlespacing*{{\part}}{{0pt}}{{0pt}}{{30pt}}
 \titlespacing*{{\chapter}}{{0pt}}{{20pt}}{{18pt}}
 \titlespacing*{{\section}}{{0pt}}{{18pt}}{{10pt}}
 \titlespacing*{{\subsection}}{{0pt}}{{14pt}}{{8pt}}

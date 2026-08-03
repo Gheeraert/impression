@@ -31,20 +31,22 @@
 % Ouverture de contribution (référentiel PURH v0.5, "Ouvertures de
 % contribution") : titre, sous-titre, auteur et traducteur viennent des
 % <p rend="..."> du <div type="titlePage">, seule source de vérité visible —
-% ne pas les dupliquer ailleurs. Styles provisoires : le calibrage exact de
-% la titraille PURH (Josefin Sans Thin, corps ciblés) est hors périmètre de
-% cette passe et relève d'une micropasse dédiée.
+% ne pas les dupliquer ailleurs. Titre/sous-titre/auteur calibrés sur les
+% valeurs observées (référentiel §2.5, §5.3) : Josefin Sans Thin 16 pt
+% capitales centré pour le titre, Thin Italic 12 pt pour le sous-titre,
+% corps courant gras centré pour l'auteur (style txt_auteur). Positions
+% verticales exactes (mm) non calibrées ici — hors périmètre de cette passe.
 \newcommand{\lateiContributionTitle}[1]{%
   \par\vspace{0.5\baselineskip}%
-  {\PURHTitleFont\huge\bfseries\raggedright #1\par}%
+  {\PURHTitreFont\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}\par}%
   \vspace{0.3\baselineskip}%
 }
 \newcommand{\lateiContributionSubtitle}[1]{%
-  {\PURHTitleFont\Large\itshape\raggedright #1\par}%
+  {\PURHTitreFont\fontsize{12pt}{14pt}\selectfont\itshape\centering #1\par}%
   \vspace{0.4\baselineskip}%
 }
 \newcommand{\lateiContributionAuthor}[1]{%
-  {\normalsize\scshape #1\par}%
+  {\normalsize\bfseries\centering #1\par}%
   \vspace{0.3\baselineskip}%
 }
 \newcommand{\lateiContributionTranslator}[1]{%

@@ -60,7 +60,7 @@ def test_macros_track_recto_and_verso_running_titles_separately() -> None:
 
 def test_header_font_is_roman_not_italic() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\PURHHeaderFont}}{{\PURHTitleFont\small}}" in preamble_source
+    assert r"\PURHHeaderFont}}{{\PURHTitreFont\small}}" in preamble_source
     assert r"\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}" not in preamble_source
 
 
