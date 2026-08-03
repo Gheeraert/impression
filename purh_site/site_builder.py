@@ -17,8 +17,9 @@ from .site_asset_manifest import build_asset_manifest, resolve_image_output, wri
 from .site_credits import render_credit_block
 from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pdf_artifacts
 from .site_quality import run_site_quality_checks
+from .site_sitemap import write_sitemap_and_robots
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
-from .site_zotero import render_zotero_meta
+from .site_zotero import build_page_description, render_zotero_meta
 from .tei_loader import LoadReport, TeiLoader, load_many
 from .utils import NSMAP, ensure_dir
 
@@ -336,6 +337,7 @@ class SiteBuilder:
                 anchor_index,
                 citation_pdf_href=citation_pdf_href,
             )
+        sitemap_report_lines = write_sitemap_and_robots(config.output_dir, site_meta, pages)
 
         report_path = config.output_dir / "build_report.txt"
         report_lines = [
@@ -360,6 +362,7 @@ class SiteBuilder:
             report_lines.append(f"Quatrième de couverture : {back_cover_source}")
         asset_manifest = build_asset_manifest(config.output_dir, tree, theme_assets, pdf_artifacts)
         report_lines.extend(write_asset_manifest(config.output_dir, asset_manifest))
+        report_lines.extend(sitemap_report_lines)
         quality_issues = run_site_quality_checks(config.output_dir)
         report_lines.extend(["", "Contrôle qualité du site :"])
         if quality_issues:
@@ -561,6 +564,7 @@ class SiteBuilder:
             theme_assets=theme_assets,
             page_grid_class='page-grid',
             page=page,
+            abstract_html=fragment_html,
             citation_pdf_href=citation_pdf_href,
         )
         page_html = normalize_inline_html_spacing(page_html)
