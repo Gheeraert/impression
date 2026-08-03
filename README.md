@@ -657,12 +657,20 @@ Lancer les tests :
 python -m pytest tests/ -q
 ```
 
+Par défaut, cette commande **exclut** les tests marqués `full_book` (compilation PDF complète d'un livre réel
+entier — plusieurs minutes chacun, voir `addopts` dans `pyproject.toml`). Pour les inclure explicitement :
+
+```bash
+python -m pytest tests/ -m full_book -q
+```
+
 Tests ciblés utiles :
 
 ```bash
 python -m pytest tests/test_latei_layout_commands.py -q
 python -m pytest tests/test_latei_real_metopes_fixture.py -q
 python -m pytest tests/test_reversible_roundtrip.py -q
+python -m pytest tests/test_commons_publishing_sample_pdf.py -q
 ```
 
 ### Lint
