@@ -23,6 +23,7 @@ from .latei_driver import (
     compile_latei_pdf,
 )
 from .latei_metadata import extract_latei_metadata
+from .latei_metadata_validation import validate_latei_metadata
 from .latei_running_titles import package_latei_running_titles
 from .reversible import (
     Diagnostic,
@@ -59,6 +60,8 @@ class ReversibleExportResult:
     roundtrip_xml_path: Path
     diagnostics_path: Path
     diagnostics_count: int
+    metadata_diagnostics_path: Path
+    metadata_diagnostics_count: int
     manifest_path: Path
     success: bool
     message: str
@@ -112,6 +115,7 @@ def run_reversible_export_for_file(
         latei_log_path,
         roundtrip_xml_path,
         diagnostics_path,
+        metadata_diagnostics_path,
         latei_monofile_path,
         latei_monofile_pdf_path,
         latei_monofile_log_path,
@@ -161,6 +165,8 @@ def run_reversible_export_for_file(
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
+            metadata_diagnostics_path=metadata_diagnostics_path,
+            metadata_diagnostics_count=0,
             manifest_path=manifest_path,
             success=False,
             message=message,
@@ -200,6 +206,8 @@ def run_reversible_export_for_file(
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
+            metadata_diagnostics_path=metadata_diagnostics_path,
+            metadata_diagnostics_count=0,
             manifest_path=manifest_path,
             success=False,
             message=message,
@@ -242,12 +250,15 @@ def run_reversible_export_for_file(
             roundtrip_xml_path=roundtrip_xml_path,
             diagnostics_path=diagnostics_path,
             diagnostics_count=1,
+            metadata_diagnostics_path=metadata_diagnostics_path,
+            metadata_diagnostics_count=0,
             manifest_path=manifest_path,
             success=False,
             message=message,
         )
 
     metadata = extract_latei_metadata(element)
+    metadata_diagnostics = validate_latei_metadata(metadata)
     result = run_tei_latex_tei_roundtrip(element)
 
     resolved_output_dir.mkdir(parents=True, exist_ok=True)
@@ -307,8 +318,15 @@ def run_reversible_export_for_file(
         pretty_print=True,
     )
     diagnostics_path.write_text(_format_diagnostics(result.diagnostics), encoding="utf-8")
+    metadata_diagnostics_path.write_text(_format_diagnostics(metadata_diagnostics), encoding="utf-8")
 
     diagnostics_count = len(result.diagnostics)
+    metadata_diagnostics_count = len(metadata_diagnostics)
+    # Les diagnostics de métadonnées (balisage littéral, doublon de
+    # contributeur) ne rendent pas l'export réversible incorrect — ce sont
+    # des défauts de source à signaler, pas des échecs de round-trip — donc
+    # ils ne participent pas à `success`/`message`, qui restent réservés à
+    # la fidélité XML -> LaTeX -> XML.
     success = diagnostics_count == 0
     if success:
         message = "Reversible export completed without diagnostics."
@@ -334,6 +352,10 @@ def run_reversible_export_for_file(
             "xml": _rel_path(roundtrip_xml_path, resolved_output_dir),
             "diagnostics": _rel_path(diagnostics_path, resolved_output_dir),
             "diagnostics_count": diagnostics_count,
+        },
+        "metadata": {
+            "diagnostics": _rel_path(metadata_diagnostics_path, resolved_output_dir),
+            "diagnostics_count": metadata_diagnostics_count,
         },
         "messages": {
             "latei_pdf": pdf_result.message,
@@ -366,6 +388,8 @@ def run_reversible_export_for_file(
         roundtrip_xml_path=roundtrip_xml_path,
         diagnostics_path=diagnostics_path,
         diagnostics_count=diagnostics_count,
+        metadata_diagnostics_path=metadata_diagnostics_path,
+        metadata_diagnostics_count=metadata_diagnostics_count,
         manifest_path=manifest_path,
         success=success,
         message=message,
@@ -446,7 +470,7 @@ def _resolve_output_dir(source_path: Path, output_dir: Path | None) -> Path:
 
 def _output_paths(
     source_path: Path, output_dir: Path
-) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
+) -> tuple[Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path, Path]:
     stem = source_path.stem
     return (
         output_dir / f"{stem}.reversible.tex",
@@ -460,6 +484,7 @@ def _output_paths(
         output_dir / f"{stem}.latei_build.log",
         output_dir / f"{stem}.roundtrip.xml",
         output_dir / f"{stem}.roundtrip_diagnostics.txt",
+        output_dir / f"{stem}.metadata_diagnostics.txt",
         output_dir / f"{stem}.latei.tex",
         output_dir / f"{stem}.latei_mono.pdf",
         output_dir / f"{stem}.latei_mono_build.log",
@@ -587,6 +612,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"LaTEI log: {result.latei_log_path}")
     print(f"Round-trip XML: {result.roundtrip_xml_path}")
     print(f"Diagnostics: {result.diagnostics_path}")
+    if result.metadata_diagnostics_count:
+        print(f"Diagnostics de métadonnées ({result.metadata_diagnostics_count}) : {result.metadata_diagnostics_path}")
     print(f"LaTeX: {result.latex_path}")
     return 0 if result.success else 1
 
