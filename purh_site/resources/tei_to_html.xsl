@@ -371,6 +371,7 @@
       </xsl:if>
       <img>
         <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
+        <xsl:attribute name="loading">lazy</xsl:attribute>
         <xsl:if test="string-length($image-alt) &gt; 0">
           <xsl:attribute name="alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
         </xsl:if>
@@ -398,6 +399,7 @@
       </xsl:if>
       <img>
         <xsl:attribute name="src"><xsl:value-of select="$image-src"/></xsl:attribute>
+        <xsl:attribute name="loading">lazy</xsl:attribute>
         <xsl:if test="string-length($image-alt) &gt; 0">
           <xsl:attribute name="alt"><xsl:value-of select="$image-alt"/></xsl:attribute>
         </xsl:if>

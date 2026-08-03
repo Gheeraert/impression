@@ -304,6 +304,49 @@ def test_credit_block_contains_core_citation_information(tmp_path: Path) -> None
     assert "Date de consultation" in credit_text
 
 
+def test_chapter_page_gets_a_meta_description_excerpt_from_its_own_content(tmp_path: Path) -> None:
+    chapter = """
+<group xml:id='chapitre' type='chapter' data-page-title='Chapitre un' data-page-authors='Auteur, Alice'>
+  <body>
+    <div type='section1'>
+      <head>Chapitre un</head>
+      <p>Ce chapitre etudie precisement la question posee en introduction, avec un luxe de details.</p>
+    </div>
+  </body>
+</group>
+"""
+    output_dir = build_metadata_site(tmp_path, FULL_TITLE_STMT, FULL_PUBLICATION_STMT, chapter, FULL_SERIES_STMT)
+    chapter_doc = parse_page(content_pages(output_dir)[0])
+
+    description = meta_content(chapter_doc, "description")
+    assert "Ce chapitre etudie precisement la question posee" in description
+    assert meta_content(chapter_doc, "DC.Description") == description
+    # The excerpt must come from the chapter's own body, not the book title.
+    assert "Livre savant" not in description
+
+
+def test_meta_description_is_truncated_at_a_word_boundary(tmp_path: Path) -> None:
+    long_sentence = " ".join(f"mot{i}" for i in range(60))
+    chapter = f"""
+<group xml:id='chapitre' type='chapter' data-page-title='Chapitre long'>
+  <body>
+    <div type='section1'>
+      <head>Chapitre long</head>
+      <p>{long_sentence}</p>
+    </div>
+  </body>
+</group>
+"""
+    output_dir = build_metadata_site(tmp_path, FULL_TITLE_STMT, FULL_PUBLICATION_STMT, chapter, FULL_SERIES_STMT)
+    chapter_doc = parse_page(content_pages(output_dir)[0])
+
+    description = meta_content(chapter_doc, "description")
+    assert len(description) <= 161  # 160 chars + ellipsis character
+    assert description.endswith("…")
+    assert not description[:-1].endswith(" ")
+    assert " mot" in description or description.startswith("mot")
+
+
 def test_minimal_metadata_does_not_emit_empty_meta_or_links(tmp_path: Path) -> None:
     output_dir = build_metadata_site(
         tmp_path,

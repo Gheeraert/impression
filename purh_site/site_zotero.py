@@ -23,6 +23,32 @@ def _strip_html(value: str) -> str:
     return re.sub(r"\s+", " ", text_value).strip()
 
 
+# Google typically displays ~155-160 characters of a meta description before
+# truncating with an ellipsis of its own; cutting cleanly at a word boundary
+# ourselves beats leaving that to chance mid-word.
+_DESCRIPTION_MAX_LENGTH = 160
+
+
+def _truncate_description(text: str, limit: int = _DESCRIPTION_MAX_LENGTH) -> str:
+    text = text.strip()
+    if len(text) <= limit:
+        return text
+    truncated = text[:limit].rsplit(" ", 1)[0]
+    return truncated.rstrip(",;:.") + "…"
+
+
+def build_page_description(html_content: str) -> str:
+    """Plain-text excerpt suitable for a <meta name="description"> tag."""
+    return _truncate_description(_strip_html(html_content))
+
+
+def _citation_language(site_meta: SiteMeta) -> str:
+    """Highwire Press citation_language expects a short code (e.g. "fr"),
+    while SiteMeta.language may carry a fuller BCP-47 tag (e.g. "fr-FR",
+    used as-is for the HTML lang attribute) — keep only the primary subtag."""
+    return (site_meta.language or "fr").split("-")[0]
+
+
 def _meta_tag(name: str, content: str) -> str:
     content = (content or "").strip()
     if not content:
@@ -39,6 +65,7 @@ def render_zotero_meta(
 ) -> str:
     tags: list[str] = []
     volume_title = full_volume_title(site_meta)
+    description_text = build_page_description(abstract_html) if abstract_html else ""
 
     page_url = build_public_page_url(page.file_name if page is not None else "index.html", site_meta)
     if page is None:
@@ -55,7 +82,7 @@ def render_zotero_meta(
             _meta_tag("citation_series_title", site_meta.collection_title),
             _meta_tag("citation_series_number", site_meta.collection_number),
             _meta_tag("citation_doi", site_meta.doi),
-            _meta_tag("citation_language", "fr"),
+            _meta_tag("citation_language", _citation_language(site_meta)),
             _meta_tag("citation_pdf_url", build_public_asset_url(citation_pdf_href, site_meta) if citation_pdf_href else ""),
             _meta_tag("citation_abstract_html_url", page_url),
             _meta_tag("DC.Title", citation_title),
@@ -64,10 +91,6 @@ def render_zotero_meta(
             _meta_tag("DC.Date", site_meta.publication_year),
             _meta_tag("DC.Identifier", page_url),
         ])
-        if abstract_html:
-            abstract_text = _strip_html(abstract_html)
-            tags.append(_meta_tag("description", abstract_text))
-            tags.append(_meta_tag("DC.Description", abstract_text))
         for creator in site_meta.creators:
             dc_name = "DC.Contributor" if creator_tag == "citation_editor" else "DC.Creator"
             tags.append(_meta_tag(dc_name, creator))
@@ -91,7 +114,7 @@ def render_zotero_meta(
             _meta_tag("citation_issn", site_meta.issn),
             _meta_tag("citation_series_title", site_meta.collection_title),
             _meta_tag("citation_series_number", site_meta.collection_number),
-            _meta_tag("citation_language", "fr"),
+            _meta_tag("citation_language", _citation_language(site_meta)),
             _meta_tag("citation_abstract_html_url", page_url),
             _meta_tag("DC.Title", citation_title),
             _meta_tag("DC.Type", "bookSection"),
@@ -100,5 +123,9 @@ def render_zotero_meta(
             _meta_tag("DC.Date", site_meta.publication_year),
             _meta_tag("DC.Identifier", page_url),
         ])
+
+    if description_text:
+        tags.append(_meta_tag("description", description_text))
+        tags.append(_meta_tag("DC.Description", description_text))
 
     return "\n  ".join(tag for tag in tags if tag)
