@@ -307,11 +307,15 @@
 % contribution" : « sans libellé ni numérotation de chapitre »). Le titre
 % réellement affiché vient du <div type="titlePage"> rendu par ailleurs
 % (\lateiContributionTitle) ; le dupliquer ici romprait cette règle.
+% \cleardoublepage (jamais \clearpage) : « parties et articles sur recto,
+% blancs techniques si nécessaire » (référentiel §5.2) — indépendant de
+% l'option de classe openany/openright, qui ne régit que le \chapter brut
+% du chemin <div type="chapter">, distinct de celui-ci.
 \cs_new_protected:Npn \latei_add_contribution_opening_break:
   {
     \tl_if_empty:NF \l_latei_option_page_title_tl
       {
-        \clearpage
+        \cleardoublepage
         \phantomsection
         \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
         \exp_args:NV \latei_markboth_recto:n \l_latei_option_page_title_tl
@@ -334,6 +338,10 @@
 \NewDocumentCommand{\lateiRenderPartGroup}{O{} +m}
   {
     \lateiEnsureMainMatter
+    % Toujours forcé ici, pas seulement via \lateiEnsureMainMatter (dont le
+    % \cleardoublepage ne joue qu'à la toute première bascule vers le corps) :
+    % chaque partie, même la 2e ou la 3e du livre, doit ouvrir en recto.
+    \cleardoublepage
     \begingroup
       \lateiSetHeadContext{part}
       #2
@@ -412,7 +420,10 @@
 \newcommand{\lateiHeadContext}{fallback}
 \newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
 \NewDocumentCommand{\lateiRenderHead}{m}{%
-  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBothVerso{#1}\addcontentsline{toc}{part}{#1}}{%
+  % \part* ajoute déjà lui-même son entrée de TDM sous le shape [display] de
+  % \titleformat{\part} (vérifié empiriquement) : un \addcontentsline{toc}
+  % {part}{...} manuel ici produirait un doublon, pas un renfort.
+  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBothVerso{#1}}{%
   \IfStrEq{\lateiHeadContext}{chapter}{\lateiChapter{#1}}{%
     \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
     \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
