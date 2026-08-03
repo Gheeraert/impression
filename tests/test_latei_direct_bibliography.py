@@ -129,6 +129,7 @@ def test_latei_direct_bibliography_compiles_when_lualatex_is_available(
     assert bibliography_export.latei_pdf_path.stat().st_size > 0
 
 
+@pytest.mark.full_book
 def test_latei_direct_real_fixture_bibliography_still_round_trips_and_compiles(
     fixture_export: ReversibleExportResult,
 ) -> None:

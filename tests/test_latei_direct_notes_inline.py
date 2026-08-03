@@ -174,6 +174,7 @@ def test_latei_direct_note_paragraph_pdf_text_has_no_number_only_note_line(
     assert not re.search(r"(?m)^\s*1\s*$\s*^Texte de note en paragraphe\.", process.stdout)
 
 
+@pytest.mark.full_book
 def test_latei_direct_real_fixture_still_round_trips_and_compiles(
     fixture_export: ReversibleExportResult,
 ) -> None:

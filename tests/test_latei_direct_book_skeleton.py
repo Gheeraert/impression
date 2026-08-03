@@ -16,7 +16,13 @@ FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 @pytest.fixture(scope="module")
 def export_result(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
     output_dir = tmp_path_factory.mktemp("latei_direct_book_skeleton")
-    return run_reversible_export_for_file(FIXTURE_PATH, output_dir)
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=False)
+
+
+@pytest.fixture(scope="module")
+def export_result_with_pdf(tmp_path_factory: pytest.TempPathFactory) -> ReversibleExportResult:
+    output_dir = tmp_path_factory.mktemp("latei_direct_book_skeleton_pdf")
+    return run_reversible_export_for_file(FIXTURE_PATH, output_dir, compile_pdf=True)
 
 
 def test_latei_direct_book_skeleton_keeps_body_reversible(export_result: ReversibleExportResult) -> None:
@@ -69,26 +75,28 @@ def test_latei_direct_driver_and_macros_have_book_skeleton_invariants(
     assert "type={titlePage}" in macros
 
 
-def test_latei_direct_pdf_compiles_when_lualatex_is_available(export_result: ReversibleExportResult) -> None:
+@pytest.mark.full_book
+def test_latei_direct_pdf_compiles_when_lualatex_is_available(export_result_with_pdf: ReversibleExportResult) -> None:
     if shutil.which("lualatex") is None:
         pytest.skip("LuaLaTeX is unavailable.")
 
-    if not export_result.latei_pdf_success:
-        log = export_result.latei_log_path.read_text(encoding="utf-8", errors="replace")
+    if not export_result_with_pdf.latei_pdf_success:
+        log = export_result_with_pdf.latei_log_path.read_text(encoding="utf-8", errors="replace")
         excerpt = "\n".join(log.splitlines()[:160])
         pytest.fail(f"Direct LaTEI PDF did not compile on the real Metopes fixture.\n{excerpt}")
 
-    assert export_result.latei_pdf_path.exists()
-    assert export_result.latei_pdf_path.stat().st_size > 0
+    assert export_result_with_pdf.latei_pdf_path.exists()
+    assert export_result_with_pdf.latei_pdf_path.stat().st_size > 0
 
 
-def test_latei_direct_pdf_is_not_a_tiny_flat_smoke_output(export_result: ReversibleExportResult) -> None:
+@pytest.mark.full_book
+def test_latei_direct_pdf_is_not_a_tiny_flat_smoke_output(export_result_with_pdf: ReversibleExportResult) -> None:
     if shutil.which("lualatex") is None or shutil.which("pdfinfo") is None:
         pytest.skip("LuaLaTeX or pdfinfo is unavailable.")
-    if not export_result.latei_pdf_success:
-        pytest.skip(export_result.latei_pdf_message)
+    if not export_result_with_pdf.latei_pdf_success:
+        pytest.skip(export_result_with_pdf.latei_pdf_message)
 
-    pages = _pdf_page_count(export_result.latei_pdf_path)
+    pages = _pdf_page_count(export_result_with_pdf.latei_pdf_path)
 
     assert pages >= 10
 

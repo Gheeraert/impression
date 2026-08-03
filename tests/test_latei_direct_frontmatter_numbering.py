@@ -13,7 +13,7 @@ FIXTURE_PATH = Path("tests/fixtures/metopes/heraldique_ii.book.normalized.xml")
 def test_latei_frontmatter_numbering_policy(tmp_path: Path) -> None:
     """LaTEI macros must declare frontmatter/mainmatter switches and keep the
     PURH separate-numbering policy (roman liminaires, arabic body)."""
-    result = run_reversible_export_for_file(FIXTURE_PATH, tmp_path / "latei")
+    result = run_reversible_export_for_file(FIXTURE_PATH, tmp_path / "latei", compile_pdf=False)
     macros = result.latei_macros_path.read_text(encoding="utf-8")
 
     assert r"\frontmatter" in macros
