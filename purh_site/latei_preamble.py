@@ -165,11 +165,17 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \setcounter{{secnumdepth}}{{0}}
 \setcounter{{tocdepth}}{{2}}
 
+% Même traitement typographique que la titraille de contribution (Josefin
+% Sans Thin, 16 pt, capitales — référentiel §2.5, §5.3), pour le chemin
+% <div type="chapter"> resté en Chaparral/Bold à la micropasse 7 (chemin
+% distinct de l'ouverture de contribution corrigée en micropasse 5 : ce
+% \chapter est un vrai \chapter numéroté, avec son propre libellé
+% "Chapitre N" que cette passe ne modifie pas — seule la police change).
 \titleformat{{\chapter}}[display]
-  {{\PURHTitleFont\huge\bfseries\raggedright}}
+  {{\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\raggedright}}
   {{\chaptertitlename~\thechapter}}
   {{10pt}}
-  {{}}
+  {{\MakeUppercase}}
 
 % Titre de partie observé : Josefin Sans Thin 16 pt, capitales, centré
 % (référentiel PURH §2.5, §5.3). Toujours \part* (pas de numéro affiché) :

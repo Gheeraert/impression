@@ -11,9 +11,49 @@ Branche dédiée `purh-fidelite-profil-et-tests`, poussée sur origin :
 6. `579b39b` — Titraille : Josefin Sans Thin, capitales, tailles observées (micropasse 7).
 7. `f7b69f0` — Citations et poésie : environnement verse pour <lg>/<l>, retraits observés (micropasse 8).
 8. `9c811a1` — Frontières inline et appels de note : verrouillage par tests (micropasse 9, aucun correctif applicatif nécessaire).
+9. `f8b693f` — Rapport de livraison des 9 micropasses (ce document).
+10. `15f2286` — Ouvertures à droite (belle page) pour parties et articles (au-delà des 9 micropasses d'origine).
+11. Titraille du chemin `<div type="chapter">` restant (complément micropasse 7, au-delà des 9 micropasses).
 
-**Les 9 micropasses de la consigne d'origine sont maintenant toutes traitées.** Voir la section "Livraison" en
-fin de document pour le rapport de synthèse en 9 points.
+**Les 9 micropasses de la consigne d'origine sont traitées ; travail complémentaire en cours au-delà.** Voir la
+section "Livraison" pour le rapport de synthèse en 9 points (couvre les micropasses 1-9 uniquement).
+
+## Addendum — ouvertures à droite (belle page), au-delà des 9 micropasses d'origine
+
+Classe `openany` ne garantissait aucune politique fiable d'ouverture à droite (référentiel §5.2, défaut
+"Majeur"). `\latei_add_contribution_opening_break:` (front/article-chapitre/back) et `\lateiRenderPartGroup`
+passés à `\cleardoublepage` (indépendant de l'option openany/openright) : chaque partie et chaque contribution
+ouvre désormais en recto, blanc technique inséré si nécessaire.
+
+**Bug réel découvert en testant** : `\part*` enregistre déjà sa propre entrée de TDM sous le shape `[display]`
+(vérifié empiriquement) — le `\addcontentsline{toc}{part}{...}` manuel dans `\lateiRenderHead` faisait doublon,
+chaque partie apparaissait deux fois dans la table des matières. Corrigé (suppression du doublon).
+
+**Note corrective** : le rapport précédent affirmait Chaparral Pro absente de cette machine (`fc-list` ne la
+trouvait pas) — en réalité présente et utilisée (`ChaparralPro-Semibold.otf` sous
+`AppData/Local/Microsoft/Windows/Fonts/`, détectée par LuaLaTeX/luaotfload via le dossier Windows directement,
+pas via le cache fontconfig que `fc-list` interroge). Aucune conséquence sur les corrections déjà appliquées,
+seulement sur ce diagnostic d'environnement dans le point 6 du rapport de livraison ci-dessous.
+
+Vérifié par compilation réelle (livre à deux parties, contenu de longueur variable) : chaque partie/article
+ouvre sur une page impaire (1, 3, 5, 7), aucune entrée de TDM dupliquée.
+
+## Addendum — titraille du chemin `<div type="chapter">` restant
+
+Complément à la micropasse 7 : le `\chapter` numéroté du chemin `<div type="chapter">` (distinct de l'ouverture
+de contribution corrigée en micropasse 5) était resté en Chaparral/Josefin Bold, non touché à l'époque pour ne
+pas casser sa couverture de tests. Passé au même traitement que le titre de partie/contribution : Josefin Sans
+Thin, 16pt, capitales (`\MakeUppercase` en before-code titlesec). Le libellé "Chapitre N" (question structurelle
+distincte) est inchangé — seule la police change.
+
+**Effet de bord repéré et accepté** : `\tableofcontents` typeset son propre titre via un `\chapter*` interne,
+qui partage le même `\titleformat{\chapter}` — "Table des matières" est donc aussi rendu en capitales. Cohérent
+avec le traitement des titres de niveau chapitre, conservé tel quel plutôt que d'ajouter la complexité d'un
+style dédié pour ce seul cas. Deux tests préexistants comparaient du texte à la casse exacte de ce titre et de
+titres de chapitre ; rendus insensibles à la casse (`test_latei_running_titles_minimal.py`,
+`test_latei_compile_isolation.py`) puisqu'ils ne portent pas sur la titraille elle-même.
+
+Vérifié par compilation réelle : titre de chapitre en capitales, libellé "Chapitre N" inchangé.
 
 ## Addendum — micropasse 9 (frontières inline et appels de note)
 
