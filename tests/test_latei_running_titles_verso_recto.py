@@ -59,12 +59,12 @@ def test_macros_track_recto_and_verso_running_titles_separately() -> None:
 
 
 def test_header_font_is_roman_not_italic() -> None:
-    """La famille a changé le 2026-08-04 (Thin -> standard, gris trop clair
-    signalé après vérification humaine — voir test_latei_titraille.py) ;
-    seul l'absence d'italique reste vérifiée ici."""
+    """La famille/couleur a changé deux fois le 2026-08-04 (voir
+    test_latei_titraille.py pour le détail) ; seule l'absence d'italique
+    reste vérifiée ici, inchangée à travers ces deux passes."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\PURHHeaderFont}}{{\PURHTitleFont\small}}" in preamble_source
-    assert r"\PURHHeaderFont}}{{\PURHTitleFont\small\itshape}}" not in preamble_source
+    assert r"\PURHHeaderFont}}{{\PURHTitreFont\small\color[gray]{{0.25}}}}" in preamble_source
+    assert r"itshape" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 
 
 def test_part_heading_updates_verso_not_recto(two_part_export) -> None:

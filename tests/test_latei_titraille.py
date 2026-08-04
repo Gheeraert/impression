@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 """Titraille (référentiel PURH v0.5, §2.5/§5.3): part and contribution
-titles, 16 pt, capitals, centered; subtitle Thin Italic 12 pt; section
-titles Thin 12 pt, capitals. The pre-existing code used Chaparral Pro /
-Josefin Bold at ~24.8 pt in lowercase instead.
+titles, 16 pt, capitals, centered; subtitle 12 pt italic; section titles
+12 pt, capitals. The pre-existing code used Chaparral Pro / Josefin Bold at
+~24.8 pt in lowercase instead.
 
 Part/contribution titles were first corrected to Josefin Sans Thin
 (référentiel §2.5/§5.3/§4.3), then re-corrected to Josefin Sans BOLD after
@@ -17,9 +17,19 @@ intertitre level (section/subsection/subsubsection, i.e. the headings
 *inside* a chapter/article body, distinct from the chapter/article's own
 opening title) — also black and bold in the printer PDF, contradicting an
 earlier, narrower fix that had deliberately kept subsection/subsubsection
-in the Thin family. And to the running-title header (\\PURHHeaderFont):
-its gray was reported too light — switched from the Thin family to the
-regular Josefin Sans weight (not bold, unlike the heading levels)."""
+in the Thin family.
+
+The running-title header (\\PURHHeaderFont) went through two rounds on the
+same day: first reported too light gray (Thin family swapped for the
+regular Josefin Sans weight), then reported too dark/visually bold with
+that same swap (the printer PDF has "no weight" at all on this level) —
+settled by reverting to the Thin family and applying an explicit gray
+\\color instead of changing family, since weight and color are two
+different levers and only color was ever the actual target here.
+
+A second, separate round of feedback the same day also corrected the
+contribution subtitle (référentiel §5.3's "Thin Italic" was contradicted:
+the printer PDF shows Bold Italic lowercase for this level)."""
 
 import shutil
 from pathlib import Path
@@ -100,18 +110,25 @@ def test_subsection_and_subsubsection_titleformat_are_bold() -> None:
     assert r"\PURHTitleFont\bfseries\normalsize\raggedright" in subsubsection_block
 
 
-def test_running_title_header_font_is_not_the_thin_family() -> None:
-    """Le gris du titre courant était trop clair (vérification humaine
-    directe, 2026-08-04) : famille standard, pas Thin — mais pas gras non
-    plus, contrairement aux niveaux de titraille ci-dessus."""
+def test_running_title_header_uses_thin_family_with_explicit_gray_color() -> None:
+    """Deux vérifications humaines successives (2026-08-04) : la première
+    jugeait le gris trop clair (Thin -> famille standard, sans succès) ; la
+    seconde a trouvé ce résultat trop noir et visuellement gras — retour à
+    la famille Thin (« pas de graisse » sur le PDF imprimeur) avec un gris
+    explicite (\\color) plutôt qu'un changement de famille."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small}}" in preamble_source
+    assert r"\usepackage{{color}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[gray]{{0.25}}}}" in preamble_source
+    assert r"\PURHTitleFont" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 
 
-def test_contribution_title_is_bold_and_subtitle_stays_thin() -> None:
+def test_contribution_title_and_subtitle_are_both_bold() -> None:
+    """Le sous-titre était resté Thin Italic (référentiel §5.3), corrigé en
+    Bold Italic bas de casse le 2026-08-04 après vérification humaine
+    directe montrant explicitement gras + italique sur le PDF imprimeur."""
     macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
     assert r"\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}" in macros
-    assert r"\PURHTitreFont\fontsize{12pt}{14pt}\selectfont\itshape\centering #1" in macros
+    assert r"\PURHTitleFont\bfseries\fontsize{12pt}{14pt}\selectfont\itshape\centering #1" in macros
 
 
 def test_titraille_renders_uppercase_part_article_and_section_titles(titraille_export) -> None:

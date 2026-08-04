@@ -36,16 +36,20 @@
 % noir et gras là où le Thin — indiqué par le référentiel §2.5/§5.3, mais
 % contredit par cette observation — rendait un texte maigre et grisâtre,
 % peu lisible ; même correctif que \titleformat{\part}/{\chapter} dans le
-% préambule). Sous-titre resté en Thin Italic 12 pt (non signalé comme
-% défaut). Positions verticales exactes (mm) non calibrées ici — hors
-% périmètre de cette passe.
+% préambule). Sous-titre d'abord laissé en Thin Italic 12 pt (référentiel
+% §5.3, non signalé comme défaut lors de la première vérification), puis
+% re-corrigé en Bold Italic bas de casse le 2026-08-04 : nouvelle
+% vérification humaine directe montrant explicitement gras + italique sur
+% le PDF imprimeur pour ce niveau — pas de majuscules forcées, déjà correct
+% (aucun \MakeUppercase ici, contrairement au titre). Positions verticales
+% exactes (mm) non calibrées ici — hors périmètre de cette passe.
 \newcommand{\lateiContributionTitle}[1]{%
   \par\vspace{0.5\baselineskip}%
   {\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}\par}%
   \vspace{0.3\baselineskip}%
 }
 \newcommand{\lateiContributionSubtitle}[1]{%
-  {\PURHTitreFont\fontsize{12pt}{14pt}\selectfont\itshape\centering #1\par}%
+  {\PURHTitleFont\bfseries\fontsize{12pt}{14pt}\selectfont\itshape\centering #1\par}%
   \vspace{0.4\baselineskip}%
 }
 % \iflateiShowContributionAuthor (défini dans le préambule, valeur pilotée

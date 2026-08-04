@@ -87,6 +87,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \usepackage{{indentfirst}}
 \usepackage{{emptypage}}
 \usepackage[normalem]{{ulem}}
+\usepackage{{color}}
 
 \IfFontExistsTF{{Chaparral Pro}}
   {{\setmainfont{{Chaparral Pro}}}}
@@ -113,12 +114,21 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 % Romain, pas italique (référentiel PURH §2.3 : titres courants "Josefin
 % Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
-% un défaut confirmé, pas un choix). Famille Josefin Sans standard (pas Thin,
-% et pas non plus \bfseries comme la titraille) : vérification humaine
-% directe du PDF généré face au PDF imprimeur — le gris du titre courant y
-% était trop clair, la graisse Thin y étant trop maigre pour rester lisible
-% à 10 pt (chantier de parité v0.6, 2026-08-04).
-\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small}}
+% un défaut confirmé, pas un choix).
+%
+% Deux vérifications humaines successives (2026-08-04) ont porté sur ce même
+% réglage : la première jugeait le gris trop clair (corrigé en passant de
+% \PURHTitreFont, famille Thin, à \PURHTitleFont, famille standard, sans
+% \bfseries) ; la seconde a trouvé ce résultat trop noir et visuellement
+% gras — le PDF imprimeur, lui, n'a « pas de graisse ». Retour à la famille
+% Thin (qui correspond bien à « pas de graisse ») avec, cette fois, une
+% teinte grise explicite (\color) plutôt qu'un changement de famille, pour
+% obtenir un gris plus soutenu que le rendu par défaut sans re-solliciter de
+% graisse. Valeur (25 % de blanc, soit 75 % de noir) approximative, jamais
+% mesurée sur le PDF imprimeur faute d'outil de calibration colorimétrique
+% fiable disponible ici — à réajuster si la prochaine vérification humaine
+% la juge encore inexacte.
+\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[gray]{{0.25}}}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
