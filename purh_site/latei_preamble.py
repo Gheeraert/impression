@@ -180,7 +180,13 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \usepackage{{titletoc}}
 
 \setcounter{{secnumdepth}}{{0}}
-\setcounter{{tocdepth}}{{2}}
+% Référentiel PURH v0.6 §9 ("Table des matières") : la cible exclut les
+% sections internes (intertitres) de la TDM — seuls le niveau des parties
+% (\part, niveau -1) et celui des ouvertures de contribution/front matter
+% (\addcontentsline{{toc}}{{chapter}}, niveau 0) doivent y figurer. tocdepth=2
+% incluait à tort les <div type="section1">/<div type="section2"> (niveaux
+% \section=1, \subsection=2), gonflant la TDM à trois pages au lieu de deux.
+\setcounter{{tocdepth}}{{0}}
 
 % Josefin Sans Bold, 16 pt, capitales — le référentiel indiquait Josefin
 % Sans Thin (§2.5, §5.3, §4.3), contredit par vérification humaine directe

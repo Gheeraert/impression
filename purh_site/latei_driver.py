@@ -84,6 +84,7 @@ def build_latei_driver(
             _front_matter_sequence(metadata),
             rf"\input{{{body_input}}}",
             r"\cleardoublepage",
+            r"\pagestyle{plain}",
             r"\tableofcontents",
             r"\end{document}",
         ]
@@ -189,6 +190,7 @@ def _monofile_content(
         r"\end{lateiDocument}",
         "",
         r"\cleardoublepage",
+        r"\pagestyle{plain}",
         r"\tableofcontents",
         "",
         r"\end{document}",
