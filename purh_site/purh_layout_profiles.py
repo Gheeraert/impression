@@ -45,6 +45,11 @@ class PurhLayoutProfile:
     body_leading_pt: float
     note_font_size_pt: float
     note_leading_pt: float
+    # Référentiel v0.6 §7.2/§17 (P1 item 3) : sur l'ouverture de contribution,
+    # l'auteur et l'affiliation restent dans les métadonnées mais ne sont pas
+    # imprimés visuellement — cible confirmée sur les deux PDF imprimeur
+    # observés (Beautés vitales, Dissimuler pour mieux régner).
+    show_contribution_author: bool
 
 
 PURH_155X230_CURRENT_2026 = PurhLayoutProfile(
@@ -60,6 +65,7 @@ PURH_155X230_CURRENT_2026 = PurhLayoutProfile(
     body_leading_pt=13.5,
     note_font_size_pt=8.5,
     note_leading_pt=10.2,
+    show_contribution_author=False,
 )
 
 PURH_155X230_PRODUCTION_2025 = PurhLayoutProfile(
@@ -75,6 +81,7 @@ PURH_155X230_PRODUCTION_2025 = PurhLayoutProfile(
     body_leading_pt=13.5,
     note_font_size_pt=8.5,
     note_leading_pt=10.2,
+    show_contribution_author=False,
 )
 
 # The profile a fresh production PDF should target unless a caller asks

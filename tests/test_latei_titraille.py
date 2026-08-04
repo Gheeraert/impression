@@ -96,9 +96,12 @@ def test_titraille_renders_uppercase_part_article_and_section_titles(titraille_e
     assert "TITRE DE PARTIE" in text
     assert "TITRE ARTICLE" in text
     assert "TITRE DE SECTION" in text
-    # The author line is not uppercased (référentiel style txt_auteur, no
-    # capitals) — only the title levels are.
-    assert "Prenom Nom" in text
+    # Auteur et affiliation ne sont plus imprimés sur l'ouverture de
+    # contribution (référentiel PURH v0.6 §7.2/§17 P1 item 3, profil de
+    # production par défaut) — voir test_latei_opening_templates.py pour la
+    # vérification dédiée (métadonnées conservées dans le corps réversible,
+    # affichage seulement désactivé).
+    assert "Prenom Nom" not in text
     assert "PRENOM NOM" not in text
     # Running-title headers stay in original case (a different, non-titling
     # rendering path — see test_latei_running_titles_verso_recto.py).

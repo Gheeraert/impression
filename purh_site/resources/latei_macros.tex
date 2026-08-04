@@ -45,9 +45,23 @@
   {\PURHTitreFont\fontsize{12pt}{14pt}\selectfont\itshape\centering #1\par}%
   \vspace{0.4\baselineskip}%
 }
+% \iflateiShowContributionAuthor (défini dans le préambule, valeur pilotée
+% par le profil de mise en page — référentiel PURH v0.6 §7.2/§17 P1 item 3 :
+% « auteur et affiliation non imprimés » sur l'ouverture de contribution,
+% mais métadonnées conservées) : le contenu réversible <p rend="author-aut">
+% / <p rend="authority_affiliation"> reste inchangé dans le corps LaTEI, seul
+% son affichage PDF est basculé par ce drapeau, jamais son existence.
 \newcommand{\lateiContributionAuthor}[1]{%
-  {\normalsize\bfseries\centering #1\par}%
-  \vspace{0.3\baselineskip}%
+  \iflateiShowContributionAuthor
+    {\normalsize\bfseries\centering #1\par}%
+    \vspace{0.3\baselineskip}%
+  \fi
+}
+\newcommand{\lateiContributionAffiliation}[1]{%
+  \iflateiShowContributionAuthor
+    {\small\centering #1\par}%
+    \vspace{0.3\baselineskip}%
+  \fi
 }
 \newcommand{\lateiContributionTranslator}[1]{%
   {\small\itshape #1\par}%
@@ -61,7 +75,9 @@
       \IfSubStr{#1}{rend={title-main}}{\lateiContributionTitle{#2}}{%
         \IfSubStr{#1}{rend={title-sub}}{\lateiContributionSubtitle{#2}}{%
           \IfSubStr{#1}{rend={author-aut}}{\lateiContributionAuthor{#2}}{%
-            \IfSubStr{#1}{rend={editor-trl}}{\lateiContributionTranslator{#2}}{\par #2\par}%
+            \IfSubStr{#1}{rend={authority\_affiliation}}{\lateiContributionAffiliation{#2}}{%
+              \IfSubStr{#1}{rend={editor-trl}}{\lateiContributionTranslator{#2}}{\par #2\par}%
+            }%
           }%
         }%
       }%
@@ -315,11 +331,16 @@
 % par contribution » — chaque ouverture (front matter, chapitre/article, back
 % matter) redémarre sa propre numérotation de notes plutôt que de poursuivre
 % celle de la contribution précédente sur tout le livre.
+% \thispagestyle{empty} : référentiel PURH v0.6 §7.2/§17 P1 item 2, « aucun
+% en-tête ni folio » sur l'ouverture de contribution — seule cette première
+% page bascule en pagestyle vide ; les pages suivantes de la contribution
+% reprennent le titre courant normalement (référentiel §6).
 \cs_new_protected:Npn \latei_add_contribution_opening_break:
   {
     \tl_if_empty:NF \l_latei_option_page_title_tl
       {
         \cleardoublepage
+        \thispagestyle{empty}
         \phantomsection
         \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
         \exp_args:NV \latei_markboth_recto:n \l_latei_option_page_title_tl
@@ -347,6 +368,9 @@
     % \cleardoublepage ne joue qu'à la toute première bascule vers le corps) :
     % chaque partie, même la 2e ou la 3e du livre, doit ouvrir en recto.
     \cleardoublepage
+    % référentiel PURH v0.6 §7.1 : « page de style vide » sur l'ouverture de
+    % partie — aucun en-tête ni folio, comme pour l'ouverture de contribution.
+    \thispagestyle{empty}
     \begingroup
       \lateiSetHeadContext{part}
       #2

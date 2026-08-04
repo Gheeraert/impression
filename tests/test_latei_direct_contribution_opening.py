@@ -111,7 +111,10 @@ def test_contribution_opening_compiles_without_chapitre_label_and_keeps_toc(
     # data-page-title, a different (metadata) path than the visible heading.
     assert "TITRE ARTICLE" in text
     assert "Un sous-titre" in text  # accented word itself skipped: pdftotext/apostrophe interaction is unrelated to this fix
-    assert "Prénom Nom" in text
+    # Auteur non imprimé sur l'ouverture de contribution par défaut
+    # (référentiel PURH v0.6 §7.2/§17 P1 item 3) — voir
+    # test_latei_opening_templates.py pour la vérification dédiée.
+    assert "Prénom Nom" not in text
     assert "Traduit de l anglais par Quelqu un." in text
 
     toc_path = contribution_export.latei_pdf_path.with_suffix(".toc")

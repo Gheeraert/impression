@@ -59,6 +59,9 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
     body_leading = _pt(profile.body_leading_pt)
     note_font_size = _pt(profile.note_font_size_pt)
     note_leading = _pt(profile.note_leading_pt)
+    show_contribution_author_macro = (
+        r"\lateiShowContributionAuthortrue" if profile.show_contribution_author else r"\lateiShowContributionAuthorfalse"
+    )
 
     return rf"""
 \documentclass[{body_class_pt},twoside,openany]{{book}}
@@ -361,6 +364,16 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % -----------------------------------------------------------------
 % Macros utilitaires PURH
 % -----------------------------------------------------------------
+% Visibilité auteur/affiliation sur l'ouverture de contribution (référentiel
+% PURH v0.6 §7.2/§17 P1 item 3) : piloté par le profil de mise en page, pas
+% par une valeur fixe — « le profil doit distinguer conservation des
+% métadonnées et visibilité sur la page ». Doit être déclaré ici, avant que
+% les macros LaTEI ne soient chargées : elles lisent ce drapeau dans
+% \lateiContributionAuthor / \lateiContributionAffiliation mais ne le
+% déclarent pas elles-mêmes.
+\newif\iflateiShowContributionAuthor
+{show_contribution_author_macro}
+
 \newcommand{{\PURHSeparator}}{{%
   \par\addvspace{{1.5\baselineskip}}%
   \noindent\rule{{5cm}}{{0.4pt}}%
