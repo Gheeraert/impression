@@ -43,9 +43,35 @@
 % le PDF imprimeur pour ce niveau — pas de majuscules forcées, déjà correct
 % (aucun \MakeUppercase ici, contrairement au titre). Positions verticales
 % exactes (mm) non calibrées ici — hors périmètre de cette passe.
+%
+% Coupures de ligne du titre (référentiel PURH v0.5/v0.6 §7.3, "coupures
+% éditoriales" — P1 item 4, exécuté le 2026-08-04 sur demande explicite,
+% objectif : reproduire la règle implicite du PDF imprimeur plutôt qu'exiger
+% une annotation manuelle par titre) : le référentiel avertit qu'il ne faut
+% pas reconstruire ces coupures « par une largeur de boîte arbitraire ».
+% Vérification empirique sur 7 titres réels du PDF imprimeur de *Dissimuler
+% pour mieux régner* (7, 9, 15, 27, 26, 51, 191 caractères environ) montre
+% cependant que la largeur de boîte N'EST PAS arbitraire : elle correspond
+% de très près (104 mm calculé contre 103,4 mm mesuré indépendamment par
+% analyse de pixels sur le rendu réel) à la largeur d'empagement du profil
+% 155×230 (105 mm), et un simple \parbox à cette largeur reproduit déjà
+% correctement, via le même algorithme Knuth-Plass que tout paragraphe
+% LaTeX centré, le nombre de lignes et la coupure exacte de plusieurs titres
+% tests (ex. "Les lieux de la conjuration : société secrète et hétérotopie
+% dans la littérature romantique", 4 lignes identiques au PDF imprimeur).
+% Sur d'autres titres, la coupure obtenue diffère de celle du PDF imprimeur
+% d'un mot (ex. "Les espaces du secret à Clarens" → "LES ESPACES DU SECRET
+% À" / "CLARENS" ici, contre "LES ESPACES DU SECRET" / "À CLARENS" dans le
+% PDF imprimeur) — écart probablement dû à une règle InDesign de
+% conservation des mots courts (« à », « de »…) avec la ligne suivante, que
+% l'algorithme de LaTeX ne reproduit pas. Valeur retenue : 104mm, meilleur
+% compromis observé plutôt qu'une largeur arbitraire non vérifiée.
+\newcommand{\PURHContributionTitleWidth}{104mm}
 \newcommand{\lateiContributionTitle}[1]{%
   \par\vspace{0.5\baselineskip}%
-  {\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}\par}%
+  \begin{center}
+  \parbox{\PURHContributionTitleWidth}{\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}}%
+  \end{center}
   \vspace{0.3\baselineskip}%
 }
 \newcommand{\lateiContributionSubtitle}[1]{%
