@@ -77,6 +77,15 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   headsep=8mm,
   footskip=10mm
 ]{{geometry}}
+% Référentiel PURH v0.6 §6.2 : « le bandeau généré est situé environ 3,1 mm
+% plus bas que dans le PDF imprimeur » — écart de rendu, pas une remise en
+% cause de la marge du haut mesurée sur le maître InDesign (profile.
+% margin_top_mm, qui reste la source de vérité pour la position du corps de
+% texte). \topmargin remonte le bandeau de titre courant de 3,1 mm ;
+% \headsep compense d'autant pour que le corps de texte, lui, démarre
+% exactement à la même position qu'avant ce correctif.
+\addtolength{{\topmargin}}{{-3.1mm}}
+\addtolength{{\headsep}}{{3.1mm}}
 \raggedbottom
 
 \usepackage{{fontspec}}
