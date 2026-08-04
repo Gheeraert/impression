@@ -8,6 +8,7 @@ compilable wrapper and must not be used as a reversible source.
 """
 
 import os
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -413,9 +414,12 @@ def _false_title(metadata: LateiMetadata) -> str:
     return rf"\PURHFalseTitle{{{_latex_text(metadata.title)}}}"
 
 
-# Adresse et URL institutionnelles PURH : dictées telles quelles par
+# Nom complet, adresse et URL institutionnels PURH : dictés tels quels par
 # l'utilisateur (colophon, 2026-08-04), fixes pour tout livre PURH — pas
-# des métadonnées par livre, donc jamais lues depuis LateiMetadata.
+# des métadonnées par livre (le TEI/Métopes source contient parfois le sigle
+# abrégé "PURH" à la place, cf. _full_title_page ci-dessous), donc jamais lus
+# depuis LateiMetadata.
+_PURH_FULL_NAME = "Presses universitaires de Rouen et du Havre"
 _PURH_ADDRESS_LINE = "2 place Émile Blondel – 76821 Mont-Saint-Aignan Cedex"
 _PURH_URL = "http://purh.univ-rouen.fr"
 
@@ -435,14 +439,17 @@ def _colophon_production_lines(metadata: LateiMetadata) -> list[str]:
 
 
 def _colophon_institutional_lines(metadata: LateiMetadata) -> list[str]:
-    """Mentions légales et coordonnées : adresse/URL institutionnelles
-    fixes, toujours présentes ; année et ISBN restent des métadonnées du
-    livre, omises si absentes plutôt que remplacées par un espace réservé."""
+    """Mentions légales et coordonnées : la ligne de copyright et l'adresse/
+    URL institutionnelles sont fixes et TOUJOURS présentes (vérification
+    humaine directe, 2026-08-04 : « (c) Presses universitaires de Rouen et
+    du Havre » doit toujours figurer, juste au-dessus de l'adresse — pas
+    seulement quand une année de publication est disponible). Seule l'année,
+    elle, reste une métadonnée du livre : ajoutée à la suite du nom de
+    l'éditeur quand elle est connue, simplement omise sinon (jamais un
+    espace réservé littéral). L'ISBN suit la même règle d'omission."""
     lines: list[str] = []
-    if metadata.publication_year:
-        lines.append(_latex_text(
-            f"© Presses universitaires de Rouen et du Havre, {metadata.publication_year}."
-        ))
+    year_suffix = f", {metadata.publication_year}" if metadata.publication_year else ""
+    lines.append(_latex_text(f"© {_PURH_FULL_NAME}{year_suffix}."))
     lines.append(_latex_text(_PURH_ADDRESS_LINE))
     lines.append(rf"\url{{{_PURH_URL}}}")
     if metadata.preferred_isbn:
@@ -481,17 +488,46 @@ def _title_page_responsibility_lines(metadata: LateiMetadata) -> str:
     return ""
 
 
+_ROMAN_CENTURY_NUMERALS = (
+    "XXI", "XX", "XIX", "XVIII", "XVII", "XVI", "XV", "XIV", "XIII", "XII", "XI",
+    "X", "IX", "VIII", "VII", "VI", "V", "IV", "III", "II", "I",
+)
+_CENTURY_NUMERAL_RE = re.compile(r"\b(" + "|".join(_ROMAN_CENTURY_NUMERALS) + r")(e|er|re)?\b")
+
+
+def _small_caps_century_numerals(escaped_text: str) -> str:
+    """Petites capitales sur les chiffres romains de siècle (vérification
+    humaine directe, 2026-08-04, sur *Dissimuler pour mieux régner* :
+    "XVIIe-XIXe siècles" apparaissait en grandes capitales, identiques au
+    reste du sous-titre, faute de tout balisage <hi rend="small-caps">
+    autour d'eux dans le TEI source — convention typographique française
+    appliquée ici mécaniquement, faute de marquage source à lire. Attend un
+    texte déjà échappé par _latex_text (le remplacement injecte un
+    \\textsc{{...}} littéral, qui serait lui-même cassé si _latex_text
+    s'exécutait après). Portée volontairement étroite au seul sous-titre de
+    la page de titre — pas une règle appliquée à tout le corps de texte."""
+    return _CENTURY_NUMERAL_RE.sub(
+        lambda m: rf"\textsc{{{m.group(1)}}}{m.group(2) or ''}", escaped_text
+    )
+
+
 def _full_title_page(metadata: LateiMetadata) -> str:
     lines = [rf"\PurhTitleMain{{{_latex_text(metadata.title)}}}"]
     if metadata.subtitle:
-        lines.append(rf"\PurhSubtitle{{{_latex_text(metadata.subtitle)}}}")
+        subtitle = _small_caps_century_numerals(_latex_text(metadata.subtitle))
+        lines.append(rf"\PurhSubtitle{{{subtitle}}}")
     responsibility = _title_page_responsibility_lines(metadata)
     if responsibility:
         lines.append(r"\vspace{2\baselineskip}")
         lines.append(rf"\PurhContributors{{{responsibility}}}")
-    if metadata.publisher:
-        lines.append(r"\vspace{2\baselineskip}")
-        lines.append(rf"\PurhTitleExtra{{{_latex_text(metadata.publisher)}}}")
+    # Mention finale : toujours le nom complet PURH, fixe (référentiel v0.7,
+    # 2026-08-04) — le TEI/Métopes source contient parfois le sigle "PURH"
+    # à la place (constaté sur *Dissimuler pour mieux régner*), jamais
+    # affiché tel quel ici ; calée en bas de page comme le colophon
+    # (\vspace*{\fill}, voir _credits_page pour le même mécanisme et son
+    # piège documenté : étoilé, jamais un \vfill nu).
+    lines.append(r"\vspace*{\fill}")
+    lines.append(rf"\PurhPublisherMention{{{_latex_text(_PURH_FULL_NAME)}}}")
     body = "\n".join(lines)
     return rf"\PURHTitlePage{{{body}}}"
 

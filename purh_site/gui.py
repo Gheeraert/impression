@@ -179,6 +179,7 @@ class App(ttk.Frame):
         self.layout_format_var = tk.StringVar(value=_LAYOUT_FORMAT_OPTIONS[0])
         self.cover_designer_var = tk.StringVar()
         self.editorial_contact_var = tk.StringVar()
+        self.directors_override_var = tk.StringVar()
         self.build_button: ttk.Button | None = None
         self.xml_files: list[Path] = []
         self.port_var = tk.StringVar(value="8000,8080")
@@ -392,14 +393,26 @@ class App(ttk.Frame):
         ttk.Label(frame, text="Suivi éditorial").grid(row=1, column=0, sticky="w", pady=(0, 6))
         ttk.Entry(frame, textvariable=self.editorial_contact_var, width=36).grid(row=1, column=1, sticky="ew", pady=(0, 6))
 
+        ttk.Label(frame, text="Sous la direction de (correction)").grid(row=2, column=0, sticky="w", pady=(0, 6))
+        ttk.Entry(frame, textvariable=self.directors_override_var, width=36).grid(row=2, column=1, sticky="ew", pady=(0, 6))
+
         ttk.Label(
             frame,
-            text="Laisser vide pour omettre ces lignes du colophon.\nL'année de publication et l'ISBN sont repris du XML.",
+            text=(
+                "Laisser vide pour omettre ces lignes du colophon.\n"
+                "L'année de publication et l'ISBN sont repris du XML.\n"
+                "\"Sous la direction de\" : noms séparés par \"et\" ou une virgule ;"
+                " remplace, si renseigné, les auteurs extraits du XML sur la page de titre"
+                " (le TEI Métopes ne distingue pas toujours fiablement les éditeurs"
+                " scientifiques d'un autre rôle, ex. compositeur/trice)."
+            ),
             foreground="gray",
-        ).grid(row=2, column=0, columnspan=2, sticky="w", pady=(0, 8))
+            wraplength=340,
+            justify="left",
+        ).grid(row=3, column=0, columnspan=2, sticky="w", pady=(0, 8))
 
         buttons = ttk.Frame(frame)
-        buttons.grid(row=3, column=0, columnspan=2, sticky="e")
+        buttons.grid(row=4, column=0, columnspan=2, sticky="e")
         ttk.Button(buttons, text="Fermer", command=dialog.destroy).grid(row=0, column=0)
 
         frame.columnconfigure(1, weight=1)
@@ -693,6 +706,7 @@ class App(ttk.Frame):
             pdf_export_mode=pdf_export_mode,
             cover_designer=self.cover_designer_var.get().strip(),
             editorial_contact=self.editorial_contact_var.get().strip(),
+            directors_override=self.directors_override_var.get().strip(),
         )
 
     def _refresh_pdf_export_controls(self) -> None:

@@ -49,6 +49,7 @@ def build_site_latei_pdf_artifacts(
     latex_engine: str = "lualatex",
     cover_designer: str = "",
     editorial_contact: str = "",
+    directors_override: str = "",
 ) -> SiteLateiPdfExportResult:
     """Build LaTEI PDF artifacts and present them under site-compatible names.
 
@@ -72,6 +73,7 @@ def build_site_latei_pdf_artifacts(
         compile_pdf=compile_pdf,
         cover_designer=cover_designer,
         editorial_contact=editorial_contact,
+        directors_override=directors_override,
     )
 
     tex_path = output_dir / "book.tex"

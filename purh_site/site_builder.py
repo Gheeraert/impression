@@ -412,6 +412,7 @@ class SiteBuilder:
             latex_engine=config.latex_engine,
             cover_designer=config.cover_designer,
             editorial_contact=config.editorial_contact,
+            directors_override=config.directors_override,
         )
 
         return PdfSiteArtifacts(

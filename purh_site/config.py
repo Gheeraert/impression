@@ -23,6 +23,12 @@ class BuildConfig:
     # du GUI — omis du colophon si laissés vides.
     cover_designer: str = ""
     editorial_contact: str = ""
+    # Page de titre (référentiel PURH v0.7, 2026-08-04) : correction manuelle
+    # des "sous la direction de" quand le TEI/Métopes source ne les distingue
+    # pas fiablement d'un autre rôle (ex. compositeur/trice) — voir
+    # reversible_integration.run_reversible_export_for_file. Vide = on garde
+    # l'extraction TEI telle quelle.
+    directors_override: str = ""
 
     @property
     def output_assets_dir(self) -> Path:

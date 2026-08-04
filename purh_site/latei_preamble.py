@@ -138,18 +138,20 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
 % un défaut confirmé, pas un choix).
 %
-% Trois vérifications humaines successives (2026-08-04) ont porté sur ce
+% Quatre vérifications humaines successives (2026-08-04) ont porté sur ce
 % même réglage : la première jugeait le gris trop clair (corrigé en passant
 % de \PURHTitreFont, famille Thin, à \PURHTitleFont, famille standard, sans
 % \bfseries) ; la seconde a trouvé ce résultat trop noir et visuellement
 % gras — le PDF imprimeur, lui, n'a « pas de graisse » — d'où un retour à la
 % famille Thin avec un gris explicite (\color[gray]{{0.25}}, approximatif) ;
-% la troisième a jugé ce gris encore trop clair. Passé au même système que
-% le fond d'entête de tableau et le texte courant (§11.3/§12.1) — une teinte
-% CMJN noir X % plutôt qu'un gris RVB — à 50 % noir, valeur donnée
-% explicitement par l'utilisateur cette fois (pas une estimation à
-% recalibrer).
-\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.5}}}}
+% la troisième a jugé ce gris encore trop clair, d'où un premier passage au
+% même système que le fond d'entête de tableau et le texte courant
+% (§11.3/§12.1) — une teinte CMJN noir X % plutôt qu'un gris RVB — à 50 %
+% noir ; la quatrième a de nouveau jugé ce résultat trop clair au regard du
+% PDF imprimeur, où le titre courant est « presque noir » : remonté à 85 %
+% noir, sans changer de famille ni de graisse (toujours Thin, cf. ci-dessus
+% — seule la teinte a bougé, comme aux trois vérifications précédentes).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.85}}}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
@@ -286,6 +288,22 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % inconditionnel retiré : « pas de saut de ligne entre les références sauf
 % changement de section » — l'espacement avant une nouvelle partie vient
 % désormais de \titlecontents{{part}}, pas d'ici.
+%
+% Filet pointillé + numéro de page : laissés dans ce 4e argument dédié (pas
+% déplacés dans le texte de l'entrée transmis à \addcontentsline). Une
+% première tentative avait déplacé \titlerule*/\contentspage dans ce texte
+% pour les faire tomber sur la ligne du titre plutôt que sur celle de
+% l'auteur (vérification humaine directe du 2026-08-04 : « les points de
+% suite doivent être au niveau du titre, pas de l'auteur ») — abandonnée :
+% le paquet bookmark, qui construit automatiquement les signets PDF depuis
+% CE MÊME texte d'entrée, ne tolère pas \contentspage/\\ dans cet argument
+% ("Token not allowed in a PDF string", puis désynchronisation de
+% titlesec — bug réel constaté par compilation). Solution retenue : le nom
+% d'auteur n'est plus concaténé DANS le texte de l'entrée de chapitre du
+% tout — voir \latei_finish_contribution_toc_entry: (latei_macros.tex), qui
+% l'écrit désormais comme une ligne de TDM séparée, via \addtocontents
+% (jamais capturée par le mécanisme de signets de bookmark, qui n'observe
+% que \addcontentsline/\contentsline).
 \titlecontents{{chapter}}
   [0pt]
   {{}}
@@ -296,12 +314,17 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % Entrées de partie (le référentiel dit « titres de section », mais
 % désigne bien ici le niveau \part de ce document — les véritables
 % intertitres/sections sont exclus de la TDM depuis §9/tocdepth=0) : Josefin
-% Sans Bold centré, un peu plus grand que le corps (12 pt contre 11 pt),
-% ligne vide avant et après. Aucun numéro de page affiché : une partie est
-% un intitulé structurant la liste, pas une entrée cherchable en soi.
+% Sans Bold PETITES CAPITALES centré (vérification humaine directe du
+% 2026-08-04 : à la différence du nom d'auteur sous chaque entrée de
+% contribution, qui doit rester bas de casse — voir
+% \lateiTocAuthorBreak — les titres de ce niveau doivent au contraire être
+% en petites capitales), un peu plus grand que le corps (12 pt contre
+% 11 pt), ligne vide avant et après. Aucun numéro de page affiché : une
+% partie est un intitulé structurant la liste, pas une entrée cherchable en
+% soi.
 \titlecontents{{part}}
   [0pt]
-  {{\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\centering}}
+  {{\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\scshape\fontsize{{12pt}}{{14pt}}\selectfont\centering}}
   {{}}
   {{}}
   {{}}
@@ -533,8 +556,17 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   \vspace{{0.6\baselineskip}}%
 }}
 
-\newcommand{{\PurhTitleExtra}}[1]{{%
-  {{\small #1\par}}%
+% Mention finale de la page de titre (référentiel v0.7, vérification
+% humaine directe du 2026-08-04) : nom complet de l'éditeur, majuscules
+% grasses, Chaparral (fonte principale, aucun changement de famille) — pas
+% \PURHTitleFont/Josefin, contrairement à toute la titraille (§2.4/§3 du
+% référentiel v0.7) : cette mention n'est pas un niveau de titraille, c'est
+% une mention institutionnelle calée en bas de page. Corps choisi pour
+% occuper une bonne partie de la largeur de la page (empagement d'environ
+% 105 mm sur ce profil) sans mesure millimétrique donnée par l'utilisateur —
+% à recalibrer par vérification visuelle directe sur un autre format.
+\newcommand{{\PurhPublisherMention}}[1]{{%
+  {{\fontsize{{14pt}}{{16pt}}\selectfont\bfseries\MakeUppercase{{#1}}\par}}%
 }}
 
 \newenvironment{{PurhBlockQuote}}

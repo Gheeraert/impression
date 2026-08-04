@@ -72,9 +72,9 @@ def colophon_export_without_names(tmp_path_factory: pytest.TempPathFactory):
 # 1. Titre courant
 # ---------------------------------------------------------------------------
 
-def test_running_title_uses_50_percent_black_not_gray_rgb() -> None:
+def test_running_title_uses_85_percent_black_not_gray_rgb() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.5}}}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.85}}}}" in preamble_source
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +151,23 @@ def test_colophon_always_shows_fixed_purh_address_and_url() -> None:
     assert "http://purh.univ-rouen.fr" in driver_source
 
 
+def test_colophon_copyright_line_always_shown_even_without_publication_year() -> None:
+    """Vérification humaine directe du 2026-08-04 : "(c) Presses
+    universitaires de Rouen et du Havre" doit TOUJOURS figurer, juste
+    au-dessus de l'adresse — pas seulement quand l'année de publication est
+    connue (contrairement au comportement précédent)."""
+    from purh_site.latei_driver import _colophon_institutional_lines
+    from purh_site.latei_metadata import LateiMetadata
+
+    lines_without_year = _colophon_institutional_lines(LateiMetadata())
+    assert lines_without_year[0] == "© Presses universitaires de Rouen et du Havre."
+    assert "2 place Émile Blondel" in lines_without_year[1]
+
+    lines_with_year = _colophon_institutional_lines(LateiMetadata(publication_year="2026"))
+    assert lines_with_year[0] == "© Presses universitaires de Rouen et du Havre, 2026."
+    assert "2 place Émile Blondel" in lines_with_year[1]
+
+
 def test_colophon_renders_full_structure_in_the_generated_pdf(colophon_export) -> None:
     if shutil.which("lualatex") is None:
         pytest.skip("LuaLaTeX is unavailable.")
@@ -205,6 +222,29 @@ def test_gui_exposes_format_dropdown_and_colophon_dialog() -> None:
     source = Path("purh_site/gui.py").read_text(encoding="utf-8")
     assert "_LAYOUT_FORMAT_OPTIONS" in source
     assert "155 × 230 mm" in source
+
+
+def test_build_config_has_directors_override_field() -> None:
+    from purh_site.config import BuildConfig
+
+    config = BuildConfig(output_dir=Path("."), directors_override="Jean Dupont et Marie Martin")
+    assert config.directors_override == "Jean Dupont et Marie Martin"
+    assert BuildConfig(output_dir=Path(".")).directors_override == ""
+
+
+def test_site_latei_pdf_export_forwards_directors_override_kwarg() -> None:
+    import inspect
+
+    from purh_site.site_latei_pdf_export import build_site_latei_pdf_artifacts
+
+    params = inspect.signature(build_site_latei_pdf_artifacts).parameters
+    assert "directors_override" in params
+
+
+def test_gui_exposes_directors_override_field() -> None:
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    assert "directors_override_var" in source
+    assert "Sous la direction de (correction)" in source
     assert "_open_colophon_dialog" in source
     assert "cover_designer_var" in source
     assert "editorial_contact_var" in source

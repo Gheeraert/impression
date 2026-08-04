@@ -9,6 +9,7 @@ LaTeX, round-trip TEI, and a human-readable diagnostics report for one XML file.
 
 import argparse
 import json
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -99,6 +100,7 @@ def run_reversible_export_for_file(
     compile_pdf: bool = True,
     cover_designer: str = "",
     editorial_contact: str = "",
+    directors_override: str = "",
 ) -> ReversibleExportResult:
     """Run the experimental TEI -> controlled LaTeX -> TEI export for one file.
 
@@ -111,6 +113,17 @@ def run_reversible_export_for_file(
     ``collection_title`` and siblings in the HTML site metadata path, which
     only fill a gap left by the XML, these two are always supplied
     externally (the GUI's optional colophon dialog) when present.
+
+    ``directors_override`` (page de titre, 2026-08-04) : constaté sur
+    *Dissimuler pour mieux régner*, le seul ``<author role="pbd">`` présent
+    dans le TEI/Métopes source y désigne en réalité la compositrice
+    ("Anaïs Lebreton"), pas les éditrices scientifiques de l'ouvrage
+    ("sous la direction de") — un défaut du balisage source, pas de
+    l'extraction (``role="pbd"`` est le code MARC "Publishing director",
+    correctement lu). Sans marqueur fiable pour distinguer les deux dans le
+    TEI, la correction se fait ici, par saisie explicite (GUI), jamais en
+    devinant depuis le contenu : une chaîne " et "/","-séparée qui, si
+    fournie, REMPLACE entièrement ``metadata.directors``.
     """
     source_path = Path(xml_path).expanduser()
     resolved_output_dir = _resolve_output_dir(source_path, output_dir)
@@ -280,6 +293,12 @@ def run_reversible_export_for_file(
         metadata.cover_designer = cover_designer
     if editorial_contact:
         metadata.editorial_contact = editorial_contact
+    if directors_override:
+        metadata.directors = [
+            name.strip()
+            for name in re.split(r"\s+et\s+|[,;]", directors_override)
+            if name.strip()
+        ]
     metadata_diagnostics = validate_latei_metadata(metadata)
     image_diagnostics = validate_latei_images(element, source_xml_path=source_path)
     result = run_tei_latex_tei_roundtrip(element)

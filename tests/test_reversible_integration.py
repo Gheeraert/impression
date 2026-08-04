@@ -130,7 +130,11 @@ def test_latei_driver_uses_header_metadata_and_keeps_header_reversible(tmp_path:
     # direction de", réservé aux ouvrages dirigés.
     assert r"\PurhSubtitle{Sous-titre}" in main
     assert r"\PurhContributors{Alice Auteur}" in main
-    assert r"\PurhTitleExtra{PURH}" in main
+    # Mention finale (référentiel v0.7, 2026-08-04) : toujours le nom
+    # complet PURH fixe, jamais le sigle "PURH" du champ <publisher> XML
+    # (qui peut être abrégé) ni les autres métadonnées.
+    assert r"\PurhPublisherMention{Presses universitaires de Rouen et du Havre}" in main
+    assert r"\PurhTitleExtra{PURH}" not in main
     assert r"\PurhTitleExtra{ISBN PDF 979-10-000-0000-1}" not in main
     assert r"\PurhTitleExtra{ISBN imprime 979-10-000-0000-0}" not in main
     assert r"\PurhTitleExtra{DOI 10.0000/purh.test}" not in main

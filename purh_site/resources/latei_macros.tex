@@ -105,23 +105,73 @@
 \newcommand{\lateiSignatureEmpty}{}
 \newcommand{\lateiSignatureAuthor}{}
 \newcommand{\lateiSignatureAffiliation}{}
+% \lateiTocAuthorPlain : copie de l'auteur sans le rendu petites capitales
+% du nom de famille (vérification humaine directe du 2026-08-04, référentiel
+% v0.7) : le nom de l'auteur doit apparaître bas de casse dans la TDM, alors
+% que \lateiSignatureAuthor porte le rendu de la signature de fin d'article
+% (§8), où le nom de famille EST en petites capitales (\textsc{Nom}, capturé
+% tel quel depuis <hi rend="small-caps">). Calculée une fois, au moment de
+% la capture (\lateiContributionAuthor ci-dessous), PAS au moment de
+% l'écriture de l'entrée de TDM : \addcontentsline écrit son argument via
+% \protected@write, qui \edef-développe tout ce qui n'est pas protégé —
+% une redéfinition locale de \textsc placée directement dans cet argument
+% (première tentative, abandonnée) ne s'exécute donc jamais normalement : un
+% \edef ne peut pas EXÉCUTER les primitives non désarmables (\def, \global…)
+% qu'un \renewcommand appelle en interne, il les recopie telles quelles —
+% ce qui corrompait le fichier .toc plutôt que de simplement neutraliser
+% \textsc (bug réel constaté par compilation : erreurs "\textsc has an
+% extra }" ailleurs dans le document, bien après le point réellement fautif).
+% \protected@xdef ci-dessous s'exécute en revanche au fil normal du
+% document (pas dans un argument \addcontentsline), où une redéfinition
+% locale de \textsc via un simple \def EST correctement exécutée par
+% l'expansion.
+\newcommand{\lateiTocAuthorPlain}{}
 \newcommand{\lateiResetContributionSignature}{%
   \global\let\lateiSignatureAuthor\lateiSignatureEmpty
   \global\let\lateiSignatureAffiliation\lateiSignatureEmpty
+  \global\let\lateiTocAuthorPlain\lateiSignatureEmpty
 }
-% Retour à la ligne + retrait + gras dans une entrée de TDM (référentiel
-% §9.1) : \titlecontents (contrairement à \@dottedtocline du noyau) type-
-% set chaque entrée comme un paragraphe à retrait suspendu — un "\\" y
-% force une nouvelle ligne, contrairement à \par qui romprait le
-% paragraphe entier de la TDM plutôt que la seule entrée en cours.
-\newcommand{\lateiTocAuthorBreak}{\\\hspace*{1em}\bfseries}
+% Nom d'auteur sous une entrée de TDM (référentiel §9.1) : écrit comme une
+% ligne de TDM SÉPARÉE de l'entrée de chapitre elle-même, via
+% \addtocontents (voir \latei_finish_contribution_toc_entry: plus bas) —
+% jamais concaténé dans le texte transmis à \addcontentsline{{toc}}{{chapter}}
+% : le paquet bookmark, qui construit les signets PDF automatiquement
+% depuis CE texte, ne tolère pas les macros qu'on y ajouterait pour
+% positionner le filet pointillé/numéro de page au niveau du titre plutôt
+% que de l'auteur (bug réel constaté par compilation, voir le commentaire
+% sur \titlecontents{{chapter}} dans latei_preamble.py). \par au lieu de la
+% précédente rupture "\\" à l'intérieur d'un même paragraphe : ici, il
+% s'agit bien d'un paragraphe séparé, plus de retrait suspendu de
+% \titlecontents à préserver.
+\newcommand{\lateiTocAuthorLine}[1]{%
+  \par\noindent\hspace*{1em}{\bfseries #1}\par
+}
+% \protected@xdef (utilisé ci-dessous) contient un "@" : catégorie de code
+% 11 requise pour le lire comme partie d'un seul nom de commande — comme
+% pour \@empty (documenté plus haut pour \lateiSignatureEmpty), mais avec
+% un piège de plus ici : un \makeatletter DANS le corps de la macro, exécuté
+% seulement à l'usage de \lateiContributionAuthor, arrive trop tard — le
+% corps de \newcommand{{...}} est tokenisé une fois pour toutes au moment où
+% ce fichier est lu (\input), pas à chaque invocation ultérieure ; "@" doit
+% donc déjà avoir la catégorie 11 AU MOMENT où \protected@xdef est LU dans
+% cette définition, pas seulement au moment où elle s'exécute (bug réel
+% rencontré : un \makeatletter placé à l'intérieur du corps produisait
+% encore "You can't use a prefix with `the character @'", preuve que la
+% tokenisation avait déjà eu lieu). D'où le \makeatletter englobant toute
+% la définition ci-dessous, refermé par \makeatother juste après.
+\makeatletter
 \newcommand{\lateiContributionAuthor}[1]{%
   \global\def\lateiSignatureAuthor{#1}%
+  \begingroup
+    \def\textsc##1{##1}%
+    \protected@xdef\lateiTocAuthorPlain{#1}%
+  \endgroup
   \iflateiShowContributionAuthor
     {\normalsize\bfseries\centering #1\par}%
     \vspace{0.3\baselineskip}%
   \fi
 }
+\makeatother
 \newcommand{\lateiContributionAffiliation}[1]{%
   \global\def\lateiSignatureAffiliation{#1}%
   \iflateiShowContributionAuthor
@@ -451,10 +501,15 @@
   {
     \tl_if_empty:NF \g_latei_pending_toc_title_tl
       {
-        \ifx\lateiSignatureAuthor\lateiSignatureEmpty
-          \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
-        \else
-          \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl \lateiTocAuthorBreak \lateiSignatureAuthor}
+        % Titre seul ici : filet pointillé + numéro de page restent gérés
+        % par le 4e argument de \titlecontents{chapter} (préambule), comme
+        % avant — l'auteur, lui, est écrit séparément ci-dessous, jamais
+        % concaténé dans CE texte (voir le commentaire sur
+        % \lateiTocAuthorLine, plus haut, pour la raison : compatibilité
+        % avec les signets PDF automatiques du paquet bookmark).
+        \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
+        \ifx\lateiSignatureAuthor\lateiSignatureEmpty\else
+          \addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}
         \fi
         \tl_gclear:N \g_latei_pending_toc_title_tl
       }

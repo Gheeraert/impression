@@ -158,10 +158,14 @@ def test_credits_page_shows_only_available_metadata(full_metadata_export, minima
     assert "purh.univ-rouen.fr" in full_text
 
     # No source data at all beyond the title: no fabricated boilerplate
-    # (no invented "Tous droits réservés" or similar), but the fixed
-    # institutional address/URL still appear (not book-specific data).
+    # (no invented "Tous droits réservés" or similar, no year since none was
+    # provided), but the copyright line itself is a fixed institutional
+    # mention (vérification humaine directe, 2026-08-04 : "(c) Presses
+    # universitaires de Rouen et du Havre" doit TOUJOURS figurer, pas
+    # seulement quand une année de publication est connue) and so is the
+    # address/URL — none of that is book-specific data.
     minimal_text = render(minimal_metadata_export.latei_pdf_path)
     assert "979-10-240-0000-0" not in minimal_text
-    assert "©" not in minimal_text
+    assert "© Presses universitaires de Rouen et du Havre." in minimal_text
     assert "Tous droits" not in minimal_text
     assert "purh.univ-rouen.fr" in minimal_text

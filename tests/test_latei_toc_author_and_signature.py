@@ -175,6 +175,81 @@ def test_editorial_responsibility_is_two_explicit_lines(two_articles_export) -> 
     assert "Anne-Lise Worms et Clelia Zernik" in lines
 
 
+def test_directors_override_replaces_misattributed_pbd_author() -> None:
+    """Constaté sur *Dissimuler pour mieux régner* (2026-08-04) : le seul
+    <author role="pbd"> du TEI/Métopes source y désigne la compositrice, pas
+    les éditrices scientifiques — sans marqueur fiable pour les distinguer
+    dans le TEI, la correction se fait par saisie explicite (GUI/config),
+    jamais en devinant depuis le contenu."""
+    from purh_site.reversible_integration import run_reversible_export_for_file
+
+    xml = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
+      <teiHeader>
+        <fileDesc>
+          <titleStmt>
+            <title type="main">Dissimuler pour mieux regner</title>
+            <author role="pbd"><persName><forename>Anais</forename><surname>Lebreton</surname></persName></author>
+          </titleStmt>
+          <publicationStmt><publisher>PURH</publisher></publicationStmt>
+          <sourceDesc><p/></sourceDesc>
+        </fileDesc>
+      </teiHeader>
+      <text><group type="book">
+        <group type="introduction" data-page-title="Introduction" xml:id="intro">
+          <front><div type="titlePage"><p rend="title-main">Introduction</p></div></front>
+          <body><div><p>Corps.</p></div></body>
+        </group>
+      </group></text>
+    </TEI>"""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        xml_path = Path(tmp) / "book.xml"
+        xml_path.write_text(xml, encoding="utf-8")
+        result = run_reversible_export_for_file(
+            xml_path,
+            Path(tmp) / "out",
+            directors_override="Floriane Daguise et Florence Fix",
+        )
+        main = result.latei_main_path.read_text(encoding="utf-8")
+        assert "Floriane Daguise et Florence Fix" in main
+        assert "Anais Lebreton" not in main
+
+
+def test_publisher_mention_is_always_the_fixed_full_name_bottom_anchored() -> None:
+    """Vérification humaine directe du 2026-08-04 : au lieu du sigle "PURH"
+    (tel quel dans le TEI/Métopes source, constaté sur *Dissimuler pour
+    mieux régner*) juste sous les éditeurs scientifiques, il faut le nom
+    complet, en majuscules grasses Chaparral, calé en bas de la page de
+    titre."""
+    from purh_site.latei_driver import _full_title_page
+    from purh_site.latei_metadata import LateiMetadata
+
+    page = _full_title_page(LateiMetadata(title="Titre", publisher="PURH"))
+    assert r"\vspace*{\fill}" in page
+    assert r"\PurhPublisherMention{Presses universitaires de Rouen et du Havre}" in page
+    assert r"\PurhTitleExtra{PURH}" not in page
+
+    preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
+    assert r"\newcommand{{\PurhPublisherMention}}[1]{{%" in preamble_source
+    mention_macro = preamble_source.split(r"\newcommand{{\PurhPublisherMention}}[1]{{%")[1].split("\n")[1]
+    assert r"\bfseries\MakeUppercase" in mention_macro
+    assert r"\PURHTitleFont" not in mention_macro  # Chaparral (ambient font), pas Josefin
+
+
+def test_century_roman_numerals_are_smallcaps_in_the_subtitle() -> None:
+    """Vérification humaine directe du 2026-08-04, sur *Dissimuler pour
+    mieux régner* : "XVIIe-XIXe siècles" apparaissait en grandes capitales
+    au lieu de petites capitales dans le sous-titre."""
+    from purh_site.latei_driver import _small_caps_century_numerals
+
+    text = r"Locus politicus, locus secretus en litterature (XVIIe-XIXe siecles)"
+    result = _small_caps_century_numerals(text)
+    assert r"\textsc{XVII}e-\textsc{XIX}e siecles" in result
+    # Ordinary words must not be mistaken for roman numerals.
+    assert "litterature" in result and r"\textsc" not in result.split("(")[0]
+
+
 def test_responsibility_falls_back_to_authors_without_the_directed_prefix() -> None:
     from purh_site.latei_driver import _title_page_responsibility_lines
     from purh_site.latei_metadata import LateiMetadata
@@ -287,6 +362,19 @@ def test_toc_heading_is_centered() -> None:
 
 
 def test_chapter_toc_entries_are_plain_with_dotted_leader() -> None:
+    """Vérification humaine directe du 2026-08-04 : les points de suite et
+    le numéro de page doivent apparaître au niveau du TITRE, pas de
+    l'auteur. Le filet reste dans le 4e argument dédié de
+    \\titlecontents{chapter} (inchangé) — une première tentative avait
+    déplacé \\titlerule*/\\contentspage DANS le texte transmis à
+    \\addcontentsline pour les faire suivre immédiatement le titre ;
+    abandonnée, le paquet bookmark (signets PDF automatiques, construits
+    depuis ce même texte) ne tolère pas ces macros dans cet argument
+    ("Token not allowed in a PDF string", puis désynchronisation de
+    titlesec — bug réel constaté par compilation). Solution retenue : le
+    nom d'auteur n'est plus jamais concaténé dans le texte de l'entrée de
+    chapitre — voir test_toc_author_line_is_not_smallcaps pour son
+    mécanisme de ligne séparée."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     chapter_titlecontents = preamble_source.split(r"\titlecontents{{chapter}}")[1].split(r"\titlecontents{{part}}")[0]
     assert r"\PURHTitleFont" not in chapter_titlecontents
@@ -294,18 +382,68 @@ def test_chapter_toc_entries_are_plain_with_dotted_leader() -> None:
     assert r"\addvspace" not in chapter_titlecontents
     assert r"\titlerule*[0.5pc]{{.}}\contentspage" in chapter_titlecontents
 
+    macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
+    finish_entry = macros.split(r"\cs_new_protected:Npn \latei_finish_contribution_toc_entry:")[1]
+    # \addcontentsline carries the title alone; the author, if any, is
+    # written as a wholly separate \addtocontents call below it.
+    addcontentsline_call = finish_entry.split(r"\addcontentsline{toc}{chapter}{")[1].split("}\n")[0]
+    assert r"\lateiTocAuthorLine" not in addcontentsline_call
+    assert r"\addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}" in finish_entry
 
-def test_part_toc_entries_are_bold_centered_with_blank_lines() -> None:
+
+def test_part_toc_entries_are_bold_smallcaps_centered_with_blank_lines() -> None:
+    """Vérification humaine directe du 2026-08-04 : les titres de ce niveau
+    (le référentiel dit « titres de section », mais désigne bien le niveau
+    \\part) doivent être en petites capitales — à la différence du nom
+    d'auteur sous chaque entrée de contribution, qui doit au contraire
+    rester bas de casse (voir test_toc_author_line_is_not_smallcaps)."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     assert r"\titlecontents{{part}}" in preamble_source
-    assert r"\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\centering" in preamble_source
+    assert (
+        r"\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\scshape\fontsize{{12pt}}{{14pt}}\selectfont\centering"
+        in preamble_source
+    )
     assert r"[\addvspace{{1\baselineskip}}]" in preamble_source
+
+
+def test_toc_author_line_is_not_smallcaps() -> None:
+    """Vérification humaine directe du 2026-08-04 : le nom de l'auteur dans
+    la TDM doit rester bas de casse, alors que la signature de fin
+    d'article (§8) affiche le nom de famille en petites capitales
+    (\\textsc{{Nom}}, capturé tel quel dans \\lateiSignatureAuthor).
+
+    Une première tentative redéfinissait \\textsc localement DANS
+    l'argument de \\addcontentsline (via \\renewcommand, entre
+    \\lateiTocAuthorBreak et le nom) — abandonnée : \\addcontentsline écrit
+    son argument via \\protected@write, qui \\edef-développe le texte, et un
+    \\edef ne peut pas EXÉCUTER les primitives non désarmables (\\def,
+    \\global…) que \\renewcommand appelle en interne — il les recopie telles
+    quelles, corrompant le fichier .toc plutôt que de neutraliser \\textsc
+    (bug réel constaté par compilation : erreurs "\\textsc has an extra }"
+    ailleurs dans le document). La capture "texte brut" se fait donc plus
+    tôt, au fil normal du document (\\lateiContributionAuthor), via
+    \\protected@xdef et une redéfinition locale de \\textsc par un simple
+    \\def (pas par \\renewcommand)."""
+    macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
+    author_macro = macros.split(r"\newcommand{\lateiContributionAuthor}[1]{%")[1].split(
+        r"\newcommand{\lateiContributionAffiliation}"
+    )[0]
+    assert r"\def\textsc##1{##1}%" in author_macro
+    assert r"\protected@xdef\lateiTocAuthorPlain{#1}%" in author_macro
+
+    assert r"\global\let\lateiTocAuthorPlain\lateiSignatureEmpty" in macros
+
+    finish_entry = macros.split(r"\cs_new_protected:Npn \latei_finish_contribution_toc_entry:")[1]
+    # \lateiSignatureAuthor is only used as the emptiness guard (\ifx) here;
+    # \lateiTocAuthorPlain is what actually gets printed in the TOC.
+    assert r"\ifx\lateiSignatureAuthor\lateiSignatureEmpty\else" in finish_entry
+    assert r"\addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}" in finish_entry
 
 
 def test_toc_defers_the_entry_to_include_the_author_line() -> None:
     macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
     assert r"\latei_finish_contribution_toc_entry:" in macros
-    assert r"\lateiTocAuthorBreak" in macros
+    assert r"\lateiTocAuthorLine" in macros
     # The old immediate \addcontentsline inside the opening break is gone.
     opening_break = macros.split(r"\cs_new_protected:Npn \latei_add_contribution_opening_break:")[1].split(
         r"\cs_new_protected:Npn \latei_finish_contribution_toc_entry:"
@@ -340,3 +478,12 @@ def test_toc_shows_bold_author_line_under_the_signed_article_only(two_articles_e
     assert plotin_pos < author_pos < sans_auteur_pos
     # No author line leaks under the second, unsigned entry.
     assert "Anne-Lise" not in toc_text[sans_auteur_pos:]
+
+    # Dotted leader must sit on the title's own line, not the author's below
+    # it (vérification humaine directe du 2026-08-04): with "-layout",
+    # pdftotext keeps each visual line separate, so the title line and the
+    # author line are distinguishable by splitting on newlines.
+    plotin_line = next(line for line in toc_text.splitlines() if "Plotin contre Platon" in line)
+    author_line = next(line for line in toc_text.splitlines() if "Anne-Lise Worms" in line)
+    assert "." in plotin_line
+    assert "." not in author_line
