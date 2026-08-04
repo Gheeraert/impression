@@ -11,6 +11,13 @@ v0.6, chantier de parité 2026-08-03) :
    4 <div type="section2"> portant de vrais sous-titres phrastiques (ex.
    "Montage narratif : un je entre inclusion et exclusion"), jamais des
    libellés courts — pas de capitales forcées à ce niveau.
+
+   Re-corrigé le 2026-08-04 (voir test_latei_titraille.py pour le détail) :
+   nouvelle vérification humaine directe demandant au contraire que tous les
+   intertitres (section, subsection, subsubsection) soient noirs et gras —
+   ce fichier ne conserve donc plus qu'un test de non-régression minimal
+   confirmant que la famille et la graisse suivent bien ce dernier choix ;
+   les assertions détaillées vivent désormais dans test_latei_titraille.py.
 2. Notes de bas de page : sur le PDF imprimeur le numéro est calé à gauche
    avec un retrait négatif de première ligne (hanging indent), sans point
    après le numéro — contrairement au référentiel (qui indique "point +
@@ -83,15 +90,16 @@ _LONG_FOOTNOTE_XML = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
 </TEI>"""
 
 
-def test_subsection_titleformat_uses_thin_family_without_bold() -> None:
+def test_subsection_titleformat_uses_bold_family() -> None:
+    """Voir test_latei_titraille.py pour la vérification complète (statique
+    + pdffonts) du choix noir et gras à tous les niveaux d'intertitre."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     subsection_block = preamble_source.split(r"\titleformat{{\subsection}}[block]")[1].split(
         r"\titleformat{{\subsubsection}}[block]"
     )[0]
 
-    assert r"\PURHTitreFont" in subsection_block
-    assert r"\bfseries" not in subsection_block
-    assert r"\PURHTitleFont" not in subsection_block
+    assert r"\PURHTitleFont" in subsection_block
+    assert r"\bfseries" in subsection_block
 
 
 def test_footnote_makefntext_uses_hanging_indent_and_no_period() -> None:
@@ -149,7 +157,7 @@ def long_footnote_export(tmp_path_factory: pytest.TempPathFactory):
     return run_reversible_export_for_file(xml_path, tmp_path / "out")
 
 
-def test_subsection_compiles_without_bold_josefin_in_body(subsection_export) -> None:
+def test_subsection_compiles_and_shows_heading_text(subsection_export) -> None:
     if shutil.which("lualatex") is None:
         pytest.skip("LuaLaTeX is unavailable.")
     if not subsection_export.latei_pdf_success:

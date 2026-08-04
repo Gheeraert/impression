@@ -66,6 +66,15 @@
     \vspace{0.3\baselineskip}%
   \fi
 }
+% Espace vertical entre le bloc de titre d'ouverture (titre, sous-titre,
+% auteur/affiliation) et le début du corps : absent du généré alors que le
+% PDF imprimeur montre un grand blanc, estimé à 5-6 lignes de titre (16 pt /
+% 19 pt d'interligne) par vérification humaine directe (chantier de parité
+% v0.6, 2026-08-04) — 5,5 × 19 pt ≈ 105 pt. Valeur volontairement fixe, pas
+% pilotée par le profil (comme les autres corps de la titraille), faute de
+% mesure millimétrique du référentiel à ce niveau précis (le §7.2 documente
+% une position absolue du corps depuis le haut de page, pas cet écart local).
+\newcommand{\PURHContributionBodyGap}{\vspace{105pt}}
 \newcommand{\lateiContributionTranslator}[1]{%
   {\small\itshape #1\par}%
   \vspace{0.6\baselineskip}%
@@ -568,6 +577,7 @@
     \begingroup
     \lateiSetHeadContext{titlePage}%
     #2%
+    \PURHContributionBodyGap
     \endgroup
   }{%
     \begingroup

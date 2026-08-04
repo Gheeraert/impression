@@ -113,8 +113,12 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 
 % Romain, pas italique (référentiel PURH §2.3 : titres courants "Josefin
 % Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
-% un défaut confirmé, pas un choix).
-\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small}}
+% un défaut confirmé, pas un choix). Famille Josefin Sans standard (pas Thin,
+% et pas non plus \bfseries comme la titraille) : vérification humaine
+% directe du PDF généré face au PDF imprimeur — le gris du titre courant y
+% était trop clair, la graisse Thin y étant trop maigre pour rester lisible
+% à 10 pt (chantier de parité v0.6, 2026-08-04).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
@@ -192,30 +196,36 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   {{0pt}}
   {{\MakeUppercase}}
 
-% Titre de section observé : Josefin Sans Thin 12 pt, capitales (référentiel
-% §2.5). Alignement et espacement non chiffrés par le référentiel pour ce
-% niveau : conservés tels quels (raggedright, séparations existantes).
+% Titre de section (intertitre), 12 pt, capitales. Le référentiel §2.5
+% indiquait Josefin Sans Thin ; corrigé en Bold (même correctif que la
+% titraille partie/chapitre/contribution ci-dessus) après vérification
+% humaine directe du PDF généré face au PDF imprimeur : les intertitres y
+% apparaissent noirs et gras, pas maigres (chantier de parité v0.6,
+% 2026-08-04). Alignement et espacement non chiffrés par le référentiel pour
+% ce niveau : conservés tels quels (raggedright, séparations existantes).
 \titleformat{{\section}}[block]
-  {{\PURHTitreFont\fontsize{{12pt}}{{14pt}}\selectfont\raggedright}}
+  {{\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\raggedright}}
   {{}}
   {{0pt}}
   {{\MakeUppercase}}
 
 % Sous-section (référentiel v0.6 §4.3 : seul le niveau "section" — c'est-à-
 % dire section1 — est chiffré ; aucune valeur propre à section2/section3
-% n'est fournie). Correctif ciblé : même famille Thin que le titre de
-% section, sans le gras ni les capitales (confirmé sur le livre réel —
-% <div type="section2"> y porte de vrais sous-titres phrastiques, jamais
-% des libellés courts). Tailles conservées telles quelles (\large/
-% \normalsize) faute de mesure référentiel à ce niveau ; police corrigée.
+% n'est fournie). Un correctif antérieur avait délibérément retiré le gras
+% à ce niveau (confirmé alors sur le livre réel — <div type="section2"> y
+% porte de vrais sous-titres phrastiques, jamais des libellés courts) ; la
+% vérification humaine directe du 2026-08-04 demande au contraire le même
+% traitement noir et gras que les autres intertitres, suivie ici. Capitales
+% non demandées à ce niveau, contrairement à \section : inchangé. Tailles
+% conservées telles quelles (\large/\normalsize) faute de mesure référentiel.
 \titleformat{{\subsection}}[block]
-  {{\PURHTitreFont\large\raggedright}}
+  {{\PURHTitleFont\bfseries\large\raggedright}}
   {{}}
   {{0pt}}
   {{}}
 
 \titleformat{{\subsubsection}}[block]
-  {{\PURHTitreFont\normalsize\raggedright}}
+  {{\PURHTitleFont\bfseries\normalsize\raggedright}}
   {{}}
   {{0pt}}
   {{}}

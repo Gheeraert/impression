@@ -11,7 +11,15 @@ direct human verification of a generated PDF against the printer PDF: part
 titles there are black and bold, not thin and grayish — the référentiel's
 own claim of "Thin" for this specific level was contradicted by that live
 observation and is no longer followed (chantier de parité v0.6, 2026-08-04).
-Section-level titles (12 pt) were not flagged and stay Thin."""
+
+The same 2026-08-04 verification extended the correction to every
+intertitre level (section/subsection/subsubsection, i.e. the headings
+*inside* a chapter/article body, distinct from the chapter/article's own
+opening title) — also black and bold in the printer PDF, contradicting an
+earlier, narrower fix that had deliberately kept subsection/subsubsection
+in the Thin family. And to the running-title header (\\PURHHeaderFont):
+its gray was reported too light — switched from the Thin family to the
+regular Josefin Sans weight (not bold, unlike the heading levels)."""
 
 import shutil
 from pathlib import Path
@@ -74,9 +82,30 @@ def test_chapter_titleformat_is_16pt_bold() -> None:
     assert r"\PURHTitleFont\bfseries\fontsize{{16pt}}{{19pt}}\selectfont\raggedright" in preamble_source
 
 
-def test_section_titleformat_is_12pt_uppercase() -> None:
+def test_section_titleformat_is_12pt_bold_uppercase() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\PURHTitreFont\fontsize{{12pt}}{{14pt}}\selectfont\raggedright" in preamble_source
+    assert r"\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\raggedright" in preamble_source
+
+
+def test_subsection_and_subsubsection_titleformat_are_bold() -> None:
+    preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
+    subsection_block = preamble_source.split(r"\titleformat{{\subsection}}[block]")[1].split(
+        r"\titleformat{{\subsubsection}}[block]"
+    )[0]
+    subsubsection_block = preamble_source.split(r"\titleformat{{\subsubsection}}[block]")[1].split(
+        r"\titlespacing*"
+    )[0]
+
+    assert r"\PURHTitleFont\bfseries\large\raggedright" in subsection_block
+    assert r"\PURHTitleFont\bfseries\normalsize\raggedright" in subsubsection_block
+
+
+def test_running_title_header_font_is_not_the_thin_family() -> None:
+    """Le gris du titre courant était trop clair (vérification humaine
+    directe, 2026-08-04) : famille standard, pas Thin — mais pas gras non
+    plus, contrairement aux niveaux de titraille ci-dessus."""
+    preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small}}" in preamble_source
 
 
 def test_contribution_title_is_bold_and_subtitle_stays_thin() -> None:
