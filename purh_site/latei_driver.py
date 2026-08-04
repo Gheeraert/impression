@@ -406,44 +406,55 @@ def _false_title(metadata: LateiMetadata) -> str:
     return rf"\PURHFalseTitle{{{_latex_text(metadata.title)}}}"
 
 
-def _credits_lines(metadata: LateiMetadata) -> list[str]:
-    """Lignes réelles de la page de crédits, à partir des métadonnées
-    disponibles uniquement — aucun texte légal générique (licence, mentions
-    "tous droits réservés") n'est inventé : ce champ n'existe pas encore
-    dans LateiMetadata au-delà de `rights`, repris tel quel s'il est
-    renseigné plutôt que complété par une formule fixe non vérifiée."""
+# Adresse et URL institutionnelles PURH : dictées telles quelles par
+# l'utilisateur (colophon, 2026-08-04), fixes pour tout livre PURH — pas
+# des métadonnées par livre, donc jamais lues depuis LateiMetadata.
+_PURH_ADDRESS_LINE = "2 place Émile Blondel – 76821 Mont-Saint-Aignan Cedex"
+_PURH_URL = "http://purh.univ-rouen.fr"
+
+
+def _colophon_production_lines(metadata: LateiMetadata) -> list[str]:
+    """Couverture/mise en pages et suivi éditorial : sans équivalent dans
+    la source TEI/Métopes, renseignés par l'éditrice via la boîte de
+    dialogue optionnelle du GUI (cover_designer/editorial_contact sur
+    LateiMetadata) — omis tant qu'ils ne sont pas fournis, jamais un
+    "[Prénom Nom]" littéral imprimé faute de valeur réelle."""
     lines: list[str] = []
-    if metadata.directors:
-        lines.append(_latex_text("Sous la direction de " + " et ".join(metadata.directors)))
-    elif metadata.editors:
-        lines.append(_latex_text(" ; ".join(metadata.editors)))
-    if metadata.collection_title:
-        collection = metadata.collection_title
-        if metadata.collection_number:
-            collection = f"{collection}, n° {metadata.collection_number}"
-        lines.append(_latex_text(collection))
-    publisher_bits = [bit for bit in (metadata.publisher, metadata.publication_place, metadata.publication_year) if bit]
-    if publisher_bits:
-        lines.append(_latex_text(", ".join(publisher_bits)))
-    for label, value in (
-        ("ISBN", metadata.isbn_print),
-        ("ISBN (PDF)", metadata.isbn_pdf),
-        ("ISBN (ePub)", metadata.isbn_epub),
-        ("ISSN", metadata.issn),
-        ("DOI", metadata.doi),
-    ):
-        if value:
-            lines.append(_latex_text(f"{label} : {value}"))
-    if metadata.rights:
-        lines.append(_latex_text(metadata.rights))
+    if metadata.cover_designer:
+        lines.append(_latex_text(f"Couverture et mise en pages : {metadata.cover_designer}"))
+    if metadata.editorial_contact:
+        lines.append(_latex_text(f"Suivi éditorial : {metadata.editorial_contact}"))
+    return lines
+
+
+def _colophon_institutional_lines(metadata: LateiMetadata) -> list[str]:
+    """Mentions légales et coordonnées : adresse/URL institutionnelles
+    fixes, toujours présentes ; année et ISBN restent des métadonnées du
+    livre, omises si absentes plutôt que remplacées par un espace réservé."""
+    lines: list[str] = []
+    if metadata.publication_year:
+        lines.append(_latex_text(
+            f"© Presses universitaires de Rouen et du Havre, {metadata.publication_year}."
+        ))
+    lines.append(_latex_text(_PURH_ADDRESS_LINE))
+    lines.append(rf"\url{{{_PURH_URL}}}")
+    if metadata.preferred_isbn:
+        lines.append(_latex_text(metadata.preferred_isbn))
     return lines
 
 
 def _credits_page(metadata: LateiMetadata) -> str:
-    lines = _credits_lines(metadata)
-    if not lines:
+    blocks = [
+        block
+        for block in (_colophon_production_lines(metadata), _colophon_institutional_lines(metadata))
+        if block
+    ]
+    if not blocks:
         return ""
-    body = r"\vspace{0.4\baselineskip}".join(rf"{line}\par" for line in lines)
+    block_bodies = [
+        r"\vspace{0.4\baselineskip}".join(rf"{line}\par" for line in block) for block in blocks
+    ]
+    body = r"\vspace{1\baselineskip}".join(block_bodies)
     return rf"\PURHCreditsPage{{{body}}}"
 
 

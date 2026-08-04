@@ -110,18 +110,18 @@ def test_subsection_and_subsubsection_titleformat_are_bold() -> None:
     assert r"\PURHTitleFont\bfseries\normalsize\raggedright" in subsubsection_block
 
 
-def test_running_title_header_uses_thin_family_with_explicit_gray_color() -> None:
-    """Deux vérifications humaines successives (2026-08-04) : la première
+def test_running_title_header_uses_thin_family_with_explicit_color() -> None:
+    """Trois vérifications humaines successives (2026-08-04) : la première
     jugeait le gris trop clair (Thin -> famille standard, sans succès) ; la
     seconde a trouvé ce résultat trop noir et visuellement gras — retour à
-    la famille Thin (« pas de graisse » sur le PDF imprimeur) avec un gris
-    explicite (\\color) plutôt qu'un changement de famille."""
+    la famille Thin (« pas de graisse » sur le PDF imprimeur) ; la
+    troisième a trouvé le gris qui en résultait encore trop clair — passé au
+    système noir X % (CMJN) à 50 %, voir test_latei_colophon.py."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     # xcolor (pas le simple package color) depuis la passe P2 tableaux —
-    # nécessaire pour \rowcolor sur les lignes d'entête — mais reste
-    # compatible avec la syntaxe \color[gray]{{}} utilisée ici.
+    # nécessaire pour \rowcolor sur les lignes d'entête.
     assert r"\usepackage[table]{{xcolor}}" in preamble_source
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[gray]{{0.25}}}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.5}}}}" in preamble_source
     assert r"\PURHTitleFont" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 
 

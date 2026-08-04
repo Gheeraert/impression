@@ -15,6 +15,18 @@ from .reversible_integration import (
 )
 from .site_builder import SiteBuilder, has_editor_pdf
 
+# Formats de mise en page proposés dans le GUI (référentiel PURH v0.6 §18,
+# "corpus minimal requis") : seul 155 × 230 mm a un profil implémenté
+# (purh_layout_profiles.py) ; les autres apparaissent grisés — un rappel
+# visuel de ce qui reste à construire, pas une fonctionnalité silencieusement
+# absente (vérification humaine directe, 2026-08-04, demandant explicitement
+# ce menu déroulant).
+_LAYOUT_FORMAT_OPTIONS = (
+    "155 × 230 mm",
+    "195 × 255 mm (à venir)",
+    "180 × 240 mm (à venir)",
+)
+
 LATEI_PACKAGE_HELP = (
     "Le paquet LaTEI contient le corps réversible, le driver compilable, "
     "les macros locales, le mapping d’images, les assets copiés, le PDF éventuel, "
@@ -164,6 +176,9 @@ class App(ttk.Frame):
         self.pdf_export_mode_var = tk.StringVar(value="none")
         self.pdf_export_status_var = tk.StringVar(value="")
         self.pdf_export_widgets: list[ttk.Radiobutton] = []
+        self.layout_format_var = tk.StringVar(value=_LAYOUT_FORMAT_OPTIONS[0])
+        self.cover_designer_var = tk.StringVar()
+        self.editorial_contact_var = tk.StringVar()
         self.build_button: ttk.Button | None = None
         self.xml_files: list[Path] = []
         self.port_var = tk.StringVar(value="8000,8080")
@@ -175,7 +190,10 @@ class App(ttk.Frame):
 
     def _build_ui(self) -> None:
         self.master.title("IMPRESSIONS — livre web TEI")
-        self.master.geometry("1080x780")
+        # Agrandi de 780 à 900 (vérification humaine directe, 2026-08-04) :
+        # les boutons du bas (bar_bar) étaient coupés à la hauteur d'origine,
+        # avant même l'ajout du sélecteur de format et du bouton Colophon.
+        self.master.geometry("1080x900")
         self._build_menu()
         self.pack(fill="both", expand=True)
 
@@ -320,6 +338,73 @@ class App(ttk.Frame):
             self.pdf_export_widgets.append(radio)
 
         ttk.Label(frame, textvariable=self.pdf_export_status_var).grid(row=len(options), column=0, sticky="w", pady=(4, 0))
+
+        format_row = len(options) + 1
+        ttk.Label(frame, text="Format").grid(row=format_row, column=0, sticky="w", padx=(12, 0), pady=(8, 0))
+        format_combo = ttk.Combobox(
+            frame,
+            textvariable=self.layout_format_var,
+            values=_LAYOUT_FORMAT_OPTIONS,
+            state="readonly",
+            width=24,
+        )
+        format_combo.grid(row=format_row, column=0, sticky="w", padx=(70, 0), pady=(8, 0))
+        format_combo.bind("<<ComboboxSelected>>", self._on_layout_format_selected)
+
+        ttk.Button(
+            frame,
+            text="Colophon (couverture, suivi éditorial)…",
+            command=self._open_colophon_dialog,
+        ).grid(row=format_row + 1, column=0, sticky="w", padx=(12, 0), pady=(6, 0))
+
+    def _on_layout_format_selected(self, _event: object = None) -> None:
+        # Seul le premier format (155 × 230 mm) a un profil implémenté
+        # (purh_layout_profiles.py) — les autres, affichés grisés en
+        # substance ("à venir"), reviennent silencieusement au seul choix
+        # disponible plutôt que d'échouer plus tard, sans avertissement,
+        # au moment de la compilation.
+        if self.layout_format_var.get() != _LAYOUT_FORMAT_OPTIONS[0]:
+            messagebox.showinfo(
+                "Format à venir",
+                "Seul le format 155 × 230 mm est disponible pour le moment. "
+                "Les autres formats apparaissent dans la liste à titre indicatif.",
+            )
+            self.layout_format_var.set(_LAYOUT_FORMAT_OPTIONS[0])
+
+    def _open_colophon_dialog(self) -> None:
+        """Boîte de dialogue optionnelle (référentiel PURH v0.6 §8.1,
+        colophon, 2026-08-04) : couverture/mise en pages et suivi éditorial
+        n'ont aucun équivalent dans le XML source, contrairement à l'année
+        de publication ou l'ISBN (déjà extraits du XML) — ce sont les deux
+        seules informations que cette boîte recueille."""
+        dialog = tk.Toplevel(self.master)
+        dialog.title("Colophon")
+        dialog.transient(self.master)
+        dialog.resizable(False, False)
+
+        frame = ttk.Frame(dialog, padding=12)
+        frame.pack(fill="both", expand=True)
+
+        ttk.Label(frame, text="Couverture et mise en pages").grid(row=0, column=0, sticky="w", pady=(0, 6))
+        designer_entry = ttk.Entry(frame, textvariable=self.cover_designer_var, width=36)
+        designer_entry.grid(row=0, column=1, sticky="ew", pady=(0, 6))
+
+        ttk.Label(frame, text="Suivi éditorial").grid(row=1, column=0, sticky="w", pady=(0, 6))
+        ttk.Entry(frame, textvariable=self.editorial_contact_var, width=36).grid(row=1, column=1, sticky="ew", pady=(0, 6))
+
+        ttk.Label(
+            frame,
+            text="Laisser vide pour omettre ces lignes du colophon.\nL'année de publication et l'ISBN sont repris du XML.",
+            foreground="gray",
+        ).grid(row=2, column=0, columnspan=2, sticky="w", pady=(0, 8))
+
+        buttons = ttk.Frame(frame)
+        buttons.grid(row=3, column=0, columnspan=2, sticky="e")
+        ttk.Button(buttons, text="Fermer", command=dialog.destroy).grid(row=0, column=0)
+
+        frame.columnconfigure(1, weight=1)
+        designer_entry.focus_set()
+        dialog.grab_set()
 
     def _choose_master_xml(self) -> None:
         path = filedialog.askopenfilename(title="Choisir un fichier XML maître", filetypes=[("Fichiers XML", "*.xml")])
@@ -606,6 +691,8 @@ class App(ttk.Frame):
             collection_number=self.collection_number_var.get().strip(),
             collection_issn=self.collection_issn_var.get().strip(),
             pdf_export_mode=pdf_export_mode,
+            cover_designer=self.cover_designer_var.get().strip(),
+            editorial_contact=self.editorial_contact_var.get().strip(),
         )
 
     def _refresh_pdf_export_controls(self) -> None:

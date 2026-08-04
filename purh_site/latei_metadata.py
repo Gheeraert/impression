@@ -39,6 +39,11 @@ class LateiMetadata:
     abstract: str = ""
     keywords: list[str] = field(default_factory=list)
     rights: str = ""
+    # Sans équivalent dans la source TEI/Métopes : renseignés par l'éditrice
+    # via la boîte de dialogue optionnelle du GUI (référentiel PURH v0.6
+    # §8.1, colophon, 2026-08-04), jamais extraits du XML.
+    cover_designer: str = ""
+    editorial_contact: str = ""
 
     @property
     def contributors(self) -> list[str]:

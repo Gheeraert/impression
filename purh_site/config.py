@@ -18,6 +18,11 @@ class BuildConfig:
     site_title_fallback: str = "Livre PURH"
     pdf_export_mode: str = "none"
     latex_engine: str = "lualatex"
+    # Colophon LaTEI (référentiel PURH v0.6 §8.1, 2026-08-04) : sans
+    # équivalent dans le XML, fournis via la boîte de dialogue optionnelle
+    # du GUI — omis du colophon si laissés vides.
+    cover_designer: str = ""
+    editorial_contact: str = ""
 
     @property
     def output_assets_dir(self) -> Path:

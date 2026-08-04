@@ -138,19 +138,18 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
 % un défaut confirmé, pas un choix).
 %
-% Deux vérifications humaines successives (2026-08-04) ont porté sur ce même
-% réglage : la première jugeait le gris trop clair (corrigé en passant de
-% \PURHTitreFont, famille Thin, à \PURHTitleFont, famille standard, sans
+% Trois vérifications humaines successives (2026-08-04) ont porté sur ce
+% même réglage : la première jugeait le gris trop clair (corrigé en passant
+% de \PURHTitreFont, famille Thin, à \PURHTitleFont, famille standard, sans
 % \bfseries) ; la seconde a trouvé ce résultat trop noir et visuellement
-% gras — le PDF imprimeur, lui, n'a « pas de graisse ». Retour à la famille
-% Thin (qui correspond bien à « pas de graisse ») avec, cette fois, une
-% teinte grise explicite (\color) plutôt qu'un changement de famille, pour
-% obtenir un gris plus soutenu que le rendu par défaut sans re-solliciter de
-% graisse. Valeur (25 % de blanc, soit 75 % de noir) approximative, jamais
-% mesurée sur le PDF imprimeur faute d'outil de calibration colorimétrique
-% fiable disponible ici — à réajuster si la prochaine vérification humaine
-% la juge encore inexacte.
-\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[gray]{{0.25}}}}
+% gras — le PDF imprimeur, lui, n'a « pas de graisse » — d'où un retour à la
+% famille Thin avec un gris explicite (\color[gray]{{0.25}}, approximatif) ;
+% la troisième a jugé ce gris encore trop clair. Passé au même système que
+% le fond d'entête de tableau et le texte courant (§11.3/§12.1) — une teinte
+% CMJN noir X % plutôt qu'un gris RVB — à 50 % noir, valeur donnée
+% explicitement par l'utilisateur cette fois (pas une estimation à
+% recalibrer).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.5}}}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
@@ -526,22 +525,33 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   \clearpage
 }}
 
+% Vérification humaine directe du 2026-08-04 (faux-titre) :
+% remonté sur la page (0.35\textheight -> 0.25\textheight, approximatif —
+% « un peu plus haut », aucune mesure millimétrique donnée) et repassé en
+% Josefin Sans Bold capitales, même corps que les titres de section
+% (\titleformat{{\section}}, 12/14 pt) — le référentiel ne donnait aucune
+% cible pour ce niveau spécifique, seule cette vérification fait foi ici,
+% comme pour les autres corrections de graisse de ce chantier.
 \newcommand{{\PURHFalseTitle}}[1]{{%
   \clearpage
   \thispagestyle{{empty}}%
   \begin{{center}}
-  \vspace*{{0.35\textheight}}
-  {{\PURHTitreFont\fontsize{{14pt}}{{17pt}}\selectfont #1\par}}
+  \vspace*{{0.25\textheight}}
+  {{\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\MakeUppercase{{#1}}\par}}
   \end{{center}}
   \clearpage
 }}
 
+% Chaparral Pro (fonte principale du document, aucun changement de famille
+% nécessaire) 10 pt — vérification humaine directe du 2026-08-04 : \small
+% ne correspond pas nécessairement à 10 pt exactement (dépend de l'échelle
+% de tailles du \documentclass), remplacé par une taille explicite.
 \newcommand{{\PURHCreditsPage}}[1]{{%
   \clearpage
   \thispagestyle{{empty}}%
   \begin{{center}}
   \vspace*{{0.3\textheight}}
-  \small
+  \fontsize{{10pt}}{{12pt}}\selectfont
   #1
   \end{{center}}
   \clearpage

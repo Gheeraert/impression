@@ -410,6 +410,8 @@ class SiteBuilder:
             generated_dir,
             compile_pdf=(mode == "latei_pdf"),
             latex_engine=config.latex_engine,
+            cover_designer=config.cover_designer,
+            editorial_contact=config.editorial_contact,
         )
 
         return PdfSiteArtifacts(

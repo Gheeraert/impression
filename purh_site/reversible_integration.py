@@ -97,12 +97,20 @@ def run_reversible_export_for_file(
     *,
     latex_engine: str = "lualatex",
     compile_pdf: bool = True,
+    cover_designer: str = "",
+    editorial_contact: str = "",
 ) -> ReversibleExportResult:
     """Run the experimental TEI -> controlled LaTeX -> TEI export for one file.
 
     Existing output files with the experimental suffixes are overwritten
     explicitly. The source XML file is never overwritten. PDF compilation stays
     enabled by default for compatibility with direct callers.
+
+    ``cover_designer``/``editorial_contact`` (colophon, référentiel PURH
+    v0.6 §8.1, 2026-08-04) have no TEI/Métopes source at all — unlike
+    ``collection_title`` and siblings in the HTML site metadata path, which
+    only fill a gap left by the XML, these two are always supplied
+    externally (the GUI's optional colophon dialog) when present.
     """
     source_path = Path(xml_path).expanduser()
     resolved_output_dir = _resolve_output_dir(source_path, output_dir)
@@ -268,6 +276,10 @@ def run_reversible_export_for_file(
         )
 
     metadata = extract_latei_metadata(element)
+    if cover_designer:
+        metadata.cover_designer = cover_designer
+    if editorial_contact:
+        metadata.editorial_contact = editorial_contact
     metadata_diagnostics = validate_latei_metadata(metadata)
     image_diagnostics = validate_latei_images(element, source_xml_path=source_path)
     result = run_tei_latex_tei_roundtrip(element)

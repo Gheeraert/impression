@@ -146,14 +146,22 @@ def test_credits_page_shows_only_available_metadata(full_metadata_export, minima
         assert process.returncode == 0, process.stderr
         return process.stdout
 
+    # Colophon (référentiel PURH v0.6 §8.1, 2026-08-04) : année et ISBN
+    # viennent du XML ; adresse et URL sont des mentions institutionnelles
+    # PURH fixes, toujours présentes. DOI n'y figure plus (jamais demandé
+    # pour ce contenu précis) — voir test_latei_colophon.py pour la
+    # vérification dédiée des lignes couverture/suivi éditorial, fournies
+    # par le GUI et absentes de tout XML.
     full_text = render(full_metadata_export.latei_pdf_path)
-    assert "Sous la direction de Prenom Nom" in full_text
-    assert "ISBN : 979-10-240-0000-0" in full_text
-    assert "DOI : 10.4000/books.purh.0000" in full_text
+    assert "2026" in full_text
+    assert "979-10-240-0000-0" in full_text
+    assert "purh.univ-rouen.fr" in full_text
 
     # No source data at all beyond the title: no fabricated boilerplate
-    # (no invented "Tous droits réservés" or similar) should appear.
+    # (no invented "Tous droits réservés" or similar), but the fixed
+    # institutional address/URL still appear (not book-specific data).
     minimal_text = render(minimal_metadata_export.latei_pdf_path)
-    assert "ISBN" not in minimal_text
-    assert "DOI" not in minimal_text
+    assert "979-10-240-0000-0" not in minimal_text
+    assert "©" not in minimal_text
     assert "Tous droits" not in minimal_text
+    assert "purh.univ-rouen.fr" in minimal_text
