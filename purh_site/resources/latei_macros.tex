@@ -311,6 +311,10 @@
 % blancs techniques si nécessaire » (référentiel §5.2) — indépendant de
 % l'option de classe openany/openright, qui ne régit que le \chapter brut
 % du chemin <div type="chapter">, distinct de celui-ci.
+% \setcounter{footnote}{0} : référentiel PURH v0.6 §5/§17, « notes remise à 1
+% par contribution » — chaque ouverture (front matter, chapitre/article, back
+% matter) redémarre sa propre numérotation de notes plutôt que de poursuivre
+% celle de la contribution précédente sur tout le livre.
 \cs_new_protected:Npn \latei_add_contribution_opening_break:
   {
     \tl_if_empty:NF \l_latei_option_page_title_tl
@@ -319,6 +323,7 @@
         \phantomsection
         \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
         \exp_args:NV \latei_markboth_recto:n \l_latei_option_page_title_tl
+        \setcounter{footnote}{0}
       }
   }
 \NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
