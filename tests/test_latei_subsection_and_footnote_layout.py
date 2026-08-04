@@ -83,7 +83,7 @@ _LONG_FOOTNOTE_XML = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
     <body>
       <div type="chapter" xml:id="c1">
         <head>Test notes longues</head>
-        <p>Un texte avec un appel de note<note><p>Ceci est une note assez longue pour forcer un retour a la ligne automatique dans le corps du texte de la note elle meme afin de verifier le retrait.</p></note> et la suite du texte normal.</p>
+        <p>Un texte avec un appel de note<note><p>Ceci est une note assez longue pour forcer un retour a la ligne automatique dans le corps du texte de la note elle meme afin de verifier le retrait, meme au corps reduit de 8,5 points desormais utilise pour les notes de bas de page dans ce profil de mise en page PURH.</p></note> et la suite du texte normal.</p>
       </div>
     </body>
   </text>
@@ -233,7 +233,7 @@ def test_footnote_first_line_is_flush_left_and_continuation_is_indented(long_foo
     lines = process.stdout.splitlines()
 
     first_line = next((line for line in lines if "Ceci est une note" in line), None)
-    continuation_line = next((line for line in lines if "le corps du texte de la note" in line), None)
+    continuation_line = next((line for line in lines if "corps du texte de la note" in line), None)
     assert first_line is not None, f"Footnote first line not found in:\n{process.stdout}"
     assert continuation_line is not None, f"Footnote continuation line not found in:\n{process.stdout}"
 

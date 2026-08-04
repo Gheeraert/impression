@@ -96,7 +96,20 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \usepackage{{indentfirst}}
 \usepackage{{emptypage}}
 \usepackage[normalem]{{ulem}}
-\usepackage{{color}}
+% [table] : nécessaire pour \rowcolor sur les lignes d'entête de tableau
+% (référentiel §11.3, "fond foncé noir 30 %") — charge colortbl en plus des
+% commandes \color habituelles (compatible avec l'usage \color[gray]{{}}
+% déjà en place pour le titre courant).
+\usepackage[table]{{xcolor}}
+
+% Référentiel PURH v0.6 §12.1 : « le texte courant du PDF imprimeur
+% correspond à un noir process à 90 % [K]. La sortie actuelle utilise du
+% noir plein. » CMYK explicite (0,0,0,0.9), pas une valeur de gris RVB :
+% "K" désigne le noir process de la quadrichromie, un concept distinct du
+% gris \color[gray]{{}} utilisé ailleurs (titre courant) qui n'a pas de sens
+% en CMJN. Appliqué globalement dès le début du document.
+\definecolor{{PURHBodyBlack}}{{cmyk}}{{0,0,0,0.9}}
+\AtBeginDocument{{\color{{PURHBodyBlack}}}}
 
 \IfFontExistsTF{{Chaparral Pro}}
   {{\setmainfont{{Chaparral Pro}}}}
@@ -310,8 +323,24 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \usepackage[flushmargin]{{footmisc}}
 
 \setlength{{\footnotesep}}{{0.6\baselineskip}}
-\setlength{{\skip\footins}}{{1.2\baselineskip}}
-\renewcommand{{\footnotelayout}}{{\fontsize{{{note_font_size}}}{{{note_leading}}}\selectfont}}
+% Espace avant les notes (référentiel §5.1 : 3 mm) : \skip\footins régit
+% l'espace entre la fin du corps de texte et le début de la zone de notes
+% (filet inclus) — 1,2\baselineskip (~5,7 mm à 11/13,5 pt) en donnait trop.
+\setlength{{\skip\footins}}{{3mm}}
+% Filet de notes (référentiel §5.1 : 0,25 pt de large sur 72 pt = 25,4 mm de
+% long). \footnoterule par défaut de book.cls fait 0,4 pt sur
+% 0,4\columnwidth (~42 mm sur l'empagement de ce profil) — les deux
+% constats "environ 0,40 pt" / "environ 42 mm" du §5.2 correspondent très
+% exactement à cette valeur par défaut, jamais personnalisée jusqu'ici.
+\renewcommand{{\footnoterule}}{{%
+  \kern-3pt
+  \hrule width 72pt height 0.25pt
+  \kern 2.6pt
+}}
+% \footnotelayout (footmisc) n'a plus d'effet : la redéfinition plus bas du
+% texte de note pour le retrait négatif de première ligne applique
+% directement \fontsize{{{note_font_size}}}{{{note_leading}}} et court-circuite
+% le mécanisme normal de footmisc qui l'invoque.
 
 \usepackage{{etoolbox}}
 
@@ -343,6 +372,20 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   labelfont=bf,
   labelsep=period,
   skip=11pt
+}}
+
+% Référentiel PURH v0.6 §11.3 : titre de tableau 9/11 pt, centré, 10 mm
+% avant, 3,5 mm après — réglage propre aux tableaux (\captionsetup[table]),
+% distinct du réglage générique ci-dessus qui reste seul à s'appliquer aux
+% figures (aucune cible équivalente donnée pour elles dans le référentiel).
+\DeclareCaptionFont{{PURHTableCaptionFont}}{{\fontsize{{9pt}}{{11pt}}\selectfont}}
+\captionsetup[table]{{
+  font=PURHTableCaptionFont,
+  labelfont=bf,
+  labelsep=period,
+  justification=centering,
+  aboveskip=10mm,
+  belowskip=3.5mm
 }}
 
 \addto\captionsfrench{{
@@ -396,9 +439,16 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % donc encore écraser au début du document (bug réel rencontré et vérifié :
 % le correctif n'avait aucun effet tant qu'il n'était pas, lui aussi,
 % différé). Étant chargés plus haut, leur crochet s'exécute avant celui-ci.
+% \fontsize{{{note_font_size}}}{{{note_leading}}} explicite ici, pas laissé au
+% \footnotelayout de footmisc (référentiel §5.1 : Chaparral Pro 8,5/10,2 pt) :
+% cette redéfinition complète de \@makefntext remplace celle de footmisc et
+% n'appelle donc plus \footnotelayout — la taille du corps du texte de note
+% retombait silencieusement sur celle ambiante (~9/11 pt observés, cf. §5.2)
+% tant que ce défaut n'était pas identifié.
 \makeatletter
 \AtBeginDocument{{%
   \renewcommand{{\@makefntext}}[1]{{%
+    \fontsize{{{note_font_size}}}{{{note_leading}}}\selectfont
     \setlength{{\leftskip}}{{1.2em}}%
     \setlength{{\parindent}}{{-1.2em}}%
     \@thefnmark\enskip#1%

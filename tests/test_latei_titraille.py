@@ -117,7 +117,10 @@ def test_running_title_header_uses_thin_family_with_explicit_gray_color() -> Non
     la famille Thin (« pas de graisse » sur le PDF imprimeur) avec un gris
     explicite (\\color) plutôt qu'un changement de famille."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\usepackage{{color}}" in preamble_source
+    # xcolor (pas le simple package color) depuis la passe P2 tableaux —
+    # nécessaire pour \rowcolor sur les lignes d'entête — mais reste
+    # compatible avec la syntaxe \color[gray]{{}} utilisée ici.
+    assert r"\usepackage[table]{{xcolor}}" in preamble_source
     assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[gray]{{0.25}}}}" in preamble_source
     assert r"\PURHTitleFont" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 

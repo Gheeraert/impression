@@ -95,6 +95,20 @@ LAYOUT_PARAM_STANDALONE_MACROS = {
     "lateiVSpace",
 }
 
+# Written directly by latex_writer._write_row, before \teiRow, for header
+# rows (référentiel PURH v0.6 §11.3, "fond foncé noir 30 %") — the same
+# placement constraint as \multicolumn on a spanning cell (see
+# _parse_row_cell): colortbl's \rowcolor must be the literal first token of
+# the row or TeX's alignment scanner mishandles it ("Misplaced \noalign").
+# It is a generated presentation artifact, not authored LaTEI content (the
+# semantic "this is a header row" already lives in \teiRow's own
+# role={label|header} option) — recognized and discarded on round-trip
+# rather than raising a parse error, unlike LAYOUT_PARAM_STANDALONE_MACROS
+# whose argument is validated against a fixed small/medium/large vocabulary.
+LAYOUT_UNVALIDATED_STANDALONE_MACROS = {
+    "rowcolor",
+}
+
 _VALID_SPACE_SIZES = {"small", "medium", "large"}
 
 KNOWN_TEXT_ESCAPES = {
@@ -160,6 +174,8 @@ class _Parser:
                     self._consume_layout_standalone(macro_name)
                 elif macro_name in LAYOUT_PARAM_STANDALONE_MACROS:
                     self._consume_layout_param_standalone(macro_name)
+                elif macro_name in LAYOUT_UNVALIDATED_STANDALONE_MACROS:
+                    self._consume_layout_unvalidated_standalone(macro_name)
                 else:
                     nodes.append(self._parse_macro(macro_name))
                 text_start = self.pos
@@ -314,6 +330,10 @@ class _Parser:
                 f"Invalid size '{size}' for \\{macro_name}. Expected: small, medium, large."
             )
 
+    def _consume_layout_unvalidated_standalone(self, macro_name: str) -> None:
+        self.pos += len(macro_name) + 1
+        self._read_group()
+
     def _controlled_macro_at_pos(self) -> str | None:
         macro_names = [
             *MACRO_TO_ELEMENT,
@@ -322,6 +342,7 @@ class _Parser:
             *LAYOUT_PARAM_WRAPPER_MACROS,
             *LAYOUT_STANDALONE_MACROS,
             *LAYOUT_PARAM_STANDALONE_MACROS,
+            *LAYOUT_UNVALIDATED_STANDALONE_MACROS,
         ]
         for macro_name in sorted(macro_names, key=len, reverse=True):
             if self.latex.startswith(f"\\{macro_name}", self.pos):

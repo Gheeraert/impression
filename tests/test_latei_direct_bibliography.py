@@ -101,7 +101,9 @@ def test_latei_direct_bibliography_macros_follow_stable_contract(
     assert "name={biblStruct}" in macros
     assert r"\begin{PurhBibliography}" in macros
     assert r"\end{PurhBibliography}" in macros
-    assert r"\noindent\hangindent=1.5em\hangafter=1" in macros
+    # Référentiel PURH v0.6 §11.2 (2026-08-04) : 10 pt, retrait suspendu
+    # 5 mm — voir test_latei_microtypography_p2.py pour le détail.
+    assert r"\fontsize{10pt}{12pt}\selectfont\hangindent=5mm\hangafter=1" in macros
     assert r"\NewDocumentEnvironment{teiBibl}" in macros
     assert r"\lateiBibliographyEntry" in macros
     assert r"\teiAuthor" in macros

@@ -205,10 +205,21 @@ def _write_row(node: ElementNode, inline_quote_context: bool) -> str:
     "&" is special inside an alignment, and corrupts the tabular's column
     scan ("Incomplete \\ifnum") when a bare "&" only appears inside a
     conditionally-skipped branch. Non-cell children (stray whitespace text
-    from source indentation) are dropped: TEI rows carry no other content."""
+    from source indentation) are dropped: TEI rows carry no other content.
+
+    A header row's \\rowcolor (référentiel PURH v0.6 §11.3, "fond foncé noir
+    30 %") has the same constraint as a spanning cell's \\multicolumn: it
+    must be the literal, unwrapped first token TeX's alignment scanner sees
+    for the row, or colortbl's internal \\noalign is "misplaced" and the
+    whole tabular breaks. So it is written directly here, before \\teiRow,
+    rather than left to a conditional inside that macro (confirmed by
+    reproduction: \\iflateirowisheader\\rowcolor{...}\\fi inside \\teiRow
+    raised "Misplaced \\noalign")."""
     cells = [child for child in node.children if isinstance(child, ElementNode) and child.local_name == "cell"]
     content = " & ".join(_write_cell(cell, inline_quote_context) for cell in cells)
-    return _macro("teiRow", _options(node), content)
+    role = node.get_attr("role")
+    prefix = r"\rowcolor{black!30}" if role in ("label", "header") else ""
+    return prefix + _macro("teiRow", _options(node), content)
 
 
 def _write_cell(node: ElementNode, inline_quote_context: bool) -> str:

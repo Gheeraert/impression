@@ -112,7 +112,10 @@ def test_render_purh_latex_preamble_defaults_to_production_2025_profile() -> Non
     assert "inner=20mm" in preamble
     assert "outer=30mm" in preamble
     assert r"\renewcommand{\normalsize}{\fontsize{11pt}{13.5pt}\selectfont}" in preamble
-    assert r"\renewcommand{\footnotelayout}{\fontsize{8.5pt}{10.2pt}\selectfont}" in preamble
+    # \footnotelayout n'est plus le mécanisme actif depuis le 2026-08-04 :
+    # \@makefntext applique directement la taille de note du profil (voir
+    # test_latei_microtypography_p2.py pour le détail de ce changement).
+    assert r"\fontsize{8.5pt}{10.2pt}\selectfont" in preamble
 
 
 def test_render_purh_latex_preamble_honors_explicit_profile() -> None:

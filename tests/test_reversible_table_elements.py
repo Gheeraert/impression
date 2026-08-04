@@ -129,6 +129,43 @@ def test_cell_with_colspan_round_trips_and_uses_literal_multicolumn() -> None:
     assert cells[1].text == "B et C fusionnés"
 
 
+def test_header_row_round_trips_and_uses_literal_rowcolor() -> None:
+    # \rowcolor (référentiel PURH v0.6 §11.3, "fond foncé noir 30 %") must
+    # be the literal, unwrapped first token of the row, before \teiRow, or
+    # colortbl's internal \noalign is "misplaced" — same placement
+    # constraint as \multicolumn on a spanning cell, confirmed by isolated
+    # reproduction. The reader recognizes and discards it (a generated
+    # presentation artifact, not authored LaTEI content — the semantic
+    # "header row" already lives in \teiRow's own role option).
+    result = run(
+        '<table xmlns="http://www.tei-c.org/ns/1.0">'
+        '<row role="header"><cell>Colonne A</cell><cell>Colonne B</cell></row>'
+        "<row><cell>Valeur 1</cell><cell>Valeur 2</cell></row>"
+        "</table>"
+    )
+    emitted = result.emitted
+    rows = emitted.xpath("./tei:row", namespaces=NS)
+
+    assert result.diagnostics == []
+    assert result.latex.index(r"\rowcolor{black!30}") < result.latex.index(r"\teiRow[role={header}]")
+    assert r"\rowcolor" not in result.latex.split(r"\teiRow[role={header}]")[1].split(r"\\")[0]
+    assert len(rows) == 2
+    assert rows[0].get("role") == "header"
+    assert rows[1].get("role") is None
+    assert [cell.text for cell in rows[0].xpath("./tei:cell", namespaces=NS)] == ["Colonne A", "Colonne B"]
+
+
+def test_non_header_row_has_no_rowcolor() -> None:
+    result = run(
+        '<table xmlns="http://www.tei-c.org/ns/1.0">'
+        "<row><cell>A</cell><cell>B</cell></row>"
+        "</table>"
+    )
+
+    assert result.diagnostics == []
+    assert r"\rowcolor" not in result.latex
+
+
 def test_table_preserves_row_and_cell_order() -> None:
     result = run(
         '<table xmlns="http://www.tei-c.org/ns/1.0">'

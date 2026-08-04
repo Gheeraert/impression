@@ -472,8 +472,11 @@
   }
 \ExplSyntaxOff
 
+% Référentiel PURH v0.6 §11.2 : Chaparral Pro 10 pt, retrait suspendu 5 mm.
+% \hangindent en em dépendait de la taille de fonte ambiante (jamais fixée
+% par cette macro) ; passé en mm, valeur absolue conforme à la cible.
 \NewDocumentCommand{\lateiBibliographyEntry}{+m}{%
-  \par\noindent\hangindent=1.5em\hangafter=1 #1\par
+  \par\noindent\fontsize{10pt}{12pt}\selectfont\hangindent=5mm\hangafter=1 #1\par
 }
 \NewDocumentCommand{\lateiBibliographyBlock}{+m}{%
   \par
@@ -678,12 +681,24 @@
 % gère plus que la mise en forme (gras d'entête), jamais \multicolumn. Une
 % ligne d'entête (role=label/header sur la ligne, cf. TEI) reçoit
 % \toprule/\midrule ; \bottomrule ferme le tableau.
+% Référentiel PURH v0.6 §11.3 : texte 8/9,5 pt, marges internes 2 mm,
+% filets 0,25 pt, fond d'entête noir 30 % (un gris clair : 30 % de couverture
+% d'encre, pas un fond sombre). Chaparral Pro déjà la fonte principale du
+% document (\setmainfont) : aucun changement de famille nécessaire, seule la
+% taille change ici. \heavyrulewidth/\lightrulewidth/\cmidrulewidth
+% (booktabs) valent par défaut 0,08em/0,05em/0,05em — proportionnels à la
+% fonte ambiante, donc jamais 0,25 pt de façon fiable sans réglage explicite.
 \newif\iflateirowisheader
 \lateirowisheaderfalse
 \NewDocumentEnvironment{teiTable}{O{} +b}{%
   \lateiExtractOptions{#1}%
   \begingroup
   \lateiSetHeadContext{table}%
+  \fontsize{8pt}{9.5pt}\selectfont
+  \setlength{\tabcolsep}{2mm}
+  \setlength{\heavyrulewidth}{0.25pt}
+  \setlength{\lightrulewidth}{0.25pt}
+  \setlength{\cmidrulewidth}{0.25pt}
   \par\begin{center}%
   \begin{longtable}{*{\lateiTableNumCols}{l}}
   \toprule
@@ -693,6 +708,12 @@
   \end{center}\par%
   \endgroup
 }{}
+% \rowcolor pour les lignes d'entête est écrit directement par
+% purh_site/reversible/latex_writer.py (_write_row), avant même ce \teiRow,
+% jamais ici : même contrainte que \multicolumn sur une cellule fusionnée
+% (cf. teiCell) — un \rowcolor conditionnel à l'intérieur de cette macro
+% n'est plus le premier jeton vu par le scanner d'alignement de TeX et
+% produit "Misplaced \noalign" (confirmé par reproduction isolée).
 \NewDocumentCommand{\teiRow}{O{} +m}{%
   \IfSubStr{#1}{role={label}}{\lateirowisheadertrue}{%
     \IfSubStr{#1}{role={header}}{\lateirowisheadertrue}{\lateirowisheaderfalse}%
