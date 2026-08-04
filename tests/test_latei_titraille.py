@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 """Titraille (référentiel PURH v0.5, §2.5/§5.3): part and contribution
-titles observed in Josefin Sans Thin, 16 pt, capitals, centered; subtitle
-Thin Italic 12 pt; section titles Thin 12 pt, capitals. The pre-existing
-code used Chaparral Pro / Josefin Bold at ~24.8 pt in lowercase instead."""
+titles, 16 pt, capitals, centered; subtitle Thin Italic 12 pt; section
+titles Thin 12 pt, capitals. The pre-existing code used Chaparral Pro /
+Josefin Bold at ~24.8 pt in lowercase instead.
+
+Part/contribution titles were first corrected to Josefin Sans Thin
+(référentiel §2.5/§5.3/§4.3), then re-corrected to Josefin Sans BOLD after
+direct human verification of a generated PDF against the printer PDF: part
+titles there are black and bold, not thin and grayish — the référentiel's
+own claim of "Thin" for this specific level was contradicted by that live
+observation and is no longer followed (chantier de parité v0.6, 2026-08-04).
+Section-level titles (12 pt) were not flagged and stay Thin."""
 
 import shutil
 from pathlib import Path
@@ -54,10 +62,16 @@ def test_preamble_declares_a_dedicated_thin_titling_family() -> None:
     assert r"\newfontfamily\PURHTitreFont{{Josefin Sans Thin}}" in preamble_source
 
 
-def test_part_titleformat_is_16pt_uppercase_centered() -> None:
+def test_part_titleformat_is_16pt_bold_uppercase_centered() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     assert r"\titleformat{{\part}}[display]" in preamble_source
-    assert r"\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\centering" in preamble_source
+    assert r"\PURHTitleFont\bfseries\fontsize{{16pt}}{{19pt}}\selectfont\centering" in preamble_source
+
+
+def test_chapter_titleformat_is_16pt_bold() -> None:
+    preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
+    assert r"\titleformat{{\chapter}}[display]" in preamble_source
+    assert r"\PURHTitleFont\bfseries\fontsize{{16pt}}{{19pt}}\selectfont\raggedright" in preamble_source
 
 
 def test_section_titleformat_is_12pt_uppercase() -> None:
@@ -65,9 +79,9 @@ def test_section_titleformat_is_12pt_uppercase() -> None:
     assert r"\PURHTitreFont\fontsize{{12pt}}{{14pt}}\selectfont\raggedright" in preamble_source
 
 
-def test_contribution_title_and_subtitle_macros_use_thin_family() -> None:
+def test_contribution_title_is_bold_and_subtitle_stays_thin() -> None:
     macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
-    assert r"\PURHTitreFont\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}" in macros
+    assert r"\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}" in macros
     assert r"\PURHTitreFont\fontsize{12pt}{14pt}\selectfont\itshape\centering #1" in macros
 
 
@@ -107,3 +121,36 @@ def test_titraille_renders_uppercase_part_article_and_section_titles(titraille_e
     # rendering path — see test_latei_running_titles_verso_recto.py).
     assert "Titre de partie" in text
     assert "Titre article" in text
+
+
+def test_part_and_contribution_titles_embed_a_bold_font(titraille_export) -> None:
+    """pdffonts confirms \\titleformat{\\part} / \\lateiContributionTitle
+    actually select a bold face — a plain \\PURHTitreFont (Thin-only family)
+    could silently render the same text without ever engaging a bold shape,
+    which pdftotext alone cannot detect (it has no notion of font weight)."""
+    if shutil.which("lualatex") is None:
+        pytest.skip("LuaLaTeX is unavailable.")
+    if not titraille_export.latei_pdf_success:
+        log = titraille_export.latei_log_path.read_text(encoding="utf-8", errors="replace")
+        pytest.fail(f"Titraille sample did not compile.\n{log[:4000]}")
+    if shutil.which("pdffonts") is None:
+        pytest.skip("pdffonts is unavailable.")
+
+    import subprocess
+
+    process = subprocess.run(
+        [shutil.which("pdffonts"), str(titraille_export.latei_pdf_path)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    assert process.returncode == 0, process.stderr
+    fonts_output = process.stdout
+
+    bold_present = any(token in fonts_output for token in ("Bold", "bold", "-Bd", "-Bol"))
+    assert bold_present, (
+        "No bold font found in PDF — part/contribution titles likely still rendered "
+        f"with the Thin family.\npdffonts output:\n{fonts_output}"
+    )

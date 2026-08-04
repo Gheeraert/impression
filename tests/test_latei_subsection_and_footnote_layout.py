@@ -15,7 +15,16 @@ v0.6, chantier de parité 2026-08-03) :
    avec un retrait négatif de première ligne (hanging indent), sans point
    après le numéro — contrairement au référentiel (qui indique "point +
    espace cadratin", jamais revérifié depuis la v0.5), l'observation directe
-   de l'utilisateur sur le PDF imprimeur fait foi ici."""
+   de l'utilisateur sur le PDF imprimeur fait foi ici.
+
+Correctif du 2026-08-04, après nouvelle vérification humaine du PDF généré :
+le retrait négatif de première ligne restait invisible malgré le
+\\leftskip/\\parindent négatif déjà en place, parce qu'un \\noindent placé
+juste avant \\@thefnmark annulait l'effet du \\parindent négatif sur la
+première ligne (celle-ci se retrouvait alignée sur \\leftskip comme les
+lignes suivantes). Supprimer ce \\noindent laisse LaTeX indenter
+naturellement la première ligne de \\parindent, donc la ramener à la marge —
+c'est précisément l'effet recherché."""
 
 import shutil
 from pathlib import Path
@@ -62,6 +71,17 @@ _FOOTNOTE_XML = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
   </text>
 </TEI>"""
 
+_LONG_FOOTNOTE_XML = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <text>
+    <body>
+      <div type="chapter" xml:id="c1">
+        <head>Test notes longues</head>
+        <p>Un texte avec un appel de note<note><p>Ceci est une note assez longue pour forcer un retour a la ligne automatique dans le corps du texte de la note elle meme afin de verifier le retrait.</p></note> et la suite du texte normal.</p>
+      </div>
+    </body>
+  </text>
+</TEI>"""
+
 
 def test_subsection_titleformat_uses_thin_family_without_bold() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
@@ -84,6 +104,11 @@ def test_footnote_makefntext_uses_hanging_indent_and_no_period() -> None:
     assert r"\@thefnmark\enskip#1" in preamble_source
     assert r"\@thefnmark.\enskip" not in preamble_source
     assert r"\@thefnmark. " not in preamble_source
+    # Regression guard (bug réel corrigé le 2026-08-04) : un \noindent placé
+    # ici annule l'effet du \parindent négatif sur la première ligne — la
+    # première ligne resterait alors alignée sur \leftskip comme les
+    # suivantes, sans retrait négatif visible.
+    assert r"\noindent\@thefnmark" not in preamble_source
 
 
 def test_footnote_override_is_registered_after_hyperref() -> None:
@@ -113,6 +138,14 @@ def footnote_export(tmp_path_factory: pytest.TempPathFactory):
     tmp_path = tmp_path_factory.mktemp("latei_footnote_layout")
     xml_path = tmp_path / "book.xml"
     xml_path.write_text(_FOOTNOTE_XML, encoding="utf-8")
+    return run_reversible_export_for_file(xml_path, tmp_path / "out")
+
+
+@pytest.fixture(scope="module")
+def long_footnote_export(tmp_path_factory: pytest.TempPathFactory):
+    tmp_path = tmp_path_factory.mktemp("latei_footnote_hanging_indent")
+    xml_path = tmp_path / "book.xml"
+    xml_path.write_text(_LONG_FOOTNOTE_XML, encoding="utf-8")
     return run_reversible_export_for_file(xml_path, tmp_path / "out")
 
 
@@ -163,3 +196,45 @@ def test_footnote_number_has_no_trailing_period_in_rendered_pdf(footnote_export)
 
     assert "1. Contenu de la note" not in text
     assert "Contenu de la note" in text
+
+
+def test_footnote_first_line_is_flush_left_and_continuation_is_indented(long_footnote_export) -> None:
+    """Vérification directe du retrait négatif de première ligne : le numéro
+    doit démarrer au niveau de la marge gauche (sans retrait), la ligne de
+    suite doit être indentée sur \\leftskip — sinon la note entière apparaît
+    alignée d'un seul bloc, sans le décroché attendu (bug du 2026-08-04)."""
+    if shutil.which("lualatex") is None:
+        pytest.skip("LuaLaTeX is unavailable.")
+    if not long_footnote_export.latei_pdf_success:
+        log = long_footnote_export.latei_log_path.read_text(encoding="utf-8", errors="replace")
+        pytest.fail(f"Long footnote sample did not compile.\n{log[:4000]}")
+    if shutil.which("pdftotext") is None:
+        pytest.skip("pdftotext is unavailable.")
+
+    import subprocess
+
+    process = subprocess.run(
+        [shutil.which("pdftotext"), "-enc", "UTF-8", "-layout", str(long_footnote_export.latei_pdf_path), "-"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    assert process.returncode == 0, process.stderr
+    lines = process.stdout.splitlines()
+
+    first_line = next((line for line in lines if "Ceci est une note" in line), None)
+    continuation_line = next((line for line in lines if "le corps du texte de la note" in line), None)
+    assert first_line is not None, f"Footnote first line not found in:\n{process.stdout}"
+    assert continuation_line is not None, f"Footnote continuation line not found in:\n{process.stdout}"
+
+    first_line_indent = len(first_line) - len(first_line.lstrip(" "))
+    continuation_indent = len(continuation_line) - len(continuation_line.lstrip(" "))
+
+    assert first_line.lstrip(" ").startswith("1"), f"Expected the footnote mark at the very start: {first_line!r}"
+    assert first_line_indent < continuation_indent, (
+        f"First line indent ({first_line_indent}) should be smaller than the "
+        f"continuation line indent ({continuation_indent}) — got first={first_line!r}, "
+        f"continuation={continuation_line!r}"
+    )

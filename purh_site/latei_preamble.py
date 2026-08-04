@@ -168,23 +168,26 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 \setcounter{{secnumdepth}}{{0}}
 \setcounter{{tocdepth}}{{2}}
 
-% Même traitement typographique que la titraille de contribution (Josefin
-% Sans Thin, 16 pt, capitales — référentiel §2.5, §5.3), pour le chemin
-% <div type="chapter"> resté en Chaparral/Bold à la micropasse 7 (chemin
-% distinct de l'ouverture de contribution corrigée en micropasse 5 : ce
-% \chapter est un vrai \chapter numéroté, avec son propre libellé
-% "Chapitre N" que cette passe ne modifie pas — seule la police change).
+% Josefin Sans Bold, 16 pt, capitales — le référentiel indiquait Josefin
+% Sans Thin (§2.5, §5.3, §4.3), contredit par vérification humaine directe
+% du PDF généré face au PDF imprimeur : les titres de partie y sont noirs et
+% gras, alors que le Thin rendait un texte maigre et grisâtre, peu lisible.
+% Observation directe suivie ici, comme pour le séparateur de note de bas de
+% page défini plus bas dans ce même préambule. \PURHTitleFont (pas
+% \PURHTitreFont, qui ne charge que la graisse Thin et ne peut donc pas
+% produire de \bfseries réel) charge la famille Josefin Sans complète, dont
+% fontspec sélectionne automatiquement la graisse Bold via NFSS.
 \titleformat{{\chapter}}[display]
-  {{\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\raggedright}}
+  {{\PURHTitleFont\bfseries\fontsize{{16pt}}{{19pt}}\selectfont\raggedright}}
   {{\chaptertitlename~\thechapter}}
   {{10pt}}
   {{\MakeUppercase}}
 
-% Titre de partie observé : Josefin Sans Thin 16 pt, capitales, centré
-% (référentiel PURH §2.5, §5.3). Toujours \part* (pas de numéro affiché) :
-% le label reste vide plutôt que d'exposer un numéro de partie non requis.
+% Titre de partie : même correctif Bold que \chapter ci-dessus. Toujours
+% \part* (pas de numéro affiché) : le label reste vide plutôt que d'exposer
+% un numéro de partie non requis.
 \titleformat{{\part}}[display]
-  {{\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont\centering}}
+  {{\PURHTitleFont\bfseries\fontsize{{16pt}}{{19pt}}\selectfont\centering}}
   {{}}
   {{0pt}}
   {{\MakeUppercase}}
@@ -344,6 +347,13 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % \leftskip aligne toutes les lignes de la note sur la même marge gauche ;
 % \parindent négatif ramène uniquement la première ligne (celle du numéro)
 % en deçà de cette marge, jusqu'au bord. \@thefnmark seul, sans point.
+% Surtout PAS de \noindent ici : \noindent annule précisément l'effet du
+% \parindent négatif qu'il est censé appliquer à la première ligne — bug
+% réel constaté après vérification humaine du PDF généré (la première ligne
+% restait alignée sur \leftskip comme les suivantes, aucun retrait négatif
+% visible) ; laisser LaTeX indenter naturellement la première ligne de
+% \parindent (donc la ramener à 0, à la marge) est ce qui produit le retrait
+% négatif recherché.
 % \AtBeginDocument, pas une simple redéfinition de préambule : hyperref/
 % bookmark redéfinissent eux-mêmes \@makefntext pour y ajouter leurs
 % ancres, mais le font via leur propre \AtBeginDocument — un
@@ -356,7 +366,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   \renewcommand{{\@makefntext}}[1]{{%
     \setlength{{\leftskip}}{{1.2em}}%
     \setlength{{\parindent}}{{-1.2em}}%
-    \noindent\@thefnmark\enskip#1%
+    \@thefnmark\enskip#1%
   }}%
 }}
 \makeatother

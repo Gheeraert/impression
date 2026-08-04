@@ -3,10 +3,14 @@ from __future__ import annotations
 """Titraille du chemin <div type="chapter"> (complément à la micropasse 7,
 "Titraille") : ce \\chapter numéroté, distinct de l'ouverture de
 contribution corrigée en micropasse 5, était resté en Chaparral/Josefin
-Bold bas de casse. Passé au même traitement Josefin Sans Thin 16 pt
-capitales que le titre de partie/contribution — seule la police change,
-le libellé "Chapitre N" (une question structurelle distincte) est
-inchangé."""
+Bold bas de casse. Passé au même traitement Josefin Sans 16 pt capitales que
+le titre de partie/contribution — seule la police change, le libellé
+"Chapitre N" (une question structurelle distincte) est inchangé.
+
+Graisse re-corrigée le 2026-08-04 : Thin d'abord (référentiel §2.5/§5.3),
+puis Bold après vérification humaine directe du PDF généré face au PDF
+imprimeur (voir test_latei_titraille.py pour le détail de cette
+contradiction assumée avec le texte du référentiel)."""
 
 import shutil
 from pathlib import Path
@@ -35,13 +39,12 @@ def chapter_div_export(tmp_path_factory: pytest.TempPathFactory):
     return run_reversible_export_for_file(xml_path, tmp_path / "out")
 
 
-def test_chapter_titleformat_uses_thin_family_16pt_uppercase() -> None:
+def test_chapter_titleformat_uses_bold_family_16pt_uppercase() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     chapter_block = preamble_source.split(r"\titleformat{{\chapter}}[display]")[1].split(r"\titleformat{{\part}}")[0]
 
-    assert r"\PURHTitreFont\fontsize{{16pt}}{{19pt}}\selectfont" in chapter_block
+    assert r"\PURHTitleFont\bfseries\fontsize{{16pt}}{{19pt}}\selectfont" in chapter_block
     assert r"{{\MakeUppercase}}" in chapter_block
-    assert r"\bfseries" not in chapter_block
 
 
 def test_chapter_div_renders_uppercase_title_keeps_chapitre_label(chapter_div_export) -> None:

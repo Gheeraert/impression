@@ -31,14 +31,17 @@
 % Ouverture de contribution (référentiel PURH v0.5, "Ouvertures de
 % contribution") : titre, sous-titre, auteur et traducteur viennent des
 % <p rend="..."> du <div type="titlePage">, seule source de vérité visible —
-% ne pas les dupliquer ailleurs. Titre/sous-titre/auteur calibrés sur les
-% valeurs observées (référentiel §2.5, §5.3) : Josefin Sans Thin 16 pt
-% capitales centré pour le titre, Thin Italic 12 pt pour le sous-titre,
-% corps courant gras centré pour l'auteur (style txt_auteur). Positions
-% verticales exactes (mm) non calibrées ici — hors périmètre de cette passe.
+% ne pas les dupliquer ailleurs. Titre en Josefin Sans Bold 16 pt capitales
+% centré (vérification humaine directe du PDF généré face au PDF imprimeur :
+% noir et gras là où le Thin — indiqué par le référentiel §2.5/§5.3, mais
+% contredit par cette observation — rendait un texte maigre et grisâtre,
+% peu lisible ; même correctif que \titleformat{\part}/{\chapter} dans le
+% préambule). Sous-titre resté en Thin Italic 12 pt (non signalé comme
+% défaut). Positions verticales exactes (mm) non calibrées ici — hors
+% périmètre de cette passe.
 \newcommand{\lateiContributionTitle}[1]{%
   \par\vspace{0.5\baselineskip}%
-  {\PURHTitreFont\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}\par}%
+  {\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering\MakeUppercase{#1}\par}%
   \vspace{0.3\baselineskip}%
 }
 \newcommand{\lateiContributionSubtitle}[1]{%
