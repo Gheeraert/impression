@@ -16,11 +16,10 @@ from __future__ import annotations
   est maintenant appliqué avant \\tableofcontents pour couvrir toutes ses
   pages, pas seulement la première.
 
-Non traité dans cette passe (référentiel §9.1) : affichage de l'auteur
-comme élément typographique distinct sous chaque entrée de contribution
-(nécessite de faire transiter la métadonnée auteur jusqu'à l'entrée de TDM,
-absente aujourd'hui de data-page-title) et accueil du colophon en bas de
-la seconde page."""
+Affichage de l'auteur sous chaque entrée de contribution : traité dans une
+passe ultérieure (2026-08-04, voir test_latei_toc_author_and_signature.py)
+via le même mécanisme de capture globale que la signature de fin d'article.
+Non traité : accueil du colophon en bas de la seconde page de TDM."""
 
 import shutil
 from pathlib import Path
@@ -41,7 +40,11 @@ _MANY_ARTICLES_XML = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
       {articles}
     </group>
   </text>
-</TEI>""".format(articles="".join(_ARTICLE_TEMPLATE.format(n=n) for n in range(1, 21)))
+
+</TEI>""".format(articles="".join(_ARTICLE_TEMPLATE.format(n=n) for n in range(1, 41)))
+# 40 articles (pas 20) : les entrées de TDM sont plus compactes depuis la
+# passe du 2026-08-04 (plus d'\addvspace inconditionnel entre elles), 20
+# tenait déjà sur une seule page physique.
 
 
 @pytest.fixture(scope="module")
@@ -59,10 +62,16 @@ def test_tocdepth_is_zero_to_exclude_internal_sections() -> None:
 
 
 def test_pagestyle_plain_is_set_before_tableofcontents() -> None:
+    """Depuis le centrage du titre de TDM (2026-08-04), une redéfinition
+    locale de \\titleformat{\\chapter} s'intercale désormais entre les deux
+    dans le même bloc de liste Python — toujours avant \\tableofcontents,
+    juste plus adjacente."""
     driver_source = Path("purh_site/latei_driver.py").read_text(encoding="utf-8")
     assert driver_source.count(r'r"\pagestyle{plain}"') == 2
     for chunk in driver_source.split(r'r"\pagestyle{plain}"')[1:]:
-        assert r'r"\tableofcontents"' in chunk.split("]")[0]
+        # Fenêtre courte plutôt qu'un découpage sur "]" : \titleformat{\chapter}
+        # [display]{{...}} contient lui-même des "]" littéraux ("[display]").
+        assert r'r"\tableofcontents"' in chunk[:1200]
 
 
 def test_toc_excludes_internal_section_headings(many_articles_export) -> None:
@@ -121,7 +130,7 @@ def test_second_toc_page_has_no_running_title_header(many_articles_export) -> No
         capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
     ).stdout
     toc_page = None
-    for page in range(1, 60):
+    for page in range(1, 100):
         process = subprocess.run(
             [shutil.which("pdftotext"), "-enc", "UTF-8", "-f", str(page), "-l", str(page), str(pdf_path), "-"],
             capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
@@ -136,7 +145,7 @@ def test_second_toc_page_has_no_running_title_header(many_articles_export) -> No
         capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
     ).stdout
 
-    assert "Article 20" in second_toc_page_text
+    assert "Article 40" in second_toc_page_text
     # No running-title header line: neither the book's own fallback title
     # ("TEI", from the minimal fixture's untitled teiHeader) nor a folio
     # should appear before the first TOC entry line.

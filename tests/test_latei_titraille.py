@@ -163,9 +163,13 @@ def test_titraille_renders_uppercase_part_article_and_section_titles(titraille_e
     # contribution (référentiel PURH v0.6 §7.2/§17 P1 item 3, profil de
     # production par défaut) — voir test_latei_opening_templates.py pour la
     # vérification dédiée (métadonnées conservées dans le corps réversible,
-    # affichage seulement désactivé).
-    assert "Prenom Nom" not in text
-    assert "PRENOM NOM" not in text
+    # affichage seulement désactivé). Réapparaît légitimement plus loin
+    # comme signature de fin d'article (2026-08-04, voir
+    # test_latei_toc_author_and_signature.py) : vérifié avant "Corps de
+    # section", pas sur tout le document.
+    opening_block = text[: text.index("Corps de section")]
+    assert "Prenom Nom" not in opening_block
+    assert "PRENOM NOM" not in opening_block
     # Running-title headers stay in original case (a different, non-titling
     # rendering path — see test_latei_running_titles_verso_recto.py).
     assert "Titre de partie" in text

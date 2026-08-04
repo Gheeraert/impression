@@ -277,13 +277,35 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   \renewcommand{{\contentsname}}{{Table des matières}}
 }}
 
+% Entrées de contribution/front matter (référentiel PURH v0.6 §9.1,
+% vérification humaine directe du 2026-08-04) : « titre de la communication
+% sans graisse, bas de casse, Chaparral, calé à gauche, série de points
+% puis numéro de ligne ». Chaparral Pro reste la fonte ambiante (aucune
+% famille à sélectionner) : \PURHTitleFont\bfseries retiré, \hfill remplacé
+% par le même filet pointillé que \section ci-dessous. \addvspace{{8pt}}
+% inconditionnel retiré : « pas de saut de ligne entre les références sauf
+% changement de section » — l'espacement avant une nouvelle partie vient
+% désormais de \titlecontents{{part}}, pas d'ici.
 \titlecontents{{chapter}}
   [0pt]
-  {{\addvspace{{8pt}}\PURHTitleFont\bfseries}}
   {{}}
   {{}}
-  {{\hfill\contentspage}}
-  [\smallskip]
+  {{}}
+  {{\titlerule*[0.5pc]{{.}}\contentspage}}
+
+% Entrées de partie (le référentiel dit « titres de section », mais
+% désigne bien ici le niveau \part de ce document — les véritables
+% intertitres/sections sont exclus de la TDM depuis §9/tocdepth=0) : Josefin
+% Sans Bold centré, un peu plus grand que le corps (12 pt contre 11 pt),
+% ligne vide avant et après. Aucun numéro de page affiché : une partie est
+% un intitulé structurant la liste, pas une entrée cherchable en soi.
+\titlecontents{{part}}
+  [0pt]
+  {{\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\centering}}
+  {{}}
+  {{}}
+  {{}}
+  [\addvspace{{1\baselineskip}}]
 
 \titlecontents{{section}}
   [1.5em]
@@ -474,15 +496,40 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
   \par\addvspace{{1.5\baselineskip}}%
 }}
 
-\newcommand{{\PurhSubtitle}}[1]{{%
-  \par\vspace{{0.4\baselineskip}}%
-  {{\large\itshape #1\par}}%
-  \vspace{{0.6\baselineskip}}%
+% Titre principal de la page de titre (référentiel PURH v0.6 §8.1,
+% vérification humaine directe du 2026-08-04) : même hauteur de départ que
+% le faux-titre (\PURHTitlePage partage désormais \vspace*{{0.25\textheight}}
+% avec \PURHFalseTitle), mais corps plus grand — Josefin Sans Bold
+% capitales, comme le faux-titre, juste agrandi. Aucune mesure
+% millimétrique donnée par l'utilisateur pour ce corps précis : 22/26 pt
+% choisi pour rester nettement plus grand que les 12/14 pt du faux-titre.
+\newcommand{{\PurhTitleMain}}[1]{{%
+  {{\PURHTitleFont\bfseries\fontsize{{22pt}}{{26pt}}\selectfont\centering\MakeUppercase{{#1}}\par}}
 }}
 
+% Sous-titre : Josefin Sans Bold bas de casse (pas de \MakeUppercase, à la
+% différence du titre), un peu plus petit, centré sur deux lignes — largeur
+% de boîte pour forcer le retour à la ligne, même principe que
+% \PURHContributionTitleWidth pour les titres d'ouverture de contribution
+% (référentiel §7.3 : reproduire la coupure plutôt que l'exiger en dur).
+\newcommand{{\PurhSubtitle}}[1]{{%
+  \par\vspace{{0.6\baselineskip}}%
+  \begin{{center}}
+  \parbox{{88mm}}{{\PURHTitleFont\bfseries\fontsize{{15pt}}{{18pt}}\selectfont\centering #1}}
+  \end{{center}}
+  \vspace{{0.4\baselineskip}}%
+}}
+
+% Responsabilité éditoriale : Chaparral Pro (fonte principale, aucun
+% changement de famille) gras bas de casse, plus petit que le sous-titre,
+% sur deux lignes explicites — « sous la direction de » toujours seul sur
+% sa propre ligne, puis les noms sur la suivante (référentiel §8.1,
+% vérification humaine directe du 2026-08-04). #1 est déjà le texte complet
+% des deux lignes, séparées par \\ côté appelant (latei_driver.py), pas
+% reconstruites ici : cette macro ne fait que les mettre en forme.
 \newcommand{{\PurhContributors}}[1]{{%
   \par\vspace{{0.5\baselineskip}}%
-  {{\normalsize\scshape #1\par}}%
+  {{\bfseries\fontsize{{11pt}}{{13pt}}\selectfont\centering #1\par}}%
   \vspace{{0.6\baselineskip}}%
 }}
 
@@ -546,22 +593,33 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % nécessaire) 10 pt — vérification humaine directe du 2026-08-04 : \small
 % ne correspond pas nécessairement à 10 pt exactement (dépend de l'échelle
 % de tailles du \documentclass), remplacé par une taille explicite.
+% \vspace*{{\fill}} (pas \vspace*{{0.3\textheight}}, ni un \vfill non étoilé)
+% : deuxième vérification humaine directe — le colophon doit être calé en
+% bas de page, pas centré verticalement. Un \vfill nu en tout début de page
+% est silencieusement absorbé par l'algorithme de coupure de page de TeX
+% (jamais visible, confirmé par reproduction : le contenu restait centré
+% près du haut) — surtout avec \raggedbottom actif dans ce document, qui
+% autorise justement les pages à ne pas s'étirer jusqu'à \textheight.
+% \vspace* (étoilé) protège la glue même en tête de page.
 \newcommand{{\PURHCreditsPage}}[1]{{%
   \clearpage
   \thispagestyle{{empty}}%
   \begin{{center}}
-  \vspace*{{0.3\textheight}}
-  \fontsize{{10pt}}{{12pt}}\selectfont
+  \vspace*{{\fill}}
+  \fontsize{{10pt}}{{11.5pt}}\selectfont
   #1
   \end{{center}}
   \clearpage
 }}
 
+% Vérification humaine directe du 2026-08-04 : même hauteur de départ que
+% le faux-titre (0.25\textheight, pas 0.15) — seul le corps du titre change
+% entre les deux pages, pas sa position verticale.
 \newcommand{{\PURHTitlePage}}[1]{{%
   \clearpage
   \thispagestyle{{empty}}%
   \begin{{center}}
-  \vspace*{{0.15\textheight}}
+  \vspace*{{0.25\textheight}}
   #1
   \end{{center}}
   \clearpage

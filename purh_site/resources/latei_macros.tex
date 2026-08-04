@@ -84,16 +84,65 @@
 % mais métadonnées conservées) : le contenu réversible <p rend="author-aut">
 % / <p rend="authority_affiliation"> reste inchangé dans le corps LaTEI, seul
 % son affichage PDF est basculé par ce drapeau, jamais son existence.
+% Signature de fin d'article (référentiel PURH v0.6 §8/§17, vérification
+% humaine directe du 2026-08-04) : « les articles sont signés à la fin »,
+% calés à droite — un emplacement distinct de l'ouverture de contribution
+% (où auteur/affiliation restent masqués, cf. \iflateiShowContributionAuthor
+% ci-dessus). \lateiContributionAuthor/\lateiContributionAffiliation
+% capturent donc leur contenu dans ces macros globales, INDÉPENDAMMENT du
+% drapeau d'affichage en tête de page, pour que \lateiRenderContributionSignature
+% (appelée après le corps de la contribution, voir \lateiRenderFrontGroup/
+% \lateiRenderChapterGroup) puisse la réémettre à la fin. Réinitialisées à
+% vide au début de chaque contribution (mêmes macros) pour ne jamais laisser
+% fuiter la signature d'une contribution vers la suivante qui n'en a pas.
+% \@empty (le sentinelle vide du noyau LaTeX) exige la catégorie de code 11
+% pour "@", seulement active entre \makeatletter et \makeatother — ce
+% fichier n'en a pas besoin ailleurs et n'ouvre pas ce bloc ici. \@empty y
+% serait tokenisé comme "\@" (caractère isolé) suivi du texte ordinaire
+% "empty", qui s'imprimerait littéralement (bug réel constaté par
+% compilation : "empty empty" visible sur la page). \lateiSignatureEmpty
+% propre, sans "@", sert de sentinelle à la place.
+\newcommand{\lateiSignatureEmpty}{}
+\newcommand{\lateiSignatureAuthor}{}
+\newcommand{\lateiSignatureAffiliation}{}
+\newcommand{\lateiResetContributionSignature}{%
+  \global\let\lateiSignatureAuthor\lateiSignatureEmpty
+  \global\let\lateiSignatureAffiliation\lateiSignatureEmpty
+}
+% Retour à la ligne + retrait + gras dans une entrée de TDM (référentiel
+% §9.1) : \titlecontents (contrairement à \@dottedtocline du noyau) type-
+% set chaque entrée comme un paragraphe à retrait suspendu — un "\\" y
+% force une nouvelle ligne, contrairement à \par qui romprait le
+% paragraphe entier de la TDM plutôt que la seule entrée en cours.
+\newcommand{\lateiTocAuthorBreak}{\\\hspace*{1em}\bfseries}
 \newcommand{\lateiContributionAuthor}[1]{%
+  \global\def\lateiSignatureAuthor{#1}%
   \iflateiShowContributionAuthor
     {\normalsize\bfseries\centering #1\par}%
     \vspace{0.3\baselineskip}%
   \fi
 }
 \newcommand{\lateiContributionAffiliation}[1]{%
+  \global\def\lateiSignatureAffiliation{#1}%
   \iflateiShowContributionAuthor
     {\small\centering #1\par}%
     \vspace{0.3\baselineskip}%
+  \fi
+}
+% Chaparral Pro (fonte principale, aucun changement de famille), sans
+% graisse, corps un peu plus petit que le corps du texte (11 pt -> 10 pt),
+% calé à droite. Le prénom en bas de casse et le nom en petites capitales
+% viennent déjà tels quels du balisage source (<p rend="author-aut">Prénom
+% <hi rend="small-caps">Nom</hi></p>, déjà routé vers \teiHi[rend={small-caps}]
+% ailleurs) : #1 n'a besoin d'aucune reformulation ici, seulement d'un
+% nouvel habillage.
+\newcommand{\lateiRenderContributionSignature}{%
+  \ifx\lateiSignatureAuthor\lateiSignatureEmpty\else
+    \par\vspace{0.8\baselineskip}%
+    {\fontsize{10pt}{12pt}\selectfont\raggedleft\lateiSignatureAuthor\par}%
+    \ifx\lateiSignatureAffiliation\lateiSignatureEmpty\else
+      {\fontsize{10pt}{12pt}\selectfont\raggedleft\lateiSignatureAffiliation\par}%
+    \fi
   \fi
 }
 % Espace vertical entre le bloc de titre d'ouverture (titre, sous-titre,
@@ -377,6 +426,15 @@
 % en-tête ni folio » sur l'ouverture de contribution — seule cette première
 % page bascule en pagestyle vide ; les pages suivantes de la contribution
 % reprennent le titre courant normalement (référentiel §6).
+% \g_latei_pending_toc_title_tl : l'entrée de TDM elle-même est différée
+% jusqu'à \latei_finish_contribution_toc_entry: (appelée après le corps de
+% la contribution, comme \lateiRenderContributionSignature) — au moment où
+% cette rupture s'exécute, \lateiSignatureAuthor n'est pas encore connu (la
+% page de titre, qui le capture, n'a pas encore été rendue : elle fait
+% partie de #2, qui s'exécute après). Référentiel PURH v0.6 §9.1,
+% vérification humaine directe du 2026-08-04 : « prénom et nom de l'auteur,
+% en gras » sous chaque titre de contribution dans la TDM.
+\tl_new:N \g_latei_pending_toc_title_tl
 \cs_new_protected:Npn \latei_add_contribution_opening_break:
   {
     \tl_if_empty:NF \l_latei_option_page_title_tl
@@ -384,24 +442,42 @@
         \cleardoublepage
         \thispagestyle{empty}
         \phantomsection
-        \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
+        \tl_gset_eq:NN \g_latei_pending_toc_title_tl \l_latei_option_page_title_tl
         \exp_args:NV \latei_markboth_recto:n \l_latei_option_page_title_tl
         \setcounter{footnote}{0}
+      }
+  }
+\cs_new_protected:Npn \latei_finish_contribution_toc_entry:
+  {
+    \tl_if_empty:NF \g_latei_pending_toc_title_tl
+      {
+        \ifx\lateiSignatureAuthor\lateiSignatureEmpty
+          \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
+        \else
+          \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl \lateiTocAuthorBreak \lateiSignatureAuthor}
+        \fi
+        \tl_gclear:N \g_latei_pending_toc_title_tl
       }
   }
 \NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
   {
     \lateiEnsureFrontMatter
     \latei_extract_options:n { #1 }
+    \lateiResetContributionSignature
     \latei_add_contribution_opening_break:
     #2
+    \latei_finish_contribution_toc_entry:
+    \lateiRenderContributionSignature
   }
 \NewDocumentCommand{\lateiRenderChapterGroup}{O{} +m}
   {
     \lateiEnsureMainMatter
     \latei_extract_options:n { #1 }
+    \lateiResetContributionSignature
     \latei_add_contribution_opening_break:
     #2
+    \latei_finish_contribution_toc_entry:
+    \lateiRenderContributionSignature
   }
 \NewDocumentCommand{\lateiRenderPartGroup}{O{} +m}
   {

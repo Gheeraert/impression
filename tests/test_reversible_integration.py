@@ -122,8 +122,14 @@ def test_latei_driver_uses_header_metadata_and_keeps_header_reversible(tmp_path:
     assert r"\newcommand{\PURHYear}{2026}" in main
     assert r"\newcommand{\PURHISBN}{979-10-000-0000-1}" in main
     assert r"\newcommand{\PURHDOI}{10.0000/purh.test}" in main
-    assert r"\PurhSubtitle{\PURHBookSubtitle}" in main
-    assert r"\PurhContributors{\PURHBookAuthor}" in main
+    # Depuis la refonte de la page de titre (2026-08-04), le sous-titre et
+    # la responsabilité éditoriale sont passés en texte échappé directement,
+    # plus par référence aux macros \PURHBookSubtitle/\PURHBookAuthor (voir
+    # test_latei_toc_author_and_signature.py pour le détail). Un auteur
+    # unique sans directeur (le cas ici) n'a pas le préfixe "sous la
+    # direction de", réservé aux ouvrages dirigés.
+    assert r"\PurhSubtitle{Sous-titre}" in main
+    assert r"\PurhContributors{Alice Auteur}" in main
     assert r"\PurhTitleExtra{PURH}" in main
     assert r"\PurhTitleExtra{ISBN PDF 979-10-000-0000-1}" not in main
     assert r"\PurhTitleExtra{ISBN imprime 979-10-000-0000-0}" not in main

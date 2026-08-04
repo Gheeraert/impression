@@ -113,11 +113,18 @@ def test_contribution_opening_compiles_without_chapitre_label_and_keeps_toc(
     assert "Un sous-titre" in text  # accented word itself skipped: pdftotext/apostrophe interaction is unrelated to this fix
     # Auteur non imprimé sur l'ouverture de contribution par défaut
     # (référentiel PURH v0.6 §7.2/§17 P1 item 3) — voir
-    # test_latei_opening_templates.py pour la vérification dédiée.
-    assert "Prénom Nom" not in text
+    # test_latei_opening_templates.py pour la vérification dédiée. Réapparaît
+    # légitimement plus loin comme signature de fin d'article (2026-08-04,
+    # voir test_latei_toc_author_and_signature.py) : vérifié avant "Texte du
+    # corps", pas sur tout le document.
+    opening_block = text[: text.index("Texte du corps")]
+    assert "Prénom Nom" not in opening_block
     assert "Traduit de l anglais par Quelqu un." in text
 
     toc_path = contribution_export.latei_pdf_path.with_suffix(".toc")
     assert toc_path.exists()
     toc = toc_path.read_text(encoding="utf-8", errors="replace")
-    assert r"\contentsline {chapter}{Titre article}" in toc
+    # Prefix, not exact match: since 2026-08-04 a signed contribution's
+    # entry also carries \lateiTocAuthorBreak + the author's name (see
+    # test_latei_toc_author_and_signature.py).
+    assert r"\contentsline {chapter}{Titre article" in toc

@@ -134,8 +134,21 @@ def test_opening_pdf_hides_author_and_affiliation_but_shows_title(article_export
     text = process.stdout
 
     assert re.search(r"TITRE ARTICLE", text)
-    assert "Jean Dupont" not in text
-    assert "Universite Test" not in text
+
+    # Author/affiliation are hidden in the *opening title block* specifically
+    # (title/subtitle/author display area) — for this minimal fixture the
+    # body is short enough that the end-of-article signature (see
+    # test_latei_toc_author_and_signature.py) lands on the same physical
+    # page, so document order (opening block precedes the body), not a page
+    # boundary, is the meaningful check here.
+    title_pos = text.index("TITRE ARTICLE")
+    body_pos = text.index("Corps de l")
+    opening_block = text[title_pos:body_pos]
+    assert "Jean Dupont" not in opening_block
+    assert "Universite Test" not in opening_block
+    # And the signature confirms the data was never discarded, only hidden
+    # at the opening.
+    assert "Jean Dupont" in text[body_pos:]
 
 
 def test_opening_page_carries_no_running_title_header_text(article_export) -> None:
@@ -156,7 +169,12 @@ def test_opening_page_carries_no_running_title_header_text(article_export) -> No
     toc_path = article_export.latei_pdf_path.with_suffix(".toc")
     assert toc_path.exists()
     toc = toc_path.read_text(encoding="utf-8", errors="replace")
-    match = re.search(r"\\contentsline\s*\{chapter\}\{Article Test\}\{(\d+)\}", toc)
+    # Lazy match up to the first "}{<digits>}{" rather than an exact
+    # "{Article Test}" : since the signed-article TOC entry got an appended
+    # \lateiTocAuthorBreak + author name (2026-08-04, see
+    # test_latei_toc_author_and_signature.py), the title brace group itself
+    # now contains further nested braces (\hspace*{1em}) before it closes.
+    match = re.search(r"\\contentsline\s*\{chapter\}\{Article Test.*?\}\{(\d+)\}\{", toc, re.DOTALL)
     assert match, f"Expected a chapter TOC entry for Article Test, got: {toc!r}"
     opening_page_number = int(match.group(1))
 

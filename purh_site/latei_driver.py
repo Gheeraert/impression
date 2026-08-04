@@ -191,6 +191,13 @@ def _monofile_content(
         "",
         r"\cleardoublepage",
         r"\pagestyle{plain}",
+        # \tableofcontents compose son propre titre via \chapter*{\contentsname},
+        # qui suit par défaut le même \titleformat{\chapter} raggedright que
+        # les vrais chapitres (référentiel PURH v0.6 §9.1, "table des matières
+        # centrée" — vérification humaine directe, 2026-08-04). Redéfini ici
+        # sans restauration ensuite : \tableofcontents est le tout dernier
+        # contenu du document, aucun \chapter ne suit.
+        r"\titleformat{\chapter}[display]{\PURHTitleFont\bfseries\fontsize{16pt}{19pt}\selectfont\centering}{}{10pt}{\MakeUppercase}",
         r"\tableofcontents",
         "",
         r"\end{document}",
@@ -444,6 +451,8 @@ def _colophon_institutional_lines(metadata: LateiMetadata) -> list[str]:
 
 
 def _credits_page(metadata: LateiMetadata) -> str:
+    # Interlignage resserré (vérification humaine directe, 2026-08-04) :
+    # 0.4/1\baselineskip entre les lignes donnait un colophon trop aéré.
     blocks = [
         block
         for block in (_colophon_production_lines(metadata), _colophon_institutional_lines(metadata))
@@ -452,20 +461,36 @@ def _credits_page(metadata: LateiMetadata) -> str:
     if not blocks:
         return ""
     block_bodies = [
-        r"\vspace{0.4\baselineskip}".join(rf"{line}\par" for line in block) for block in blocks
+        r"\vspace{0.1\baselineskip}".join(rf"{line}\par" for line in block) for block in blocks
     ]
-    body = r"\vspace{1\baselineskip}".join(block_bodies)
+    body = r"\vspace{0.5\baselineskip}".join(block_bodies)
     return rf"\PURHCreditsPage{{{body}}}"
 
 
+def _title_page_responsibility_lines(metadata: LateiMetadata) -> str:
+    """« sous la direction de » sur sa propre ligne puis les noms sur la
+    suivante, pour un ouvrage collectif dirigé (exemple concret donné par
+    l'utilisateur : *Beautés vitales*, dirigé par deux personnes) — ce
+    préfixe ne s'applique qu'aux volumes dirigés ; à défaut de directeurs,
+    seuls les noms des auteurs sont affichés, sans lui."""
+    if metadata.directors:
+        names = _latex_text(" et ".join(metadata.directors))
+        return "sous la direction de\\\\" + names
+    if metadata.authors:
+        return _latex_text(" et ".join(metadata.authors))
+    return ""
+
+
 def _full_title_page(metadata: LateiMetadata) -> str:
-    lines = [r"{\Huge\bfseries \PURHBookTitle\par}"]
+    lines = [rf"\PurhTitleMain{{{_latex_text(metadata.title)}}}"]
     if metadata.subtitle:
-        lines.append(r"\PurhSubtitle{\PURHBookSubtitle}")
-    if metadata.contributor_line:
-        lines.append(r"\PurhContributors{\PURHBookAuthor}")
-    lines.append(r"\vspace{2\baselineskip}")
+        lines.append(rf"\PurhSubtitle{{{_latex_text(metadata.subtitle)}}}")
+    responsibility = _title_page_responsibility_lines(metadata)
+    if responsibility:
+        lines.append(r"\vspace{2\baselineskip}")
+        lines.append(rf"\PurhContributors{{{responsibility}}}")
     if metadata.publisher:
+        lines.append(r"\vspace{2\baselineskip}")
         lines.append(rf"\PurhTitleExtra{{{_latex_text(metadata.publisher)}}}")
     body = "\n".join(lines)
     return rf"\PURHTitlePage{{{body}}}"
