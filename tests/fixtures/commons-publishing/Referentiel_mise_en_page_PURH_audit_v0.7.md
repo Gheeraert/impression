@@ -2,7 +2,8 @@
 
 ## Mise en page intérieure — chantier de parité v0.6 → v0.7 (profil `purh_155x230_production_2025`)
 
-Version 0.7 — 2026-08-04
+Version 0.7 — 2026-08-04, complétée le 2026-08-05 (TDM §9, titre courant
+§2.5, colophon §7.4, page de titre §4.2-§4.4, bugs LaTeX §11)
 
 ---
 
@@ -48,21 +49,25 @@ dispersés dans onze fichiers.
 |---|---|---|
 | 1 | Titraille (parties, chapitres, sections, sous-sections, sous-sous-sections) | Passage de Josefin Sans **Thin** à **Bold**, sur tous les niveaux — le référentiel v0.6 prescrivait Thin, contredit par observation directe |
 | 2 | Sous-titre d'ouverture de contribution | Thin Italic → **Bold Italic**, bas de casse |
-| 3 | Titre courant (running title) | Trois réglages successifs le même jour ; valeur finale : famille Thin + couleur CMJN noir 50 % explicite (pas de changement de graisse) |
+| 3 | Titre courant (running title) | Quatre réglages successifs (dont un le 2026-08-05) ; valeur finale : famille Thin + couleur CMJN noir **85 %** explicite (pas de changement de graisse) |
 | 4 | Texte courant | Couleur CMJN noir 90 % appliquée globalement (`\AtBeginDocument{\color{PURHBodyBlack}}`) |
-| 5 | Table des matières | Refonte complète : entrées de contribution non grasses/bas de casse/Chaparral/alignées à gauche avec points de conduite, entrées de partie centrées Josefin Bold, auteur en gras sous chaque entrée de contribution |
+| 5 | Table des matières | Refonte complète : entrées de contribution non grasses/bas de casse/Chaparral/alignées à gauche avec points de conduite **au niveau du titre** (jamais de l'auteur), entrées de partie centrées Josefin Bold **petites capitales**, auteur en gras **bas de casse** sous chaque entrée de contribution (ligne de TDM séparée, voir §9.2/§9.3) |
 | 6 | Signature de fin d'article | Nouveau mécanisme : auteur + affiliation réapparaissent à la fin du corps de la contribution, calés à droite, Chaparral 10 pt |
-| 7 | Page de titre | Refonte complète : titre principal 22/26 pt, sous-titre 15/18 pt sur 2 lignes calibrées, responsabilité éditoriale (« sous la direction de ») sur 2 lignes |
+| 7 | Page de titre | Refonte complète : titre principal 22/26 pt, sous-titre 15/18 pt sur 2 lignes calibrées (numéros de siècle en petites capitales, §4.3), responsabilité éditoriale (« sous la direction de », corrigible via GUI/config, §4.4) sur 2 lignes, mention finale PURH en toutes lettres calée en bas de page (§4.2) |
 | 8 | Faux-titre | Remonté (0,35 → 0,25 `\textheight`), repassé en Bold capitales 12/14 pt |
-| 9 | Colophon (page de crédits) | Calé en bas de page (pas centré verticalement), interlignage resserré, année/ISBN correctement omis si absents, adresse/URL PURH fixes ajoutées |
+| 9 | Colophon (page de crédits) | Calé en bas de page (pas centré verticalement), interlignage resserré, ligne copyright **toujours affichée** (§7.4), ISBN omis si absent, adresse/URL PURH fixes ajoutées |
 | 10 | Coupures de ligne du titre d'ouverture de contribution | Largeur de boîte calibrée empiriquement à 104 mm (vérifiée contre 7 titres réels) |
 | 11 | Tableaux : fond des lignes d'en-tête | `\rowcolor{black!30}` généré directement par le writer Python, reconnu et neutralisé par le reader |
 | 12 | Ouverture de contribution/partie | `\thispagestyle{empty}` forcé sur la première page (déjà partiellement en place, complété) |
 | 13 | Auteur/affiliation sur l'ouverture de contribution | Confirmé masqué par défaut (`show_contribution_author=False`), donnée conservée dans le corps réversible |
-| 14 | Liste des auteurs en fin d'ouvrage (item séparé par ligne blanche) | **Non implémenté** — voir §14, aucun marqueur TEI générique disponible |
+| 14 | Liste des auteurs en fin d'ouvrage (item séparé par ligne blanche) | **Non implémenté** — voir §13, aucun marqueur TEI générique disponible |
+| 15 | Éditeurs scientifiques mal attribués (page de titre) | Nouveau champ GUI/config `directors_override` pour corriger un TEI source qui ne distingue pas fiablement un `role="pbd"` de compositeur/trice des vrais éditeurs scientifiques (§4.4) |
 
 Le détail de chaque point, avec valeurs exactes et code source, suit dans
-les sections thématiques ci-dessous.
+les sections thématiques ci-dessous. Six correctifs supplémentaires ont été
+apportés le 2026-08-05 (points de suite/casse en TDM §9.2-§9.3, titre
+courant §2.5, colophon §7.4, page de titre §4.2-§4.4) ; deux nouveaux
+pièges LaTeX rencontrés en les développant sont ajoutés au tableau du §11.
 
 ---
 
@@ -143,11 +148,11 @@ Le correctif technique est le même partout : remplacer
 `\PURHTitreFont` (famille Thin seule) par `\PURHTitleFont\bfseries` (famille
 complète + graisse Bold via NFSS).
 
-## 2.5. Titre courant (running title) — traité à part, trois vérifications le même jour
+## 2.5. Titre courant (running title) — traité à part, quatre vérifications (dont trois le même jour)
 
 Le titre courant est le **seul niveau typographique qui n'a PAS reçu le
 correctif Bold ci-dessus** : la couleur, pas la graisse, était le problème
-réel ici, et il a fallu trois allers-retours pour le comprendre.
+réel ici, et il a fallu quatre allers-retours pour le comprendre.
 
 1. **1ʳᵉ vérification** : gris jugé trop clair → tentative de passer de
    `\PURHTitreFont` (Thin) à `\PURHTitleFont` (famille standard) sans
@@ -160,18 +165,26 @@ réel ici, et il a fallu trois allers-retours pour le comprendre.
    système que le fond d'en-tête de tableau et le texte courant — une teinte
    **CMJN noir X %** plutôt qu'un gris RVB — à **50 % noir**, valeur donnée
    explicitement par l'utilisateur (pas une estimation à recalibrer).
+4. **4ᵉ vérification (2026-08-05)** : ce 50 % à nouveau jugé trop clair au
+   regard du PDF imprimeur, où le titre courant est décrit comme
+   « presque noir ». Remonté à **85 % noir**, sans changer de famille ni de
+   graisse (toujours Thin — seule la teinte a de nouveau bougé, comme aux
+   trois vérifications précédentes).
 
 Valeur finale :
 
 ```latex
-\newcommand{\PURHHeaderFont}{\PURHTitreFont\small\color[cmyk]{0,0,0,0.5}}
+\newcommand{\PURHHeaderFont}{\PURHTitreFont\small\color[cmyk]{0,0,0,0.85}}
 ```
 
 **Leçon méthodologique pour un autre format** : face à un écart de rendu
 signalé plusieurs fois de suite sur le même élément, vérifier si graisse et
 couleur sont bien traitées comme deux leviers indépendants avant de
 re-changer de famille de police à chaque itération — c'est la confusion des
-deux qui a coûté les deux premiers essais ici.
+deux qui a coûté les deux premiers essais ici. Le quatrième essai confirme
+aussi qu'une valeur « donnée explicitement par l'utilisateur » n'est pas
+forcément définitive : revérifier contre le PDF imprimeur reste nécessaire
+même après un réglage qui semblait tranché.
 
 ---
 
@@ -235,7 +248,10 @@ graisse dans le texte extrait), donc ne suffit pas à valider ce correctif
 Ne pas confondre avec la titraille de contribution du §3 : la page de
 titre du livre (§7 ci-dessous) a son propre jeu de tailles, plus grand,
 défini par des macros séparées (`\PurhTitleMain`, `\PurhSubtitle`,
-`\PurhContributors`, `\PurhTitleExtra`), toutes dans `latei_preamble.py`.
+`\PurhContributors`, `\PurhPublisherMention`), toutes dans
+`latei_preamble.py`. `\PurhTitleExtra` (mention finale, version antérieure
+à la 2026-08-05) a été **retirée**, remplacée par `\PurhPublisherMention` —
+voir §4.2.
 
 ```latex
 \newcommand{\PurhTitleMain}[1]{%
@@ -256,7 +272,9 @@ défini par des macros séparées (`\PurhTitleMain`, `\PurhSubtitle`,
   \vspace{0.6\baselineskip}%
 }
 
-\newcommand{\PurhTitleExtra}[1]{{\small #1\par}}
+\newcommand{\PurhPublisherMention}[1]{%
+  {\fontsize{14pt}{16pt}\selectfont\bfseries\MakeUppercase{#1}\par}%
+}
 ```
 
 - **Titre principal** : 22/26 pt, Bold, MAJUSCULES, centré. Corps choisi
@@ -267,11 +285,15 @@ défini par des macros séparées (`\PurhTitleMain`, `\PurhSubtitle`,
 - **Sous-titre** : 15/18 pt, Bold Italique **non** — Bold droit, bas de
   casse (pas de `\MakeUppercase`, à la différence du titre), sur deux lignes
   forcées par une boîte de 88 mm (voir §4.1 ci-dessous pour la méthode de
-  calibrage).
+  calibrage) ; les numéros de siècle romains y sont en petites capitales
+  depuis le 2026-08-05 (§4.3).
 - **Responsabilité éditoriale** (« sous la direction de » + noms) : Chaparral
   (fonte principale, aucun changement de famille), Bold bas de casse,
-  11/13 pt — plus petit que le sous-titre.
-- **Mention finale** (éditeur) : `\small`, sans graisse particulière.
+  11/13 pt — plus petit que le sous-titre ; corrigible manuellement via
+  `directors_override` depuis le 2026-08-05 (§4.4).
+- **Mention finale** (éditeur) : depuis le 2026-08-05, toujours le nom
+  complet PURH fixe, en majuscules grasses 14/16 pt, calée en bas de page
+  (§4.2) — plus le sigle éventuellement abrégé du champ `<publisher>` XML.
 
 ## 4.1. Calibrage de la largeur de boîte du sous-titre (88 mm)
 
@@ -296,6 +318,107 @@ page. Pour un autre ouvrage dirigé avec un sous-titre différent, revérifier
 visuellement contre le PDF imprimeur réel et réajuster la largeur si
 nécessaire — ne pas supposer que 88 mm convient à un autre sous-titre sans
 vérification.
+
+## 4.2. Mention finale : nom complet PURH, calée en bas de page (2026-08-05)
+
+Vérification humaine directe sur le PDF généré de *Dissimuler pour mieux
+régner* : le champ `<publisher>` du TEI/Métopes source y contient
+littéralement le sigle abrégé `PURH`, jamais le nom complet — c'est ce
+sigle qui apparaissait donc juste sous les éditeurs scientifiques.
+Corrigé : la mention finale de la page de titre utilise désormais
+**toujours** une constante fixe, jamais `metadata.publisher` :
+
+```python
+_PURH_FULL_NAME = "Presses universitaires de Rouen et du Havre"  # latei_driver.py
+
+def _full_title_page(metadata):
+    ...
+    lines.append(r"\vspace*{\fill}")
+    lines.append(rf"\PurhPublisherMention{{{_latex_text(_PURH_FULL_NAME)}}}")
+    ...
+```
+
+`\vspace*{\fill}` (étoilé, jamais un `\vfill` nu) : même mécanisme et même
+piège que pour le colophon (§7.4) — cette fois le risque de la glue
+« absorbée en tête de page » ne s'applique pas puisque du contenu (titre,
+sous-titre, responsabilité éditoriale) précède déjà cette ligne sur la même
+page, mais l'étoile est conservée par cohérence et prudence.
+
+`\PurhPublisherMention` (§4, macro ci-dessus) : Chaparral (fonte ambiante,
+pas `\PURHTitleFont`/Josefin — cette mention n'est pas un niveau de
+titraille), majuscules grasses, 14/16 pt — corps choisi pour occuper une
+bonne partie de la largeur de la page (empagement d'environ 105 mm sur ce
+profil) sans mesure millimétrique donnée par l'utilisateur, à recalibrer
+par vérification visuelle directe sur un autre format.
+
+## 4.3. Numéros de siècle en petites capitales (2026-08-05)
+
+Vérification humaine directe sur *Dissimuler pour mieux régner* : le
+sous-titre « […] en littérature (XVIIe-XIXe siècles) » affichait les
+numéros de siècle en grandes capitales, identiques au reste du texte,
+faute de tout balisage `<hi rend="small-caps">` autour d'eux dans le TEI
+source (convention typographique française absente du balisage, pas un bug
+de rendu). Corrigé par une transformation mécanique appliquée côté Python,
+au texte déjà échappé du sous-titre :
+
+```python
+_ROMAN_CENTURY_NUMERALS = (
+    "XXI", "XX", "XIX", "XVIII", "XVII", "XVI", "XV", "XIV", "XIII", "XII", "XI",
+    "X", "IX", "VIII", "VII", "VI", "V", "IV", "III", "II", "I",
+)  # du plus long au plus court : ordre requis pour que l'alternation regex matche XIX avant XI
+_CENTURY_NUMERAL_RE = re.compile(r"\b(" + "|".join(_ROMAN_CENTURY_NUMERALS) + r")(e|er|re)?\b")
+
+def _small_caps_century_numerals(escaped_text):
+    return _CENTURY_NUMERAL_RE.sub(
+        lambda m: rf"\textsc{{{m.group(1)}}}{m.group(2) or ''}", escaped_text
+    )
+```
+
+Appliqué **uniquement** au sous-titre de la page de titre (`_full_title_page`,
+`_small_caps_century_numerals(_latex_text(metadata.subtitle))`), pas comme
+règle générale sur tout le corps de texte — portée volontairement étroite.
+La liste de numéraux romains valides (I à XXI) évite les faux positifs sur
+des mots ordinaires qui ressembleraient à un numéral (contrairement à un
+motif regex générique du type `[IVXLCDM]+`) ; l'ordre du plus long au plus
+court dans l'alternation garantit que "XIX" matche avant que "XI" soit
+essayé en premier.
+
+Doit être exécuté **après** l'échappement LaTeX (`_latex_text`), jamais
+avant : la substitution injecte un `\textsc{...}` littéral, qui serait
+lui-même cassé (le `\` échappé en `\textbackslash{}`) si `_latex_text`
+s'exécutait après elle.
+
+## 4.4. Correction manuelle des éditeurs scientifiques (`directors_override`, 2026-08-05)
+
+Constaté sur *Dissimuler pour mieux régner* : le seul `<author role="pbd">`
+du TEI/Métopes source y désigne en réalité la compositrice ("Anaïs
+Lebreton"), pas les éditrices scientifiques de l'ouvrage ("sous la
+direction de Floriane Daguisé et Florence Fix" attendu) — un défaut du
+balisage source, pas de l'extraction (`role="pbd"` est le code MARC
+"Publishing director", correctement lu par `latei_metadata.py`). Sans
+marqueur fiable pour distinguer les deux rôles dans ce TEI, la correction
+se fait par **saisie explicite**, jamais en devinant depuis le contenu —
+même doctrine que `cover_designer`/`editorial_contact` (§7.4) : un nouveau
+champ optionnel, vide par défaut, plombé de bout en bout comme eux
+(`BuildConfig.directors_override` → GUI → `site_latei_pdf_export` →
+`run_reversible_export_for_file`) :
+
+```python
+# reversible_integration.py
+if directors_override:
+    metadata.directors = [
+        name.strip()
+        for name in re.split(r"\s+et\s+|[,;]", directors_override)
+        if name.strip()
+    ]
+```
+
+Une chaîne " et "/`,`/`;`-séparée qui, si fournie, **remplace entièrement**
+`metadata.directors` (donc la ligne « sous la direction de » du §7.3) — vide
+(comportement par défaut), l'extraction TEI normale reste inchangée. Dans
+le GUI, ce champ vit dans la même boîte de dialogue optionnelle que le
+colophon (« Sous la direction de (correction) »), avec la même règle : une
+valeur non fournie ne change rien au comportement existant.
 
 ---
 
@@ -464,13 +587,15 @@ pages, pas sa position verticale. Contenu (assemblé par
 ```python
 lines = [rf"\PurhTitleMain{{{title}}}"]
 if subtitle:
+    subtitle = _small_caps_century_numerals(_latex_text(subtitle))  # §4.3
     lines.append(rf"\PurhSubtitle{{{subtitle}}}")
 if responsibility:          # "sous la direction de" + noms, ou juste les noms
     lines.append(r"\vspace{2\baselineskip}")
     lines.append(rf"\PurhContributors{{{responsibility}}}")
-if publisher:
-    lines.append(r"\vspace{2\baselineskip}")
-    lines.append(rf"\PurhTitleExtra{{{publisher}}}")
+# Mention finale : toujours le nom complet PURH fixe, jamais metadata.publisher
+# (parfois le sigle abrégé "PURH" côté TEI source) — voir §4.2.
+lines.append(r"\vspace*{\fill}")
+lines.append(rf"\PurhPublisherMention{{{_PURH_FULL_NAME}}}")
 ```
 
 ### Logique de la responsabilité éditoriale (« sous la direction de »)
@@ -550,6 +675,7 @@ Deux blocs, dans cet ordre : production (facultatif) puis mentions
 institutionnelles (fixes + métadonnées du livre).
 
 ```python
+_PURH_FULL_NAME = "Presses universitaires de Rouen et du Havre"
 _PURH_ADDRESS_LINE = "2 place Émile Blondel – 76821 Mont-Saint-Aignan Cedex"
 _PURH_URL = "http://purh.univ-rouen.fr"
 
@@ -566,9 +692,13 @@ def _colophon_production_lines(metadata):
     return lines
 
 def _colophon_institutional_lines(metadata):
+    # Vérification humaine directe, 2026-08-05 : la ligne de copyright doit
+    # TOUJOURS figurer, pas seulement quand une année de publication est
+    # connue (comportement précédent, corrigé ici) — seule l'année, elle,
+    # reste une métadonnée du livre, ajoutée à la suite quand connue.
     lines = []
-    if metadata.publication_year:
-        lines.append(f"© Presses universitaires de Rouen et du Havre, {metadata.publication_year}.")
+    year_suffix = f", {metadata.publication_year}" if metadata.publication_year else ""
+    lines.append(f"© {_PURH_FULL_NAME}{year_suffix}.")
     lines.append(_PURH_ADDRESS_LINE)          # toujours présent, fixe
     lines.append(rf"\url{{{_PURH_URL}}}")      # toujours présent, fixe
     if metadata.preferred_isbn:
@@ -581,17 +711,17 @@ session comme correcte à conserver) : **une métadonnée absente donne une
 ligne omise, jamais une valeur générique ou un espace réservé littéral**.
 En particulier :
 
-- l'adresse postale et l'URL PURH sont des constantes fixes pour tout livre
-  PURH (dictées telles quelles par l'utilisateur), donc jamais lues depuis
-  `LateiMetadata` — ne pas les faire dériver d'une métadonnée par livre pour
-  un autre format ;
-- la ligne de copyright/année ne s'affiche que si `publication_year` est
-  renseigné, et reste dans tous les cas la ligne juste **au-dessus** de
-  l'adresse, y compris quand les lignes de production (couverture/suivi
-  éditorial) sont absentes — c'est le regroupement en deux blocs distincts
-  (`production` puis `institutionnel`), chacun réduit à ses lignes
-  effectivement présentes, qui garantit cet ordre sans jamais laisser un
-  bloc vide créer un blanc superflu.
+- l'adresse postale, l'URL et désormais la ligne de copyright PURH sont des
+  constantes fixes pour tout livre PURH (dictées telles quelles par
+  l'utilisateur), donc jamais lues depuis `LateiMetadata` — ne pas les faire
+  dériver d'une métadonnée par livre pour un autre format ;
+- la ligne de copyright s'affiche **toujours**, avec ou sans année connue
+  (seul le suffixe `, {année}` est conditionnel), et reste dans tous les cas
+  la ligne juste **au-dessus** de l'adresse, y compris quand les lignes de
+  production (couverture/suivi éditorial) sont absentes — c'est le
+  regroupement en deux blocs distincts (`production` puis `institutionnel`),
+  chacun réduit à ses lignes effectivement présentes, qui garantit cet ordre
+  sans jamais laisser un bloc vide créer un blanc superflu.
 
 ---
 
@@ -712,7 +842,10 @@ doivent y figurer.
 
 Cible : « titre de la communication sans graisse, bas de casse, Chaparral,
 calé à gauche, série de points puis numéro de ligne », prénom et nom de
-l'auteur en gras sur la ligne suivante, en retrait.
+l'auteur en gras **bas de casse** sur la ligne suivante, en retrait — les
+points de suite et le numéro de page devant rester au niveau du **titre**,
+jamais de l'auteur (vérification humaine directe, 2026-08-05 : deux pièges
+rencontrés en corrigeant ce point sont détaillés au §11).
 
 ```latex
 \titlecontents{chapter}
@@ -733,30 +866,70 @@ tête de contribution (§3, `\lateiContributionTitle`) et son entrée de TDM
 
 `\hfill` a été remplacé par le même filet pointillé que `\section`
 (`\titlerule*[0.5pc]{.}\contentspage`) pour la série de points de
-conduite + numéro de page.
+conduite + numéro de page. **Ce 4e argument n'a plus bougé depuis** : une
+tentative du 2026-08-05 de le vider et de déplacer le filet dans le texte
+de l'entrée elle-même (pour le garantir sur la ligne du titre) a cassé les
+signets PDF automatiques du paquet `bookmark` — voir §11 pour le détail du
+bug et la solution finalement retenue (une ligne de TDM séparée pour
+l'auteur, ci-dessous).
 
 Espacement entre entrées : « pas de saut de ligne entre les références sauf
 changement de section » — un `\addvspace{8pt}` inconditionnel antérieur a
 été retiré ; l'espacement avant une nouvelle partie vient désormais
 uniquement de `\titlecontents{part}` (§9.3), pas de ce bloc.
 
-### Retour à la ligne + auteur en gras
+### Ligne d'auteur séparée (mécanisme actuel, révisé le 2026-08-05)
 
 ```latex
-\newcommand{\lateiTocAuthorBreak}{\\\hspace*{1em}\bfseries}
+\newcommand{\lateiTocAuthorLine}[1]{%
+  \par\noindent\hspace*{1em}{\bfseries #1}\par
+}
 ```
 
-`\titlecontents` (contrairement à `\@dottedtocline` du noyau LaTeX)
-compose chaque entrée comme un paragraphe à retrait suspendu — un `\\` y
-force une nouvelle ligne à l'intérieur de la même entrée, contrairement à
-`\par`, qui romprait le paragraphe entier de la TDM plutôt que la seule
-entrée en cours.
+Contrairement à une version antérieure (`\lateiTocAuthorBreak`, qui
+concaténait l'auteur DANS le même paragraphe que le titre via un `\\`), le
+nom d'auteur est maintenant écrit comme une entrée de TDM **entièrement
+séparée**, via `\addtocontents` plutôt que `\addcontentsline` — raison
+détaillée au §11 (compatibilité avec les signets PDF automatiques du
+paquet `bookmark`, qui n'observe que `\addcontentsline`/`\contentsline`).
+
+### Capture "texte brut" de l'auteur pour la TDM (bas de casse, pas petites capitales)
+
+Le nom de famille de l'auteur est en petites capitales (`\textsc{Nom}`)
+dans la signature de fin d'article (§8), mais doit rester bas de casse dans
+la TDM (vérification humaine directe, 2026-08-05). Plutôt que de neutraliser
+`\textsc` au moment d'écrire l'entrée de TDM (deux pièges rencontrés, voir
+§11), une copie "texte brut" est capturée **en amont**, au fil normal du document,
+au moment même où `\lateiContributionAuthor` reçoit le nom :
+
+```latex
+\makeatletter
+\newcommand{\lateiContributionAuthor}[1]{%
+  \global\def\lateiSignatureAuthor{#1}%
+  \begingroup
+    \def\textsc##1{##1}%
+    \protected@xdef\lateiTocAuthorPlain{#1}%
+  \endgroup
+  \iflateiShowContributionAuthor
+    {\normalsize\bfseries\centering #1\par}
+    \vspace{0.3\baselineskip}
+  \fi
+}
+\makeatother
+```
+
+`\lateiTocAuthorPlain` porte donc la même casse d'origine que le XML source
+(déjà correcte : la seule chose qui change entre signature et TDM est la
+graisse de fonte, jamais les lettres), sans le rendu petites capitales.
+Réinitialisée à vide par `\lateiResetContributionSignature`, comme
+`\lateiSignatureAuthor`/`\lateiSignatureAffiliation` (§8.1), pour ne jamais
+laisser fuiter la TDM d'une contribution signée vers la suivante.
 
 ### Émission différée de l'entrée de TDM
 
 Le titre de la contribution est connu dès le début (option
-`data-page-title`), mais l'auteur — nécessaire pour composer l'entrée
-complète avec son nom en gras dessous — n'est capturé qu'au moment où
+`data-page-title`), mais l'auteur — nécessaire pour composer la ligne
+séparée en gras dessous — n'est capturé qu'au moment où
 `\lateiContributionAuthor` s'exécute, **à l'intérieur** de `#2`, donc
 **après** que la rupture d'ouverture (qui déclenchait auparavant
 `\addcontentsline` immédiatement) s'est produite. Solution : stocker le
@@ -778,11 +951,13 @@ titre en attente, écrire l'entrée réelle seulement après `#2` :
 
 \cs_new_protected:Npn \latei_finish_contribution_toc_entry: {
   \tl_if_empty:NF \g_latei_pending_toc_title_tl {
-    \ifx\lateiSignatureAuthor\lateiSignatureEmpty
-      \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
-    \else
-      \addcontentsline{toc}{chapter}{%
-        \tl_use:N \g_latei_pending_toc_title_tl \lateiTocAuthorBreak \lateiSignatureAuthor}
+    % Titre seul ici : filet pointillé + numéro de page restent gérés par
+    % le 4e argument de \titlecontents{chapter} ci-dessus, comme avant —
+    % l'auteur, lui, est écrit séparément, jamais concaténé dans ce texte
+    % (voir \lateiTocAuthorLine plus haut).
+    \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
+    \ifx\lateiSignatureAuthor\lateiSignatureEmpty\else
+      \addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}
     \fi
     \tl_gclear:N \g_latei_pending_toc_title_tl
   }
@@ -799,20 +974,27 @@ raison structurelle.
 
 Le référentiel dit « titres de section », mais désigne en réalité ici le
 niveau `\part` de ce document (les véritables intertitres/sections sont
-exclus de la TDM depuis `tocdepth=0`, §9.1). Josefin Sans **Bold** centré,
-un peu plus grand que le corps (12 pt contre 11 pt), ligne vide avant et
+exclus de la TDM depuis `tocdepth=0`, §9.1). Josefin Sans **Bold, petites
+capitales** (vérification humaine directe, 2026-08-05), un peu
+plus grand que le corps (12 pt contre 11 pt), centré, ligne vide avant et
 après, sans numéro de page (une partie est un intitulé structurant la
 liste, pas une entrée cherchable en soi) :
 
 ```latex
 \titlecontents{part}
   [0pt]
-  {\addvspace{1\baselineskip}\PURHTitleFont\bfseries\fontsize{12pt}{14pt}\selectfont\centering}
+  {\addvspace{1\baselineskip}\PURHTitleFont\bfseries\scshape\fontsize{12pt}{14pt}\selectfont\centering}
   {}
   {}
   {}
   [\addvspace{1\baselineskip}]
 ```
+
+`\scshape` fonctionne ici comme `\textsc` ailleurs dans ce document (§8.2) :
+`\PURHTitleFont` est chargé via fontspec (`\newfontfamily`), qui relie
+automatiquement les formes NFSS aux fonctionnalités OpenType de la fonte
+(feature "Small Caps") quand elle les propose — même mécanisme, pas une
+redéfinition séparée.
 
 `\part*` (jamais `\part{}` numéroté) ajoute déjà lui-même son entrée de TDM
 via le shape `[display]` de `\titleformat{\part}` (vérifié empiriquement) :
@@ -894,6 +1076,9 @@ peuvent resurgir sur un autre format.
 | `\rowcolor` dans un conditionnel imbriqué | « Misplaced \noalign » | Même contrainte de premier-token que `\multicolumn` | Émission littérale côté Python, hors macro (§10) |
 | Lecteur réversible rejetant `\rowcolor` généré | « Unknown macro or escape » | Aucune tolérance pour du LaTeX généré arbitraire | Catégorie `LAYOUT_UNVALIDATED_STANDALONE_MACROS` dédiée (§10) |
 | `font=…` de `caption` avec un nom non déclaré | Erreur de compilation | `font=<nom>` exige `\DeclareCaptionFont`, pas un simple `\newcommand` | `\DeclareCaptionFont{PURHTableCaptionFont}{…}` |
+| `\renewcommand{\textsc}[1]{#1}` placé DANS un argument `\addcontentsline` (2026-08-05) | Fichier `.toc` corrompu : erreurs `\textsc has an extra }` ou `You can't use a prefix...` ailleurs dans le document, bien après le point réellement fautif | `\addcontentsline` écrit son argument via `\protected@write`, qui `\edef`-développe le texte ; un `\edef` ne peut pas EXÉCUTER les primitives non désarmables (`\def`, `\global`…) que `\renewcommand` appelle en interne — il les recopie telles quelles au lieu de les exécuter | Neutraliser `\textsc` en amont, au fil normal du document (pas dans un argument `\addcontentsline`/`\addtocontents`), via `\protected@xdef` + un `\def` local ; voir §9.2 |
+| `\makeatletter` placé DANS le corps d'une macro `\newcommand` (2026-08-05) | `You can't use a prefix with the character @` sur un `\protected@xdef` pourtant précédé d'un `\makeatletter` dans le même bloc | Le corps d'un `\newcommand`/`\def` est **tokenisé une fois pour toutes à la lecture du fichier** (à `\input`), pas à chaque invocation ultérieure — un `\makeatletter` exécuté seulement à l'usage arrive trop tard, la catégorie de code de `@` était déjà figée à 12 (« autre ») quand `\protected@xdef` a été lu | Placer `\makeatletter`/`\makeatother` AUTOUR de toute la définition de la macro, au niveau du fichier, pas à l'intérieur de son corps |
+| `\contentspage`/`\\` insérés dans le texte d'une entrée `\addcontentsline` déjà utilisée par `bookmark` (2026-08-05) | `Package hyperref Warning: Token not allowed in a PDF string`, puis `Use of \ttl@row@i doesn't match its definition` (désynchronisation de titlesec) | Le paquet `bookmark` construit automatiquement les signets PDF depuis CE MÊME texte d'entrée ; il ne tolère pas des macros de mise en forme (filet, retour à la ligne) qui ne produisent pas une chaîne PDF valide | Ne jamais enrichir le texte transmis à `\addcontentsline` au-delà d'un titre simple ; toute information additionnelle (ex. auteur) doit être écrite comme un `\addtocontents` séparé, jamais capturé par `bookmark` |
 
 **Leçon transversale la plus générale** : plusieurs de ces bugs
 (`\@makefntext`, `\footnotelayout`) viennent du même phénomène — un paquet
@@ -905,6 +1090,32 @@ l'ordre de **chargement des paquets**, pas l'ordre textuel des
 (un réglage qui ne « prend » pas malgré un `\renewcommand` syntaxiquement
 correct), soupçonner en premier un paquet chargé plus tard qui écrase la
 même commande via son propre hook différé.
+
+**Deuxième leçon transversale (2026-08-05)** : deux catégories bien
+distinctes de « moment d'exécution » piègent régulièrement ce genre de
+correctifs, et les trois bugs ajoutés cette date en sont chacun un exemple :
+
+1. **Tokenisation vs exécution.** Le corps d'une macro (`\newcommand`,
+   `\def`) est tokenisé une seule fois, à la lecture du fichier — les
+   catégories de code (comme celle de `@`) actives à CE moment-là sont
+   celles qui comptent, pas celles actives quand la macro s'exécute plus
+   tard. Un `\makeatletter` à l'intérieur du corps arrive toujours trop
+   tard pour ce corps lui-même.
+2. **Écriture différée (`\addcontentsline`/`\addtocontents`) vs exécution
+   immédiate.** Le texte passé à ces commandes est écrit dans un fichier
+   auxiliaire via `\protected@write` (un `\edef`), pour être **réexécuté
+   plus tard** quand ce fichier est `\input`. Un `\edef` ne peut développer
+   que des tokens développables : une macro à effets de bord comme
+   `\renewcommand` ne s'y « exécute » pas vraiment, elle y laisse une trace
+   partiellement développée et potentiellement corrompue. Et ce texte est
+   aussi lu par d'autres mécanismes indépendants (ici, les signets PDF de
+   `bookmark`), qui imposent leurs propres contraintes (une chaîne PDF
+   valide) sur le même contenu.
+
+Face à un comportement qui ne « prend » pas ou casse silencieusement des
+dizaines de lignes plus loin dans le document, se demander d'abord *à quel
+moment* le code en cause s'exécute réellement, plutôt que de supposer qu'il
+s'exécute là où il est textuellement écrit.
 
 ---
 
@@ -985,7 +1196,7 @@ jamais technique, elle est dans l'absence de marqueur source.
 
 # 14. Journal des commits (branche `dissimuler-parite-v0.6`, depuis la v0.6)
 
-Quatorze commits, du plus ancien au plus récent (`main..HEAD` sur cette
+Seize commits, du plus ancien au plus récent (`main..HEAD` sur cette
 branche à la date de ce document) :
 
 1. `8db3364` — Corrige les deux défauts signalés : sous-sections en gras,
@@ -997,6 +1208,11 @@ branche à la date de ce document) :
    complet, GUI
 6. `c979fbe` — Colophon en bas de page, page de titre redessinée, signature
    de fin d'article, TDM avec auteur sous chaque entrée
+7. `19c81bd` — Rédige la v0.7 du référentiel PURH (mise en page/mise en
+   forme, md + docx)
+8. `aafa4a1` — Corrige TDM (points de suite, casse auteur/section), titre
+   courant, colophon et page de titre : les six correctifs détaillés dans
+   cette version du référentiel (§2.5, §4.2-§4.4, §7.4, §9.2-§9.3, §11)
 
 (liste condensée aux commits repères disposant d'un message significatif
 dans `git log` ; le détail technique de chaque changement est repris par
