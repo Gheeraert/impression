@@ -646,6 +646,18 @@ figure audio { width: 100%; margin-bottom: 1rem; }
 }
 .endnotes ol,
 .bibl-list { padding-left: 1.3rem; }
+
+/* <bibl> flottant, enfant direct d'un <div> "Sources et bibliographie" sans
+   <listBibl> englobant (tei_to_html.xsl, tei:div/tei:bibl) : un paragraphe
+   de bloc par référence, explicitement non italique (le <cite> générique
+   dont ce cas ne relève plus est italique par défaut chez la plupart des
+   agents utilisateurs), espacé de la précédente pour ne pas se lire comme
+   un seul bloc de texte continu. */
+.bibl-entry {
+  display: block;
+  margin: 0 0 0.7rem;
+  font-style: normal;
+}
 .endnotes li { margin-bottom: 1rem; }
 .endnotes li > p {
   display: inline;

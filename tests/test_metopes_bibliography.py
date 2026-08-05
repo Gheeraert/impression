@@ -247,6 +247,40 @@ def test_simple_bibl_still_avoids_nested_cites(tmp_path: Path) -> None:
     assert entry.xpath("string(.//span[contains(@class, 'tei-title')])") == "Un titre"
 
 
+def test_bare_bibl_under_div_renders_as_separated_non_italic_block(tmp_path: Path) -> None:
+    """Commons-Publishing autorise une "Sources et bibliographie" bâtie comme
+    une hiérarchie de <div>/<head> (une par institution) contenant des <bibl>
+    directement, sans <listBibl> englobant (cas réel : *Héraldique et
+    papauté*, chapitre "Sources et bibliographie"). Avant ce test, un tel
+    <bibl> retombait sur le template générique tei:bibl (<cite>, en ligne et
+    italique par défaut) : les entrées s'enchaînaient collées les unes aux
+    autres, sans séparation, et apparaissaient toutes en italique, y compris
+    celles sans le moindre <hi rend="italic">.
+    """
+    doc = render_bibliography(
+        tmp_path,
+        """
+        <div type="section2">
+          <head>Avignon</head>
+          <bibl xml:id="bibl-a">Archives municipales : CC468 (dépenses).</bibl>
+          <bibl xml:id="bibl-b">Bibliothèque municipale : <hi rend="italic">Les peintres</hi>.</bibl>
+        </div>
+        """,
+    )
+    entries = doc.xpath("//p[contains(@class, 'bibl-entry')]")
+
+    assert len(entries) == 2
+    assert entries[0].get("id") == "bibl-a"
+    assert visible_text(entries[0]) == "Archives municipales : CC468 (dépenses)."
+    assert entries[0].tag == "p"
+    assert entries[1].tag == "p"
+    # Chaque entrée est un bloc distinct (pas de <cite> en ligne collant les
+    # deux références l'une à l'autre dans le même flux de texte).
+    assert not doc.xpath("//cite[contains(@class, 'bibl-ref')]")
+    # Seul le titre porte l'italique (<em>), pas l'entrée entière.
+    assert entries[1].xpath("string(.//em)") == "Les peintres"
+
+
 def test_biblstruct_with_missing_fields_has_no_orphan_punctuation(tmp_path: Path) -> None:
     doc = render_bibliography(
         tmp_path,

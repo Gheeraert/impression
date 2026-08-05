@@ -696,6 +696,31 @@
     </li>
   </xsl:template>
 
+  <!-- <bibl> en enfant direct de <div> : le TEI Commons-Publishing autorise
+       une "Sources et bibliographie" construite comme une hiérarchie de
+       <div>/<head> (une par institution ou lettre) contenant directement des
+       <bibl> flottants, sans <listBibl> englobant (cas réel constaté sur
+       *Héraldique et papauté*, chapitre "Sources et bibliographie" —
+       vérification humaine directe, 2026-08-06). Sans ce template, un tel
+       <bibl> retombait sur le template générique tei:bibl ci-dessous
+       (<cite>, en ligne et mis en italique par défaut par la feuille de
+       style de l'agent utilisateur) : les références s'enchaînaient collées
+       les unes aux autres, sans aucune séparation visuelle, et
+       apparaissaient toutes en italique — y compris celles sans le moindre
+       <hi rend="italic">. \lateiBibliographyEntry (référentiel PURH,
+       latei_macros.tex) rend déjà ce même cas correctement côté LaTEI/PDF ;
+       ce template aligne le HTML sur ce rendu : un paragraphe de bloc par
+       référence, non italique, espacé de la précédente (voir .bibl-entry
+       dans site.css). -->
+  <xsl:template match="tei:div/tei:bibl" priority="15">
+    <p class="bibl-entry">
+      <xsl:if test="normalize-space(@xml:id) != ''">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </p>
+  </xsl:template>
+
   <xsl:template match="tei:biblStruct">
     <span class="bibl-entry"><xsl:apply-templates/></span>
   </xsl:template>
