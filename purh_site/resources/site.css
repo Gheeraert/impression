@@ -64,7 +64,7 @@ a { color: var(--accent); }
 }
 
 .site-logo--univ {
-  max-height: 108px;
+  max-height: 54px;
 }
 
 .site-logo-text {
@@ -1030,9 +1030,12 @@ sub.tei-sub {
     display: none;
   }
 
-  .site-logo--purh,
-  .site-logo--univ {
+  .site-logo--purh {
     max-height: 76px;
+  }
+
+  .site-logo--univ {
+    max-height: 38px;
   }
 }
 
