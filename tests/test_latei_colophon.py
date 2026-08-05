@@ -73,9 +73,9 @@ def colophon_export_without_names(tmp_path_factory: pytest.TempPathFactory):
 # 1. Titre courant
 # ---------------------------------------------------------------------------
 
-def test_running_title_uses_regular_weight_at_75_percent_not_gray_rgb() -> None:
+def test_running_title_uses_regular_weight_at_65_percent_not_gray_rgb() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.75}}}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.65}}}}" in preamble_source
 
 
 # ---------------------------------------------------------------------------

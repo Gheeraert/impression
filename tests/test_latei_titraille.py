@@ -110,8 +110,8 @@ def test_subsection_and_subsubsection_titleformat_are_bold() -> None:
     assert r"\PURHTitleFont\bfseries\normalsize\raggedright" in subsubsection_block
 
 
-def test_running_title_header_uses_regular_family_at_75_percent() -> None:
-    """Six vérifications humaines successives (2026-08-04/06) : la
+def test_running_title_header_uses_regular_family_at_65_percent() -> None:
+    """Sept vérifications humaines successives (2026-08-04/06) : la
     première jugeait le gris trop clair (Thin -> famille standard, sans
     succès) ; la seconde a trouvé ce résultat trop noir et visuellement
     gras — retour à la famille Thin (« pas de graisse » sur le PDF
@@ -125,12 +125,14 @@ def test_running_title_header_uses_regular_family_at_75_percent() -> None:
     imprimeur, a montré que la graisse elle-même (pas seulement la couleur)
     était en cause : le trait du PDF imprimeur n'est pas aussi fin qu'un
     Thin — changement de levier vers \\PURHTitleFont (graisse Regular, PAS
-    \\bfseries) à 75 % noir, voir test_latei_colophon.py."""
+    \\bfseries) à 75 % noir. La septième a validé le corps Regular mais
+    demandé un ajustement fin de la teinte, un peu trop noire à 75 % —
+    redescendue à 65 %, voir test_latei_colophon.py."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     # xcolor (pas le simple package color) depuis la passe P2 tableaux —
     # nécessaire pour \rowcolor sur les lignes d'entête.
     assert r"\usepackage[table]{{xcolor}}" in preamble_source
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.75}}}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.65}}}}" in preamble_source
     assert r"\bfseries" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 
 

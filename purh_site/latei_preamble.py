@@ -169,7 +169,12 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % Regular pourrait donner à 100 %) — comparé visuellement à un jeu
 % d'échantillons Thin/Light/Regular/Medium × 75 %/100 % avant d'être
 % retenu comme la combinaison la plus proche du PDF imprimeur.
-\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.75}}}}
+%
+% Septième vérification (2026-08-06) : le corps (Regular) validé comme
+% correct par l'utilisateur — seule la teinte, encore un peu trop noire à
+% 75 %, redescendue légèrement à 65 % (un ajustement fin, pas un nouveau
+% changement de levier comme aux passes précédentes).
+\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.65}}}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un

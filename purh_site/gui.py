@@ -65,41 +65,40 @@ Outils → Restaurer un XML Métopes depuis un corps LaTEI…"""
 
 ASSETS_STRUCTURE_HELP = """Structure attendue du dossier assets
 
-Le dossier assets doit contenir les fichiers appelés par le XML : images, figures, fac-similés ou autres documents liés.
+1. Images et documents appelés par le XML (icono, figures, fac-similés…)
 
-Les chemins doivent correspondre exactement aux chemins indiqués dans le XML.
+C’est le XML, et lui seul, qui pointe vers ces fichiers : le dossier assets doit
+simplement reproduire, à l’identique, les chemins relatifs indiqués dans le XML.
 
-Exemple :
-si le XML contient :
+Exemple : <graphic url="../icono/highres/image1.jpg"/> exige que assets/
+contienne icono/highres/image1.jpg au même chemin relatif. Aucune
+convention de nommage n’est requise pour ces fichiers — seul le chemin compte.
 
-  <graphic url="images/figure-01.jpg"/>
+2. Dossiers spéciaux reconnus automatiquement (indépendants du XML)
 
-alors le dossier assets doit contenir :
-
-  images/
-    figure-01.jpg
-
-Si le XML contient :
-
-  <graphic url="figures/chapitre-2/schema.png"/>
-
-alors le dossier assets doit contenir :
-
-  figures/
-    chapitre-2/
-      schema.png
-
-En pratique, le dossier assets peut par exemple avoir cette structure :
+Ces dossiers sont détectés par leur nom/emplacement, pas par le XML :
 
   assets/
-    images/
-      figure-01.jpg
-      figure-02.jpg
-    figures/
-      chapitre-1/
-        carte-01.png
-    documents/
-      annexe.pdf
+    couverture/ (ou images/couverture/) — image de première de couverture
+    logos/
+      purh/ ou presses/       — logo PURH (pied de page)
+      universite/ ou urn/     — logo de l’université (pied de page)
+      logo_footer/ ou footer/ — logo de pied de page additionnel
+    quatrieme/                — texte de 4e de couverture (.md, .html ou .txt ;
+                                 un seul fichier lu, priorité md > html > txt)
+    PDF/                      — PDF éditeur déjà composé (voir point 3)
+
+La 4e de couverture suit un ordre de priorité : XML (<abstract
+rend="4e-couv">) > fichier choisi dans le champ dédié du formulaire >
+assets/quatrieme/. Le premier trouvé l’emporte, les autres sont ignorés.
+
+3. assets/PDF/ — PDF éditeur déjà composé (priorité et blocage)
+
+Si assets/PDF/ contient au moins un fichier .pdf, il est traité comme le PDF
+définitif de l’éditeur (le PDF imprimeur) : il est utilisé tel quel comme
+PDF du site, et l’export LaTEI/PDF de cette interface est alors désactivé
+(grisé) — il ne recompile jamais un PDF concurrent par-dessus un PDF éditeur
+déjà fourni. Pour réactiver l’export LaTEI/PDF, retirer le PDF de ce dossier.
 
 Il est conseillé d’éviter les noms de fichiers trop complexes : préférer des noms courts, sans espaces, sans accents, et stables."""
 
@@ -115,28 +114,16 @@ Ce champ sert uniquement lorsque le livre est constitué de plusieurs fichiers X
 
 3. Choisir le dossier assets
 
-Le dossier assets contient les images et les fichiers appelés par le XML.
-
-Il doit conserver la même organisation que les chemins indiqués dans le XML.
-
-Exemple :
-si le XML appelle images/figure-01.jpg, le dossier assets doit contenir un sous-dossier images avec le fichier figure-01.jpg.
-
-Structure possible :
-
-  assets/
-    images/
-      figure-01.jpg
-      figure-02.jpg
-    figures/
-      chapitre-1/
-        carte-01.png
-    documents/
-      annexe.pdf
+Le dossier assets contient les images et fichiers appelés par le XML (chemins
+à reproduire à l’identique), plus quelques dossiers spéciaux reconnus
+automatiquement (couverture, logos, quatrième de couverture, PDF éditeur).
+Voir le bouton « Structure attendue du dossier assets… » pour le détail complet.
 
 4. Ajouter une quatrième de couverture si nécessaire
 
-Si le XML contient déjà une quatrième de couverture, elle sera utilisée en priorité. Le fichier externe ne sert que de repli.
+Ce champ sert de repli seulement : le XML et assets/quatrieme/ restent
+prioritaires s’ils fournissent déjà une quatrième de couverture (détail
+dans « Structure attendue du dossier assets… »).
 
 Formats acceptés : .md, .markdown, .html, .txt.
 

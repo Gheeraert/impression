@@ -167,10 +167,32 @@ def test_gui_editorial_help_content() -> None:
     assert "Mode d’emploi \xe9ditorial" in source
     assert "Structure attendue du dossier assets" in source
     assert "Les informations d\xe9j\xe0 pr\xe9sentes dans le XML sont toujours prioritaires" in source
-    assert "Le dossier assets contient les images et les fichiers appel\xe9s par le XML" in source
     assert "Aucun export PDF/LaTeX" in source
     assert "LaTEI monofichier (.tex)" in source
     assert "LaTEI monofichier + PDF" in source
+
+
+def test_assets_structure_help_documents_xml_controlled_paths_briefly() -> None:
+    """Vérification humaine directe, 2026-08-06 : la boîte doit expliquer
+    brièvement que c'est le XML qui pointe les chemins relatifs (icono,
+    figures...), pas une convention de nommage du dossier assets."""
+    from purh_site.gui import ASSETS_STRUCTURE_HELP
+
+    assert "qui pointe vers ces fichiers" in ASSETS_STRUCTURE_HELP
+    assert "../icono/highres/image1.jpg" in ASSETS_STRUCTURE_HELP
+
+
+def test_assets_structure_help_documents_special_folders() -> None:
+    """Vérification humaine directe, 2026-08-06 : la boîte omettait les
+    dossiers spéciaux reconnus automatiquement (logos, quatrième, PDF,
+    couverture) et, pour PDF en particulier, la priorité du PDF éditeur sur
+    le PDF généré avec blocage de l'export LaTEI/PDF (has_editor_pdf)."""
+    from purh_site.gui import ASSETS_STRUCTURE_HELP
+
+    for token in ("logos/", "quatrieme/", "PDF/", "couverture/"):
+        assert token in ASSETS_STRUCTURE_HELP
+    assert "désactivé" in ASSETS_STRUCTURE_HELP or "desactive" in ASSETS_STRUCTURE_HELP.lower()
+    assert "priorité" in ASSETS_STRUCTURE_HELP or "priorite" in ASSETS_STRUCTURE_HELP.lower()
 
 
 def test_build_config_accepts_latei_mode() -> None:
