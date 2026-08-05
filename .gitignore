@@ -35,8 +35,9 @@ _pass_normalizer/
 *.toc
 docs/*.log
 
-# Sorties locales de compilation Nuitka
+# Sorties locales de compilation Nuitka (voir scripts/build_windows_exe.ps1
+# pour la recette de reconstruction, elle-même suivie par git)
 build_nuitka/
-dist/main.build/
-dist/main.exe
-dist/main.cmd
+dist/*.build/
+dist/*.exe
+dist/*.cmd
