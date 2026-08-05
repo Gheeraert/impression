@@ -51,11 +51,11 @@ dispersés dans onze fichiers.
 | 2 | Sous-titre d'ouverture de contribution | Thin Italic → **Bold Italic**, bas de casse |
 | 3 | Titre courant (running title) | Quatre réglages successifs (dont un le 2026-08-05) ; valeur finale : famille Thin + couleur CMJN noir **85 %** explicite (pas de changement de graisse) |
 | 4 | Texte courant | Couleur CMJN noir 90 % appliquée globalement (`\AtBeginDocument{\color{PURHBodyBlack}}`) |
-| 5 | Table des matières | Refonte complète : entrées de contribution non grasses/bas de casse/Chaparral/alignées à gauche avec points de conduite **au niveau du titre** (jamais de l'auteur), entrées de partie centrées Josefin Bold **petites capitales**, auteur en gras **bas de casse** sous chaque entrée de contribution (ligne de TDM séparée, voir §9.2/§9.3) |
+| 5 | Table des matières | Refonte complète : entrées de contribution non grasses/bas de casse/Chaparral/alignées à gauche avec points de conduite **au niveau du titre** (jamais de l'auteur), entrées de partie centrées Josefin Bold **capitales** (fausses petites capitales, `\MakeUppercase` — `\scshape` inerte sur cette fonte), auteur en gras **bas de casse** sous chaque entrée de contribution (ligne de TDM séparée, voir §9.2/§9.3) |
 | 6 | Signature de fin d'article | Nouveau mécanisme : auteur + affiliation réapparaissent à la fin du corps de la contribution, calés à droite, Chaparral 10 pt |
-| 7 | Page de titre | Refonte complète : titre principal 22/26 pt, sous-titre 15/18 pt sur 2 lignes calibrées (numéros de siècle en petites capitales, §4.3), responsabilité éditoriale (« sous la direction de », corrigible via GUI/config, §4.4) sur 2 lignes, mention finale PURH en toutes lettres calée en bas de page (§4.2) |
+| 7 | Page de titre | Refonte complète : titre principal 22/26 pt, sous-titre 15/18 pt sur 2 lignes calibrées (numéros de siècle en petites capitales, §4.3), responsabilité éditoriale (« sous la direction de », corrigible via GUI/config, §4.4) sur 2 lignes, mention finale PURH en toutes lettres, sur une seule ligne (`\resizebox`), calée en bas de page (§4.2) |
 | 8 | Faux-titre | Remonté (0,35 → 0,25 `\textheight`), repassé en Bold capitales 12/14 pt |
-| 9 | Colophon (page de crédits) | Calé en bas de page (pas centré verticalement), interlignage resserré, ligne copyright **toujours affichée** (§7.4), ISBN omis si absent, adresse/URL PURH fixes ajoutées |
+| 9 | Colophon (page de crédits) | Calé en bas de page (pas centré verticalement), interlignage resserré, ligne copyright **toujours affichée** (§7.4), ISBN précédé de « ISBN : » ou omis si absent, adresse/URL PURH fixes ajoutées |
 | 10 | Coupures de ligne du titre d'ouverture de contribution | Largeur de boîte calibrée empiriquement à 104 mm (vérifiée contre 7 titres réels) |
 | 11 | Tableaux : fond des lignes d'en-tête | `\rowcolor{black!30}` généré directement par le writer Python, reconnu et neutralisé par le reader |
 | 12 | Ouverture de contribution/partie | `\thispagestyle{empty}` forcé sur la première page (déjà partiellement en place, complété) |
@@ -344,12 +344,31 @@ piège que pour le colophon (§7.4) — cette fois le risque de la glue
 sous-titre, responsabilité éditoriale) précède déjà cette ligne sur la même
 page, mais l'étoile est conservée par cohérence et prudence.
 
-`\PurhPublisherMention` (§4, macro ci-dessus) : Chaparral (fonte ambiante,
-pas `\PURHTitleFont`/Josefin — cette mention n'est pas un niveau de
-titraille), majuscules grasses, 14/16 pt — corps choisi pour occuper une
-bonne partie de la largeur de la page (empagement d'environ 105 mm sur ce
-profil) sans mesure millimétrique donnée par l'utilisateur, à recalibrer
-par vérification visuelle directe sur un autre format.
+`\PurhPublisherMention` : Chaparral (fonte ambiante, pas
+`\PURHTitleFont`/Josefin — cette mention n'est pas un niveau de titraille),
+majuscules grasses, **sur une seule ligne quelle que soit la longueur du
+nom affiché** (précision du 2026-08-05) :
+
+```latex
+\newcommand{\PurhPublisherMention}[1]{%
+  \noindent\resizebox{0.95\linewidth}{!}{\bfseries\MakeUppercase{#1}}\par
+}
+```
+
+**Piège rencontré (2026-08-05)** : la première version fixait un corps
+absolu (`\fontsize{14pt}{16pt}`). À cette taille, « PRESSES UNIVERSITAIRES
+DE ROUEN ET DU HAVRE » (44 caractères) ne tenait pas sur une seule ligne à
+la largeur d'empagement de ce profil (~105 mm) et retombait sur deux lignes
+— bug réel constaté par vérification humaine directe du PDF généré, pas par
+les tests automatisés (qui ne mesurent pas la largeur du rendu). Corrigé
+avec `\resizebox{0.95\linewidth}{!}{...}` (déjà chargé via `graphicx`,
+§préambule) : le contenu est d'abord emballé dans une boîte horizontale non
+coupable (aucun retour à la ligne possible, contrairement à un simple
+changement de `\fontsize`), puis mis à l'échelle pour occuper exactement
+95 % de la largeur de la page — garantit à la fois la ligne unique et le
+remplissage « une bonne partie de la largeur de la page » quel que soit le
+nom affiché ou le profil, sans avoir à calculer un corps de police à la
+main pour chaque cas.
 
 ## 4.3. Numéros de siècle en petites capitales (2026-08-05)
 
@@ -702,7 +721,8 @@ def _colophon_institutional_lines(metadata):
     lines.append(_PURH_ADDRESS_LINE)          # toujours présent, fixe
     lines.append(rf"\url{{{_PURH_URL}}}")      # toujours présent, fixe
     if metadata.preferred_isbn:
-        lines.append(metadata.preferred_isbn)
+        # "ISBN : " devant le numéro (vérification humaine directe, 2026-08-05).
+        lines.append(f"ISBN : {metadata.preferred_isbn}")
     return lines
 ```
 
@@ -878,52 +898,61 @@ changement de section » — un `\addvspace{8pt}` inconditionnel antérieur a
 été retiré ; l'espacement avant une nouvelle partie vient désormais
 uniquement de `\titlecontents{part}` (§9.3), pas de ce bloc.
 
-### Ligne d'auteur séparée (mécanisme actuel, révisé le 2026-08-05)
+### Ligne d'auteur séparée, bas de casse (mécanisme définitif, stabilisé le 2026-08-05)
 
 ```latex
 \newcommand{\lateiTocAuthorLine}[1]{%
-  \par\noindent\hspace*{1em}{\bfseries #1}\par
+  \par\noindent\hspace*{1em}%
+  {\bfseries\renewcommand{\textsc}[1]{##1}#1\par}%
 }
-```
-
-Contrairement à une version antérieure (`\lateiTocAuthorBreak`, qui
-concaténait l'auteur DANS le même paragraphe que le titre via un `\\`), le
-nom d'auteur est maintenant écrit comme une entrée de TDM **entièrement
-séparée**, via `\addtocontents` plutôt que `\addcontentsline` — raison
-détaillée au §11 (compatibilité avec les signets PDF automatiques du
-paquet `bookmark`, qui n'observe que `\addcontentsline`/`\contentsline`).
-
-### Capture "texte brut" de l'auteur pour la TDM (bas de casse, pas petites capitales)
-
-Le nom de famille de l'auteur est en petites capitales (`\textsc{Nom}`)
-dans la signature de fin d'article (§8), mais doit rester bas de casse dans
-la TDM (vérification humaine directe, 2026-08-05). Plutôt que de neutraliser
-`\textsc` au moment d'écrire l'entrée de TDM (deux pièges rencontrés, voir
-§11), une copie "texte brut" est capturée **en amont**, au fil normal du document,
-au moment même où `\lateiContributionAuthor` reçoit le nom :
-
-```latex
-\makeatletter
 \newcommand{\lateiContributionAuthor}[1]{%
   \global\def\lateiSignatureAuthor{#1}%
-  \begingroup
-    \def\textsc##1{##1}%
-    \protected@xdef\lateiTocAuthorPlain{#1}%
-  \endgroup
   \iflateiShowContributionAuthor
     {\normalsize\bfseries\centering #1\par}
     \vspace{0.3\baselineskip}
   \fi
 }
-\makeatother
 ```
 
-`\lateiTocAuthorPlain` porte donc la même casse d'origine que le XML source
-(déjà correcte : la seule chose qui change entre signature et TDM est la
-graisse de fonte, jamais les lettres), sans le rendu petites capitales.
-Réinitialisée à vide par `\lateiResetContributionSignature`, comme
-`\lateiSignatureAuthor`/`\lateiSignatureAffiliation` (§8.1), pour ne jamais
-laisser fuiter la TDM d'une contribution signée vers la suivante.
+Le nom d'auteur est écrit comme une entrée de TDM **entièrement séparée**,
+via `\addtocontents` plutôt que `\addcontentsline` — raison détaillée au
+§11 (compatibilité avec les signets PDF automatiques du paquet `bookmark`,
+qui n'observe que `\addcontentsline`/`\contentsline`) — et référence
+directement `\lateiSignatureAuthor` telle quelle, **sans capture
+intermédiaire**.
+
+Le nom de famille de l'auteur est en petites capitales (`\textsc{Nom}`,
+via `<hi rend="small-caps">` routé par `\teiHi`) dans la signature de fin
+d'article (§8), mais doit rester bas de casse dans la TDM (vérification
+humaine directe, 2026-08-05). Neutraliser `\textsc` **au bon moment** s'est
+révélé plus délicat que prévu — deux tentatives ont échoué avant la
+solution ci-dessus, détaillées au §11 :
+
+1. Une première tentative redéfinissait `\textsc` directement dans
+   l'argument de `\addcontentsline` — `\addcontentsline` écrit son
+   argument via un `\edef`, qui ne peut pas *exécuter* les primitives que
+   `\renewcommand` appelle en interne, seulement les recopier telles
+   quelles : le fichier `.toc` en ressortait corrompu.
+2. Une deuxième tentative capturait une copie "texte brut" **en amont**, au
+   moment de `\lateiContributionAuthor`, via `\protected@xdef` + un
+   `\textsc` local — plausible en apparence, mais `\teiHi` (comme toute
+   commande définie par `\NewDocumentCommand` de xparse) est `\protected`
+   au sens eTeX, donc **jamais développée** par un `\edef`/`\xdef` quel que
+   soit l'état de `\textsc` au même moment : la copie obtenue contenait
+   encore `\teiHi[rend={small-caps}]{Nom}` tel quel, et le rendu restait en
+   petites capitales dans le PDF malgré la capture (bug réel constaté :
+   invisible dans les tests automatisés, qui ne voient que le texte extrait
+   par `pdftotext`, identique avec ou sans petites capitales — seule une
+   inspection visuelle du PDF l'a révélé).
+
+La solution retenue place le `\renewcommand{\textsc}` **dans le corps de
+`\lateiTocAuthorLine` elle-même** : ce bloc ne s'exécute pas dans un
+argument `\edef`, mais normalement, au moment où `\tableofcontents`
+`\input` le fichier `.toc` et exécute réellement `\lateiTocAuthorLine{...}`
+— un contexte où `\teiHi` peut s'exécuter pour de vrai (pas seulement se
+développer) et appeler ce `\textsc` local, correctement redéfini à ce
+moment précis. Fonctionne car la redéfinition et son usage sont dans le
+**même acte d'exécution**, pas séparés par un `\edef` intermédiaire.
 
 ### Émission différée de l'entrée de TDM
 
@@ -957,7 +986,7 @@ titre en attente, écrire l'entrée réelle seulement après `#2` :
     % (voir \lateiTocAuthorLine plus haut).
     \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
     \ifx\lateiSignatureAuthor\lateiSignatureEmpty\else
-      \addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}
+      \addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiSignatureAuthor}}
     \fi
     \tl_gclear:N \g_latei_pending_toc_title_tl
   }
@@ -974,27 +1003,64 @@ raison structurelle.
 
 Le référentiel dit « titres de section », mais désigne en réalité ici le
 niveau `\part` de ce document (les véritables intertitres/sections sont
-exclus de la TDM depuis `tocdepth=0`, §9.1). Josefin Sans **Bold, petites
-capitales** (vérification humaine directe, 2026-08-05), un peu
-plus grand que le corps (12 pt contre 11 pt), centré, ligne vide avant et
-après, sans numéro de page (une partie est un intitulé structurant la
-liste, pas une entrée cherchable en soi) :
+exclus de la TDM depuis `tocdepth=0`, §9.1). Josefin Sans **Bold,
+capitales** (vérification humaine directe, 2026-08-05), un peu plus grand
+que le corps (12 pt contre 11 pt), centré, ligne vide avant et après, sans
+numéro de page (une partie est un intitulé structurant la liste, pas une
+entrée cherchable en soi) :
 
 ```latex
 \titlecontents{part}
   [0pt]
-  {\addvspace{1\baselineskip}\PURHTitleFont\bfseries\scshape\fontsize{12pt}{14pt}\selectfont\centering}
+  {\addvspace{1\baselineskip}\PURHTitleFont\bfseries\fontsize{12pt}{14pt}\selectfont\centering}
   {}
   {}
   {}
   [\addvspace{1\baselineskip}]
 ```
 
-`\scshape` fonctionne ici comme `\textsc` ailleurs dans ce document (§8.2) :
-`\PURHTitleFont` est chargé via fontspec (`\newfontfamily`), qui relie
-automatiquement les formes NFSS aux fonctionnalités OpenType de la fonte
-(feature "Small Caps") quand elle les propose — même mécanisme, pas une
-redéfinition séparée.
+**Piège rencontré (2026-08-05)** : une première tentative ajoutait
+`\scshape` à ce bloc, en croyant qu'il fonctionnerait comme `\textsc`
+ailleurs dans ce document (§8.2) — puisque `\PURHTitleFont` est chargé via
+fontspec (`\newfontfamily`), qui relie normalement les formes NFSS aux
+fonctionnalités OpenType de la fonte quand elle les propose. Mais
+**Josefin Sans n'a pas de véritables petites capitales OpenType** :
+confirmé par compilation isolée d'un exemple minimal, dont le journal
+LaTeX rapporte explicitement `Font shape .../b/sc undefined`, avec
+substitution silencieuse par la forme normale — aucune erreur bloquante,
+donc invisible sans consulter le journal (et invisible aussi dans les
+tests automatisés : `pdftotext` ne détecte pas les graisses/formes de
+police). Résultat concret : le texte restait affiché en bas de casse dans
+le PDF, comme si `\scshape` n'avait jamais été écrit.
+
+**Solution retenue** : à défaut de petites capitales réelles, `\MakeUppercase`
+appliqué **à la source du texte**, dans `\lateiRenderHead`
+(`latei_macros.tex`) — pas ici, dans `\titlecontents{part}`, qui ne reçoit
+jamais le texte de l'entrée en argument direct (ses hooks ne sont que des
+changements de police appliqués *avant* que titlesec/titletoc n'insère le
+texte, pas des enveloppes autour de lui) :
+
+```latex
+\IfStrEq{\lateiHeadContext}{part}{\part*{\MakeUppercase{#1}}\lateiMarkBothVerso{#1}}{%
+```
+
+`\part*` réutilise ce même texte, désormais déjà en capitales, à la fois
+pour le titre affiché sur sa propre page ET pour son entrée de TDM
+automatique (voir ci-dessous) — appliquer `\MakeUppercase` une seconde fois
+via `\titleformat{\part}` (qui l'applique déjà à l'affichage sur la page)
+n'a aucun effet indésirable (majuscule d'une majuscule = la même
+majuscule). Seul `\lateiMarkBothVerso{#1}` continue d'utiliser le texte
+original, non uppercase : le titre courant (verso) doit rester dans sa
+casse d'origine (référentiel, "Titres courants").
+
+**Limite assumée** : ce n'est PAS de la véritable petite capitale
+typographique (qui réduit la hauteur des lettres à l'origine bas de casse
+tout en gardant les majuscules d'origine à taille pleine) — seulement des
+capitales pleines, à un corps réduit (12 pt) par rapport au titre affiché
+sur sa propre page (16 pt), qui les distingue visuellement des autres
+niveaux de la TDM sans reproduire l'effet exact. À reconsidérer si un
+autre format charge une fonte de titraille disposant de vraies petites
+capitales OpenType.
 
 `\part*` (jamais `\part{}` numéroté) ajoute déjà lui-même son entrée de TDM
 via le shape `[display]` de `\titleformat{\part}` (vérifié empiriquement) :
@@ -1076,9 +1142,12 @@ peuvent resurgir sur un autre format.
 | `\rowcolor` dans un conditionnel imbriqué | « Misplaced \noalign » | Même contrainte de premier-token que `\multicolumn` | Émission littérale côté Python, hors macro (§10) |
 | Lecteur réversible rejetant `\rowcolor` généré | « Unknown macro or escape » | Aucune tolérance pour du LaTeX généré arbitraire | Catégorie `LAYOUT_UNVALIDATED_STANDALONE_MACROS` dédiée (§10) |
 | `font=…` de `caption` avec un nom non déclaré | Erreur de compilation | `font=<nom>` exige `\DeclareCaptionFont`, pas un simple `\newcommand` | `\DeclareCaptionFont{PURHTableCaptionFont}{…}` |
-| `\renewcommand{\textsc}[1]{#1}` placé DANS un argument `\addcontentsline` (2026-08-05) | Fichier `.toc` corrompu : erreurs `\textsc has an extra }` ou `You can't use a prefix...` ailleurs dans le document, bien après le point réellement fautif | `\addcontentsline` écrit son argument via `\protected@write`, qui `\edef`-développe le texte ; un `\edef` ne peut pas EXÉCUTER les primitives non désarmables (`\def`, `\global`…) que `\renewcommand` appelle en interne — il les recopie telles quelles au lieu de les exécuter | Neutraliser `\textsc` en amont, au fil normal du document (pas dans un argument `\addcontentsline`/`\addtocontents`), via `\protected@xdef` + un `\def` local ; voir §9.2 |
+| `\renewcommand{\textsc}[1]{#1}` placé DANS un argument `\addcontentsline` (2026-08-05, tentative 1) | Fichier `.toc` corrompu : erreurs `\textsc has an extra }` ou `You can't use a prefix...` ailleurs dans le document, bien après le point réellement fautif | `\addcontentsline` écrit son argument via `\protected@write`, qui `\edef`-développe le texte ; un `\edef` ne peut pas EXÉCUTER les primitives non désarmables (`\def`, `\global`…) que `\renewcommand` appelle en interne — il les recopie telles quelles au lieu de les exécuter | Abandonné — voir la ligne `\protected@xdef` ci-dessous, elle-même abandonnée à son tour ; solution finale au §9.2 |
 | `\makeatletter` placé DANS le corps d'une macro `\newcommand` (2026-08-05) | `You can't use a prefix with the character @` sur un `\protected@xdef` pourtant précédé d'un `\makeatletter` dans le même bloc | Le corps d'un `\newcommand`/`\def` est **tokenisé une fois pour toutes à la lecture du fichier** (à `\input`), pas à chaque invocation ultérieure — un `\makeatletter` exécuté seulement à l'usage arrive trop tard, la catégorie de code de `@` était déjà figée à 12 (« autre ») quand `\protected@xdef` a été lu | Placer `\makeatletter`/`\makeatother` AUTOUR de toute la définition de la macro, au niveau du fichier, pas à l'intérieur de son corps |
 | `\contentspage`/`\\` insérés dans le texte d'une entrée `\addcontentsline` déjà utilisée par `bookmark` (2026-08-05) | `Package hyperref Warning: Token not allowed in a PDF string`, puis `Use of \ttl@row@i doesn't match its definition` (désynchronisation de titlesec) | Le paquet `bookmark` construit automatiquement les signets PDF depuis CE MÊME texte d'entrée ; il ne tolère pas des macros de mise en forme (filet, retour à la ligne) qui ne produisent pas une chaîne PDF valide | Ne jamais enrichir le texte transmis à `\addcontentsline` au-delà d'un titre simple ; toute information additionnelle (ex. auteur) doit être écrite comme un `\addtocontents` séparé, jamais capturé par `bookmark` |
+| `\protected@xdef` + `\textsc` local pour capturer un "texte brut" (2026-08-05, tentative 2) | Aucune erreur de compilation — mais le rendu restait en petites capitales dans le PDF malgré la capture ; bug invisible dans les tests automatisés (`pdftotext` ne distingue pas `\textsc{Nom}` de `Nom`, seul un rendu visuel le révèle) | `\teiHi` (comme toute commande définie par `\NewDocumentCommand` de xparse) est `\protected` au sens eTeX : un `\edef`/`\xdef`/`\protected@xdef` ne la développe donc JAMAIS, quel que soit l'état de `\textsc` au même moment — elle est recopiée telle quelle, non exécutée | Ne pas essayer de "capturer" un texte contenant des commandes protégées via `\edef` ; neutraliser la commande responsable (`\textsc`) au moment de l'EXÉCUTION réelle du texte, pas de son expansion — voir §9.2 pour le mécanisme final (`\renewcommand` dans le corps de `\lateiTocAuthorLine`) |
+| `\scshape` sur une fonte sans petites capitales OpenType (2026-08-05) | Aucune erreur de compilation, aucun avertissement visible sans consulter le journal complet — le texte reste silencieusement affiché dans sa forme normale (ici, bas de casse) | Josefin Sans n'a pas de forme NFSS "sc" ; LaTeX répond par une substitution de police silencieuse (`Font shape .../b/sc undefined`, journal uniquement, pas de warning console) | Vérifier la disponibilité réelle d'une fonctionnalité de police avant de s'y fier (ici, par une compilation isolée minimale) ; à défaut, approximer avec `\MakeUppercase` à corps réduit plutôt que d'utiliser une commande qui échoue silencieusement — voir §9.3 |
+| Corps de police fixe pour un texte de longueur variable (2026-08-05) | La mention finale de la page de titre retombait sur deux lignes selon la longueur du nom affiché | `\fontsize{14pt}{16pt}` fixe ne garantit rien sur la largeur réelle du texte rendu, qui dépend du nombre de caractères | `\resizebox{0.95\linewidth}{!}{...}` : emballe le texte dans une boîte non coupable puis la met à l'échelle pour occuper une largeur cible fixe, garantissant la ligne unique quel que soit le texte — voir §4.2 |
 
 **Leçon transversale la plus générale** : plusieurs de ces bugs
 (`\@makefntext`, `\footnotelayout`) viennent du même phénomène — un paquet
@@ -1116,6 +1185,25 @@ Face à un comportement qui ne « prend » pas ou casse silencieusement des
 dizaines de lignes plus loin dans le document, se demander d'abord *à quel
 moment* le code en cause s'exécute réellement, plutôt que de supposer qu'il
 s'exécute là où il est textuellement écrit.
+
+**Troisième leçon transversale (2026-08-05)** : les deux bugs les plus
+difficiles à diagnostiquer de ce chantier (`\protected@xdef` face à
+`\teiHi`, `\scshape` face à Josefin Sans) partagent un même trait — **aucun
+message d'erreur**. LaTeX substitue silencieusement (police de repli pour
+une forme NFSS absente) ou recopie silencieusement (une commande protégée
+non développée par un `\edef`) plutôt que d'échouer bruyamment. Les deux
+étaient invisibles dans les tests automatisés existants, qui vérifient soit
+la présence de certaines commandes dans le code source, soit le texte
+extrait par `pdftotext` — un canal qui ne voit ni les graisses, ni les
+formes de police, ni les petites capitales. Dans les deux cas, c'est
+seulement le rendu visuel du PDF généré, comparé au PDF imprimeur, qui a
+révélé le défaut. Pour un prochain format : quand une propriété
+typographique fine (graisse, casse, forme) est en jeu et que les tests
+automatisés passent malgré tout, ne pas conclure trop vite à une réussite
+— une vérification visuelle directe reste nécessaire, en particulier après
+avoir introduit une nouvelle fonctionnalité de police (`\scshape`,
+`\textsc`, une fonctionnalité OpenType) sur une fonte qui n'a jamais été
+vérifiée pour cette fonctionnalité précise.
 
 ---
 
@@ -1196,7 +1284,7 @@ jamais technique, elle est dans l'absence de marqueur source.
 
 # 14. Journal des commits (branche `dissimuler-parite-v0.6`, depuis la v0.6)
 
-Seize commits, du plus ancien au plus récent (`main..HEAD` sur cette
+Dix-huit commits, du plus ancien au plus récent (`main..HEAD` sur cette
 branche à la date de ce document) :
 
 1. `8db3364` — Corrige les deux défauts signalés : sous-sections en gras,
@@ -1213,6 +1301,13 @@ branche à la date de ce document) :
 8. `aafa4a1` — Corrige TDM (points de suite, casse auteur/section), titre
    courant, colophon et page de titre : les six correctifs détaillés dans
    cette version du référentiel (§2.5, §4.2-§4.4, §7.4, §9.2-§9.3, §11)
+9. `3da636f` — Met à jour le référentiel v0.7 avec les six correctifs du
+   2026-08-05
+10. `d2080e4` — Corrige TDM (auteurs/parties), préfixe ISBN et mention
+    finale sur une ligne : quatre correctifs supplémentaires, découverts
+    en recompilant réellement le monofile régénéré de *Dissimuler pour
+    mieux régner* plutôt qu'en se fiant aux seuls tests automatisés (§9.2,
+    §9.3, §7.4, §4.2, §11)
 
 (liste condensée aux commits repères disposant d'un message significatif
 dans `git log` ; le détail technique de chaque changement est repris par
