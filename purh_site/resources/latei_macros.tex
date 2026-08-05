@@ -105,31 +105,9 @@
 \newcommand{\lateiSignatureEmpty}{}
 \newcommand{\lateiSignatureAuthor}{}
 \newcommand{\lateiSignatureAffiliation}{}
-% \lateiTocAuthorPlain : copie de l'auteur sans le rendu petites capitales
-% du nom de famille (vérification humaine directe du 2026-08-04, référentiel
-% v0.7) : le nom de l'auteur doit apparaître bas de casse dans la TDM, alors
-% que \lateiSignatureAuthor porte le rendu de la signature de fin d'article
-% (§8), où le nom de famille EST en petites capitales (\textsc{Nom}, capturé
-% tel quel depuis <hi rend="small-caps">). Calculée une fois, au moment de
-% la capture (\lateiContributionAuthor ci-dessous), PAS au moment de
-% l'écriture de l'entrée de TDM : \addcontentsline écrit son argument via
-% \protected@write, qui \edef-développe tout ce qui n'est pas protégé —
-% une redéfinition locale de \textsc placée directement dans cet argument
-% (première tentative, abandonnée) ne s'exécute donc jamais normalement : un
-% \edef ne peut pas EXÉCUTER les primitives non désarmables (\def, \global…)
-% qu'un \renewcommand appelle en interne, il les recopie telles quelles —
-% ce qui corrompait le fichier .toc plutôt que de simplement neutraliser
-% \textsc (bug réel constaté par compilation : erreurs "\textsc has an
-% extra }" ailleurs dans le document, bien après le point réellement fautif).
-% \protected@xdef ci-dessous s'exécute en revanche au fil normal du
-% document (pas dans un argument \addcontentsline), où une redéfinition
-% locale de \textsc via un simple \def EST correctement exécutée par
-% l'expansion.
-\newcommand{\lateiTocAuthorPlain}{}
 \newcommand{\lateiResetContributionSignature}{%
   \global\let\lateiSignatureAuthor\lateiSignatureEmpty
   \global\let\lateiSignatureAffiliation\lateiSignatureEmpty
-  \global\let\lateiTocAuthorPlain\lateiSignatureEmpty
 }
 % Nom d'auteur sous une entrée de TDM (référentiel §9.1) : écrit comme une
 % ligne de TDM SÉPARÉE de l'entrée de chapitre elle-même, via
@@ -143,35 +121,37 @@
 % précédente rupture "\\" à l'intérieur d'un même paragraphe : ici, il
 % s'agit bien d'un paragraphe séparé, plus de retrait suspendu de
 % \titlecontents à préserver.
+%
+% \renewcommand{\textsc}[1]{#1} ICI, dans le corps de \lateiTocAuthorLine
+% (vérification humaine directe du 2026-08-05, référentiel v0.7) : le nom
+% de l'auteur doit apparaître bas de casse dans la TDM, alors que
+% \lateiSignatureAuthor — passé tel quel, sans capture intermédiaire — porte
+% le nom de famille en petites capitales (<hi rend="small-caps">Nom</hi>,
+% routé vers \teiHi[rend={small-caps}]{Nom} puis \textsc{Nom}).
+%
+% Une première tentative capturait une copie "texte brut" à l'avance, au
+% moment de \lateiContributionAuthor, via \protected@xdef + un \textsc local
+% — abandonnée : \teiHi (comme toute commande définie par \NewDocumentCommand
+% de xparse) est \protected au sens eTeX, donc jamais développée par un
+% \edef/\xdef quel que soit l'état de \textsc au même moment ; le fichier
+% .toc obtenu contenait encore \teiHi[rend={small-caps}]{Nom} tel quel (bug
+% réel constaté : petites capitales toujours visibles dans le PDF malgré la
+% capture). \renewcommand fonctionne en revanche PARFAITEMENT ici : ce bloc
+% s'exécute au moment où \tableofcontents \input le fichier .toc et exécute
+% RÉELLEMENT \lateiTocAuthorLine{...} — une exécution normale de macro, pas
+% un \edef — où \teiHi peut s'exécuter (pas seulement se développer) et
+% appeler ce \textsc local, correctement redéfini à ce moment précis.
 \newcommand{\lateiTocAuthorLine}[1]{%
-  \par\noindent\hspace*{1em}{\bfseries #1}\par
+  \par\noindent\hspace*{1em}%
+  {\bfseries\renewcommand{\textsc}[1]{##1}#1\par}%
 }
-% \protected@xdef (utilisé ci-dessous) contient un "@" : catégorie de code
-% 11 requise pour le lire comme partie d'un seul nom de commande — comme
-% pour \@empty (documenté plus haut pour \lateiSignatureEmpty), mais avec
-% un piège de plus ici : un \makeatletter DANS le corps de la macro, exécuté
-% seulement à l'usage de \lateiContributionAuthor, arrive trop tard — le
-% corps de \newcommand{{...}} est tokenisé une fois pour toutes au moment où
-% ce fichier est lu (\input), pas à chaque invocation ultérieure ; "@" doit
-% donc déjà avoir la catégorie 11 AU MOMENT où \protected@xdef est LU dans
-% cette définition, pas seulement au moment où elle s'exécute (bug réel
-% rencontré : un \makeatletter placé à l'intérieur du corps produisait
-% encore "You can't use a prefix with `the character @'", preuve que la
-% tokenisation avait déjà eu lieu). D'où le \makeatletter englobant toute
-% la définition ci-dessous, refermé par \makeatother juste après.
-\makeatletter
 \newcommand{\lateiContributionAuthor}[1]{%
   \global\def\lateiSignatureAuthor{#1}%
-  \begingroup
-    \def\textsc##1{##1}%
-    \protected@xdef\lateiTocAuthorPlain{#1}%
-  \endgroup
   \iflateiShowContributionAuthor
     {\normalsize\bfseries\centering #1\par}%
     \vspace{0.3\baselineskip}%
   \fi
 }
-\makeatother
 \newcommand{\lateiContributionAffiliation}[1]{%
   \global\def\lateiSignatureAffiliation{#1}%
   \iflateiShowContributionAuthor
@@ -509,7 +489,7 @@
         % avec les signets PDF automatiques du paquet bookmark).
         \addcontentsline{toc}{chapter}{\tl_use:N \g_latei_pending_toc_title_tl}
         \ifx\lateiSignatureAuthor\lateiSignatureEmpty\else
-          \addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}
+          \addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiSignatureAuthor}}
         \fi
         \tl_gclear:N \g_latei_pending_toc_title_tl
       }
@@ -628,7 +608,26 @@
   % \part* ajoute déjà lui-même son entrée de TDM sous le shape [display] de
   % \titleformat{\part} (vérifié empiriquement) : un \addcontentsline{toc}
   % {part}{...} manuel ici produirait un doublon, pas un renfort.
-  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBothVerso{#1}}{%
+  %
+  % \MakeUppercase{#1} ici (et non \scshape/\textsc dans
+  % \titlecontents{part}, préambule) : vérification humaine directe du
+  % 2026-08-05 a montré que \scshape n'a AUCUN effet visible sur
+  % \PURHTitleFont (Josefin Sans) — confirmé par compilation isolée, le
+  % journal LaTeX rapporte explicitement « Font shape .../b/sc undefined »,
+  % silencieusement remplacée par la forme normale (bug réel, jamais une
+  % erreur bloquante, donc invisible sans vérifier le journal). Cette fonte
+  % n'a pas de véritables petites capitales OpenType. Palliatif : capitales
+  % pleines (\MakeUppercase), à la taille réduite (12 pt) déjà fixée par
+  % \titlecontents{part} — plus petites que le titre de partie affiché sur
+  % sa propre page (16 pt), donc lisibles comme un niveau distinct dans la
+  % TDM, sans être de véritables petites capitales typographiques.
+  % Appliqué ici (à la source du texte de la partie, avant \part*) plutôt
+  % que dans \titlecontents{part} : \part* réutilise ce même #1, déjà
+  % majuscule, pour son propre \addcontentsline{{toc}}{{part}}{{...}} interne —
+  % la mise en majuscules du titre affiché sur la page (via le \MakeUppercase
+  % déjà présent dans \titleformat{{\part}}) n'est pas affectée puisqu'elle
+  % s'applique une seconde fois, sans effet, sur un texte déjà majuscule.
+  \IfStrEq{\lateiHeadContext}{part}{\part*{\MakeUppercase{#1}}\lateiMarkBothVerso{#1}}{%
   \IfStrEq{\lateiHeadContext}{chapter}{\lateiChapter{#1}}{%
     \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
     \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%

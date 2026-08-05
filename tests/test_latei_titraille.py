@@ -173,9 +173,50 @@ def test_titraille_renders_uppercase_part_article_and_section_titles(titraille_e
     assert "Prenom Nom" not in opening_block
     assert "PRENOM NOM" not in opening_block
     # Running-title headers stay in original case (a different, non-titling
-    # rendering path — see test_latei_running_titles_verso_recto.py).
-    assert "Titre de partie" in text
+    # rendering path — see test_latei_running_titles_verso_recto.py, which
+    # dedicatedly covers the part-level verso header's mixed case). The
+    # part's own TOC entry, by contrast, is now uppercase too since
+    # 2026-08-05 (see test_toc_part_entry_is_uppercase below) — "Titre de
+    # partie" (mixed case) is therefore no longer expected anywhere in this
+    # short fixture's output (too few pages for its own verso header to
+    # render before the excerpt ends).
     assert "Titre article" in text
+
+
+def test_toc_part_entry_is_uppercase(titraille_export) -> None:
+    """Vérification humaine directe du 2026-08-05 : les entrées de partie
+    dans la TDM doivent être en petites capitales — \\scshape n'ayant aucun
+    effet sur Josefin Sans (pas de petites capitales OpenType), le texte de
+    la partie est mis en majuscules à la source (\\MakeUppercase dans
+    \\lateiRenderHead), avant même d'atteindre \\part* — contrairement au
+    texte brut inchangé ("Titre de partie") utilisé pour le titre courant.
+    pdftotext, contrairement au rendu \\textsc (§8/§9), PEUT détecter cette
+    différence : \\MakeUppercase change réellement les points de code
+    Unicode, alors qu'un rendu petites capitales OpenType ne le fait pas."""
+    if shutil.which("lualatex") is None:
+        pytest.skip("LuaLaTeX is unavailable.")
+    if not titraille_export.latei_pdf_success:
+        log = titraille_export.latei_log_path.read_text(encoding="utf-8", errors="replace")
+        pytest.fail(f"Titraille sample did not compile.\n{log[:4000]}")
+    if shutil.which("pdftotext") is None:
+        pytest.skip("pdftotext is unavailable.")
+
+    import subprocess
+
+    process = subprocess.run(
+        [shutil.which("pdftotext"), "-enc", "UTF-8", "-layout", str(titraille_export.latei_pdf_path), "-"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    assert process.returncode == 0, process.stderr
+    text = process.stdout
+
+    toc_marker = text.upper().index("TABLE DES MATI")
+    toc_text = text[toc_marker:]
+    assert "TITRE DE PARTIE" in toc_text
 
 
 def test_part_and_contribution_titles_embed_a_bold_font(titraille_export) -> None:

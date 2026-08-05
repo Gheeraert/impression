@@ -87,10 +87,18 @@ def test_every_part_and_article_starts_on_an_odd_recto_page(two_parts_export) ->
     assert toc_path.exists()
     toc = toc_path.read_text(encoding="utf-8", errors="replace")
 
-    entries = re.findall(r"\\contentsline\s*\{(?:part|chapter)\}\{([^{}]*)\}\{(\d+)\}", toc)
+    # The title group allows one level of nested braces: part-level entries
+    # are wrapped in \MakeUppercase []{...} since 2026-08-05 (fake small
+    # caps for the TOC, \scshape being inert on Josefin Sans), which a
+    # brace-free [^{}]* group can no longer match.
+    entries = re.findall(r"\\contentsline\s*\{(?:part|chapter)\}\{((?:[^{}]|\{[^{}]*\})*)\}\{(\d+)\}", toc)
     assert len(entries) == 4, f"Expected 4 TOC entries (2 parts, 2 articles), got: {toc!r}"
 
-    pages_by_title = {title: int(page) for title, page in entries}
+    def _strip_uppercase_wrapper(title: str) -> str:
+        match = re.fullmatch(r"\\MakeUppercase\s*(?:\[\])?\{([^{}]*)\}", title)
+        return match.group(1) if match else title
+
+    pages_by_title = {_strip_uppercase_wrapper(title): int(page) for title, page in entries}
     # Décalées de 6 pages depuis l'ajout des liminaires (référentiel PURH
     # v0.6 §8.1 : 2 pages blanches, faux-titre, crédits, page de titre,
     # page blanche avant tout contenu) — voir test_latei_front_matter_sequence.py.

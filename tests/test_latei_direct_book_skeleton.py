@@ -60,7 +60,10 @@ def test_latei_direct_driver_and_macros_have_book_skeleton_invariants(
     assert r"\lateiEnsureMainMatter" in macros
     assert r"\lateiEnsureBackMatter" in macros
     assert r"\tableofcontents" in main
-    assert r"\part*{#1}" in macros
+    # \MakeUppercase{#1} added 2026-08-05 (fake small caps for the part's
+    # TOC entry, \scshape being inert on Josefin Sans — see
+    # test_latei_toc_author_and_signature.py::test_part_head_is_uppercased_at_the_source_for_the_toc_entry).
+    assert r"\part*{\MakeUppercase{#1}}" in macros
     assert r"\chapter{#1}" in macros
     assert r"\chapter*" in macros
     assert r"\markboth" in macros

@@ -453,7 +453,7 @@ def _colophon_institutional_lines(metadata: LateiMetadata) -> list[str]:
     lines.append(_latex_text(_PURH_ADDRESS_LINE))
     lines.append(rf"\url{{{_PURH_URL}}}")
     if metadata.preferred_isbn:
-        lines.append(_latex_text(metadata.preferred_isbn))
+        lines.append(_latex_text(f"ISBN : {metadata.preferred_isbn}"))
     return lines
 
 

@@ -221,7 +221,7 @@ def test_publisher_mention_is_always_the_fixed_full_name_bottom_anchored() -> No
     (tel quel dans le TEI/Métopes source, constaté sur *Dissimuler pour
     mieux régner*) juste sous les éditeurs scientifiques, il faut le nom
     complet, en majuscules grasses Chaparral, calé en bas de la page de
-    titre."""
+    titre, sur une seule ligne (précision du 2026-08-05)."""
     from purh_site.latei_driver import _full_title_page
     from purh_site.latei_metadata import LateiMetadata
 
@@ -232,9 +232,14 @@ def test_publisher_mention_is_always_the_fixed_full_name_bottom_anchored() -> No
 
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     assert r"\newcommand{{\PurhPublisherMention}}[1]{{%" in preamble_source
-    mention_macro = preamble_source.split(r"\newcommand{{\PurhPublisherMention}}[1]{{%")[1].split("\n")[1]
+    mention_macro = preamble_source.split(r"\newcommand{{\PurhPublisherMention}}[1]{{%")[1].split(r"}}" + "\n")[0]
     assert r"\bfseries\MakeUppercase" in mention_macro
     assert r"\PURHTitleFont" not in mention_macro  # Chaparral (ambient font), pas Josefin
+    # \resizebox (pas un simple \fontsize fixe, abandonné le 2026-08-05) :
+    # garantit une seule ligne quel que soit le nom affiché — une taille de
+    # police fixe (14 pt) faisait retomber "Presses universitaires de Rouen
+    # et du Havre" sur deux lignes (bug réel constaté sur le PDF généré).
+    assert r"\resizebox{{0.95\linewidth}}{{!}}" in mention_macro
 
 
 def test_century_roman_numerals_are_smallcaps_in_the_subtitle() -> None:
@@ -376,7 +381,13 @@ def test_chapter_toc_entries_are_plain_with_dotted_leader() -> None:
     chapitre — voir test_toc_author_line_is_not_smallcaps pour son
     mécanisme de ligne séparée."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    chapter_titlecontents = preamble_source.split(r"\titlecontents{{chapter}}")[1].split(r"\titlecontents{{part}}")[0]
+    # Stop at the first blank line after \titlecontents{chapter}'s own
+    # closing brace, not at the next \titlecontents{part} occurrence: the
+    # explanatory comment sitting between the two blocks legitimately
+    # mentions \PURHTitleFont/\bfseries (explaining the PART level's own
+    # styling), which would otherwise be swept into this "chapter must not
+    # have them" check too.
+    chapter_titlecontents = preamble_source.split(r"\titlecontents{{chapter}}")[1].split("\n\n")[0]
     assert r"\PURHTitleFont" not in chapter_titlecontents
     assert r"\bfseries" not in chapter_titlecontents
     assert r"\addvspace" not in chapter_titlecontents
@@ -388,56 +399,83 @@ def test_chapter_toc_entries_are_plain_with_dotted_leader() -> None:
     # written as a wholly separate \addtocontents call below it.
     addcontentsline_call = finish_entry.split(r"\addcontentsline{toc}{chapter}{")[1].split("}\n")[0]
     assert r"\lateiTocAuthorLine" not in addcontentsline_call
-    assert r"\addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}" in finish_entry
+    assert r"\addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiSignatureAuthor}}" in finish_entry
 
 
-def test_part_toc_entries_are_bold_smallcaps_centered_with_blank_lines() -> None:
-    """Vérification humaine directe du 2026-08-04 : les titres de ce niveau
-    (le référentiel dit « titres de section », mais désigne bien le niveau
-    \\part) doivent être en petites capitales — à la différence du nom
+def test_part_toc_entries_are_bold_uppercase_centered_with_blank_lines() -> None:
+    """Vérification humaine directe du 2026-08-04/05 : les titres de ce
+    niveau (le référentiel dit « titres de section », mais désigne bien le
+    niveau \\part) doivent être en petites capitales — à la différence du nom
     d'auteur sous chaque entrée de contribution, qui doit au contraire
-    rester bas de casse (voir test_toc_author_line_is_not_smallcaps)."""
+    rester bas de casse (voir test_toc_author_line_is_not_smallcaps).
+
+    \\scshape (première tentative, 2026-08-04) n'a aucun effet sur
+    \\PURHTitleFont (Josefin Sans, sans véritables petites capitales
+    OpenType — confirmé par compilation isolée, "Font shape .../b/sc
+    undefined") : remplacé le 2026-08-05 par \\MakeUppercase appliqué à la
+    source du texte (\\lateiRenderHead, voir le test dédié ci-dessous), le
+    corps réduit (12 pt) restant seul signe distinctif de ce niveau."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     assert r"\titlecontents{{part}}" in preamble_source
     assert (
-        r"\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\scshape\fontsize{{12pt}}{{14pt}}\selectfont\centering"
+        r"\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\centering"
         in preamble_source
     )
     assert r"[\addvspace{{1\baselineskip}}]" in preamble_source
+    # \scshape may still be named in the explanatory comment above the fix
+    # (it's inert on Josefin Sans); only its absence from the ACTIVE
+    # \titlecontents{part} block itself matters here.
+    part_titlecontents = preamble_source.split(r"\titlecontents{{part}}")[1].split(r"\titlecontents{{section}}")[0]
+    assert r"\scshape" not in part_titlecontents
+
+
+def test_part_head_is_uppercased_at_the_source_for_the_toc_entry() -> None:
+    """\\part* réutilise le même texte pour le titre affiché ET son entrée
+    de TDM automatique ; \\MakeUppercase est donc appliqué ici, à la source,
+    plutôt que dans \\titlecontents{part} (préambule), qui ne peut pas
+    envelopper un texte qu'il ne reçoit pas en argument."""
+    macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
+    assert r"\IfStrEq{\lateiHeadContext}{part}{\part*{\MakeUppercase{#1}}\lateiMarkBothVerso{#1}}{%" in macros
 
 
 def test_toc_author_line_is_not_smallcaps() -> None:
-    """Vérification humaine directe du 2026-08-04 : le nom de l'auteur dans
-    la TDM doit rester bas de casse, alors que la signature de fin
+    """Vérification humaine directe du 2026-08-04/05 : le nom de l'auteur
+    dans la TDM doit rester bas de casse, alors que la signature de fin
     d'article (§8) affiche le nom de famille en petites capitales
-    (\\textsc{{Nom}}, capturé tel quel dans \\lateiSignatureAuthor).
+    (\\textsc{{Nom}}, via <hi rend="small-caps"> routé par \\teiHi).
 
-    Une première tentative redéfinissait \\textsc localement DANS
-    l'argument de \\addcontentsline (via \\renewcommand, entre
-    \\lateiTocAuthorBreak et le nom) — abandonnée : \\addcontentsline écrit
-    son argument via \\protected@write, qui \\edef-développe le texte, et un
-    \\edef ne peut pas EXÉCUTER les primitives non désarmables (\\def,
-    \\global…) que \\renewcommand appelle en interne — il les recopie telles
-    quelles, corrompant le fichier .toc plutôt que de neutraliser \\textsc
-    (bug réel constaté par compilation : erreurs "\\textsc has an extra }"
-    ailleurs dans le document). La capture "texte brut" se fait donc plus
-    tôt, au fil normal du document (\\lateiContributionAuthor), via
-    \\protected@xdef et une redéfinition locale de \\textsc par un simple
-    \\def (pas par \\renewcommand)."""
+    Une première tentative (2026-08-04) capturait une copie "texte brut" en
+    amont via \\protected@xdef — abandonnée le 2026-08-05 : \\teiHi, défini
+    par \\NewDocumentCommand (xparse), est \\protected au sens eTeX et n'est
+    donc JAMAIS développée par un \\edef/\\xdef, quel que soit l'état de
+    \\textsc au même moment — le fichier .toc contenait donc encore
+    \\teiHi[rend={{small-caps}}]{{Nom}} tel quel (bug réel constaté : petites
+    capitales toujours visibles dans le PDF malgré la capture). Le
+    \\renewcommand local vit maintenant DANS \\lateiTocAuthorLine
+    elle-même, exécutée normalement (pas développée) au moment où
+    \\tableofcontents lit le fichier .toc — un contexte où \\teiHi peut
+    s'exécuter pour de vrai et appeler ce \\textsc local correctement
+    redéfini."""
     macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
+    assert r"\lateiTocAuthorPlain" not in macros
+
     author_macro = macros.split(r"\newcommand{\lateiContributionAuthor}[1]{%")[1].split(
         r"\newcommand{\lateiContributionAffiliation}"
     )[0]
-    assert r"\def\textsc##1{##1}%" in author_macro
-    assert r"\protected@xdef\lateiTocAuthorPlain{#1}%" in author_macro
+    # \protected@xdef may still be named in the explanatory comment above
+    # the fix (the abandoned approach); only its absence from the ACTIVE
+    # \lateiContributionAuthor body matters here.
+    assert r"\protected@xdef" not in author_macro
+    # The capture itself is unchanged/simple again: no textsc-neutralization
+    # attempted at capture time.
+    assert r"\global\def\lateiSignatureAuthor{#1}%" in author_macro
 
-    assert r"\global\let\lateiTocAuthorPlain\lateiSignatureEmpty" in macros
+    toc_author_line = macros.split(r"\newcommand{\lateiTocAuthorLine}[1]{%")[1].split(r"\newcommand{\lateiContributionAuthor}")[0]
+    assert r"\renewcommand{\textsc}[1]{##1}" in toc_author_line
 
     finish_entry = macros.split(r"\cs_new_protected:Npn \latei_finish_contribution_toc_entry:")[1]
-    # \lateiSignatureAuthor is only used as the emptiness guard (\ifx) here;
-    # \lateiTocAuthorPlain is what actually gets printed in the TOC.
     assert r"\ifx\lateiSignatureAuthor\lateiSignatureEmpty\else" in finish_entry
-    assert r"\addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiTocAuthorPlain}}" in finish_entry
+    assert r"\addtocontents{toc}{\protect\lateiTocAuthorLine{\lateiSignatureAuthor}}" in finish_entry
 
 
 def test_toc_defers_the_entry_to_include_the_author_line() -> None:

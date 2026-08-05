@@ -287,7 +287,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % par le même filet pointillé que \section ci-dessous. \addvspace{{8pt}}
 % inconditionnel retiré : « pas de saut de ligne entre les références sauf
 % changement de section » — l'espacement avant une nouvelle partie vient
-% désormais de \titlecontents{{part}}, pas d'ici.
+% désormais du bloc \part ci-dessous, pas d'ici.
 %
 % Filet pointillé + numéro de page : laissés dans ce 4e argument dédié (pas
 % déplacés dans le texte de l'entrée transmis à \addcontentsline). Une
@@ -314,17 +314,20 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % Entrées de partie (le référentiel dit « titres de section », mais
 % désigne bien ici le niveau \part de ce document — les véritables
 % intertitres/sections sont exclus de la TDM depuis §9/tocdepth=0) : Josefin
-% Sans Bold PETITES CAPITALES centré (vérification humaine directe du
-% 2026-08-04 : à la différence du nom d'auteur sous chaque entrée de
-% contribution, qui doit rester bas de casse — voir
-% \lateiTocAuthorBreak — les titres de ce niveau doivent au contraire être
-% en petites capitales), un peu plus grand que le corps (12 pt contre
-% 11 pt), ligne vide avant et après. Aucun numéro de page affiché : une
-% partie est un intitulé structurant la liste, pas une entrée cherchable en
-% soi.
+% Sans Bold, capitales (vérification humaine directe du 2026-08-04 : à la
+% différence du nom d'auteur sous chaque entrée de contribution, qui doit
+% rester bas de casse — voir \lateiTocAuthorLine dans latei_macros.tex —
+% les titres de ce niveau doivent au contraire être en petites capitales).
+% \scshape ici n'a AUCUN effet sur \PURHTitleFont (Josefin Sans, qui n'a pas
+% de véritables petites capitales OpenType — confirmé par compilation
+% isolée, "Font shape .../b/sc undefined", substitution silencieuse) : la
+% mise en majuscules se fait donc en amont, à la source du texte, via
+% \MakeUppercase{{#1}} dans \lateiRenderHead (latei_macros.tex) — seul le
+% corps réduit ici (12 pt contre 16 pt sur la page de la partie elle-même)
+% distingue ce niveau de véritables grandes capitales.
 \titlecontents{{part}}
   [0pt]
-  {{\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\scshape\fontsize{{12pt}}{{14pt}}\selectfont\centering}}
+  {{\addvspace{{1\baselineskip}}\PURHTitleFont\bfseries\fontsize{{12pt}}{{14pt}}\selectfont\centering}}
   {{}}
   {{}}
   {{}}
@@ -557,16 +560,27 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 }}
 
 % Mention finale de la page de titre (référentiel v0.7, vérification
-% humaine directe du 2026-08-04) : nom complet de l'éditeur, majuscules
-% grasses, Chaparral (fonte principale, aucun changement de famille) — pas
-% \PURHTitleFont/Josefin, contrairement à toute la titraille (§2.4/§3 du
-% référentiel v0.7) : cette mention n'est pas un niveau de titraille, c'est
-% une mention institutionnelle calée en bas de page. Corps choisi pour
-% occuper une bonne partie de la largeur de la page (empagement d'environ
-% 105 mm sur ce profil) sans mesure millimétrique donnée par l'utilisateur —
-% à recalibrer par vérification visuelle directe sur un autre format.
+% humaine directe du 2026-08-04, complétée le 2026-08-05) : nom complet de
+% l'éditeur, majuscules grasses, sur UNE SEULE ligne, Chaparral (fonte
+% principale, aucun changement de famille) — pas \PURHTitleFont/Josefin,
+% contrairement à toute la titraille (§2.4/§3 du référentiel v0.7) : cette
+% mention n'est pas un niveau de titraille, c'est une mention
+% institutionnelle calée en bas de page.
+%
+% \resizebox{{0.95\linewidth}}{{!}}{{...}} plutôt qu'une simple
+% \fontsize{{14pt}}{{16pt}} fixe (première version, abandonnée le
+% 2026-08-05) : à 14 pt, « PRESSES UNIVERSITAIRES DE ROUEN ET DU HAVRE »
+% (44 caractères) ne tenait pas sur une seule ligne à la largeur
+% d'empagement de ce profil (~105 mm) et retombait sur deux lignes — bug
+% réel constaté par vérification humaine directe du PDF généré.
+% \resizebox emballe le texte dans une boîte horizontale non coupable
+% (empêchant tout retour à la ligne, contrairement à un simple changement
+% de \fontsize) puis la met à l'échelle pour occuper exactement 95 % de la
+% largeur de la page — garantit à la fois la ligne unique et le remplissage
+% « une bonne partie de la largeur de la page » quel que soit le nom
+% affiché ou le profil, sans avoir à calculer un corps de police à la main.
 \newcommand{{\PurhPublisherMention}}[1]{{%
-  {{\fontsize{{14pt}}{{16pt}}\selectfont\bfseries\MakeUppercase{{#1}}\par}}%
+  \noindent\resizebox{{0.95\linewidth}}{{!}}{{\bfseries\MakeUppercase{{#1}}}}\par
 }}
 
 \newenvironment{{PurhBlockQuote}}

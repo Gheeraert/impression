@@ -163,6 +163,17 @@ def test_colophon_copyright_line_always_shown_even_without_publication_year() ->
     assert lines_without_year[0] == "© Presses universitaires de Rouen et du Havre."
     assert "2 place Émile Blondel" in lines_without_year[1]
 
+
+def test_colophon_isbn_line_has_a_label_prefix() -> None:
+    """Vérification humaine directe du 2026-08-05 : "ISBN :" doit précéder
+    le numéro lui-même dans le colophon."""
+    from purh_site.latei_driver import _colophon_institutional_lines
+    from purh_site.latei_metadata import LateiMetadata
+
+    lines = _colophon_institutional_lines(LateiMetadata(isbn_pdf="979-10-240-1234-5"))
+    assert "ISBN : 979-10-240-1234-5" in lines
+    assert "979-10-240-1234-5" not in lines[:-1]  # not present anywhere without the prefix
+
     lines_with_year = _colophon_institutional_lines(LateiMetadata(publication_year="2026"))
     assert lines_with_year[0] == "© Presses universitaires de Rouen et du Havre, 2026."
     assert "2 place Émile Blondel" in lines_with_year[1]
@@ -192,7 +203,8 @@ def test_colophon_renders_full_structure_in_the_generated_pdf(colophon_export) -
     assert "2 place Émile Blondel" in text
     assert "Mont-Saint-Aignan Cedex" in text
     assert "purh.univ-rouen.fr" in text
-    assert "979-10-240-1234-5" in text
+    # "ISBN : " devant le numéro (vérification humaine directe, 2026-08-05).
+    assert "ISBN : 979-10-240-1234-5" in text
 
 
 # ---------------------------------------------------------------------------
