@@ -390,7 +390,7 @@ class App(ttk.Frame):
         designer_entry = ttk.Entry(frame, textvariable=self.cover_designer_var, width=36)
         designer_entry.grid(row=0, column=1, sticky="ew", pady=(0, 6))
 
-        ttk.Label(frame, text="Suivi éditorial").grid(row=1, column=0, sticky="w", pady=(0, 6))
+        ttk.Label(frame, text="Suivi éditorial (correction)").grid(row=1, column=0, sticky="w", pady=(0, 6))
         ttk.Entry(frame, textvariable=self.editorial_contact_var, width=36).grid(row=1, column=1, sticky="ew", pady=(0, 6))
 
         ttk.Label(frame, text="Sous la direction de (correction)").grid(row=2, column=0, sticky="w", pady=(0, 6))
@@ -399,7 +399,11 @@ class App(ttk.Frame):
         ttk.Label(
             frame,
             text=(
-                "Laisser vide pour omettre ces lignes du colophon.\n"
+                "Couverture et mise en pages : laisser vide pour omettre cette ligne du"
+                " colophon (aucune source XML).\n"
+                "Suivi éditorial : repris par défaut de <editionStmt>/<respStmt>/<name>"
+                " si le XML le renseigne ; ce champ ne sert qu'à le corriger, sinon le"
+                " laisser vide.\n"
                 "L'année de publication et l'ISBN sont repris du XML.\n"
                 "\"Sous la direction de\" : noms séparés par \"et\" ou une virgule ;"
                 " remplace, si renseigné, les auteurs extraits du XML sur la page de titre"

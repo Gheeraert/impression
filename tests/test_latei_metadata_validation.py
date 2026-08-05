@@ -76,14 +76,25 @@ def test_validation_does_not_silently_alter_metadata() -> None:
     assert metadata.directors == ["Anais Lebreton", "Anais Lebreton"]
 
 
-def test_real_dissimuler_book_triggers_both_known_defects() -> None:
+def test_real_dissimuler_book_triggers_the_remaining_known_defect() -> None:
+    """Le doublon d'auteur (DUPLICATE_CONTRIBUTOR) a été corrigé en amont,
+    dans le XML source lui-même, le 2026-08-06 : <author role="pbd">
+    désignait à tort la compositrice deux fois (voir référentiel PURH v0.7
+    §4.4) — corrigé côté Métopes pour porter les deux vraies éditrices
+    scientifiques (Floriane Daguisé, Florence Fix), avec la compositrice
+    correctement déplacée vers <editionStmt>/<respStmt>/<name>. Ce n'est pas
+    une régression de notre code : c'est la source qui a changé, exactement
+    comme demandé. Seul le second défaut (balisage littéral non échappé
+    dans le sous-titre) reste présent dans ce fichier."""
     root = etree.parse(str(_DISSIMULER_LIVRE_XML)).getroot()
     metadata = extract_latei_metadata(root)
     diagnostics = validate_latei_metadata(metadata)
 
     codes = {d.code for d in diagnostics}
     assert "LITERAL_MARKUP_IN_METADATA" in codes
-    assert "DUPLICATE_CONTRIBUTOR" in codes
+    assert "DUPLICATE_CONTRIBUTOR" not in codes
+    assert metadata.directors == ["Floriane Daguisé", "Florence Fix"]
+    assert metadata.editorial_contact == "Anaïs Lebreton"
 
 
 def test_export_writes_metadata_diagnostics_without_failing_the_build(tmp_path: Path) -> None:

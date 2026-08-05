@@ -20,6 +20,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from lxml import etree
 
 from purh_site.latei_metadata import LateiMetadata
 from purh_site.reversible_integration import run_reversible_export_for_file
@@ -72,9 +73,9 @@ def colophon_export_without_names(tmp_path_factory: pytest.TempPathFactory):
 # 1. Titre courant
 # ---------------------------------------------------------------------------
 
-def test_running_title_uses_full_black_not_gray_rgb() -> None:
+def test_running_title_uses_regular_weight_at_75_percent_not_gray_rgb() -> None:
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,1}}}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.75}}}}" in preamble_source
 
 
 # ---------------------------------------------------------------------------
@@ -118,13 +119,102 @@ def test_false_title_renders_bold_uppercase(colophon_export) -> None:
 # 3. Colophon
 # ---------------------------------------------------------------------------
 
-def test_latei_metadata_has_no_xml_source_for_colophon_names() -> None:
-    """cover_designer/editorial_contact n'ont aucun équivalent dans le XML
-    (contrairement à publication_year/isbn_print) — vérifie juste qu'ils
-    existent comme champs simples, jamais peuplés par extract_latei_metadata."""
+def test_latei_metadata_cover_designer_has_no_xml_source() -> None:
+    """cover_designer n'a aucun équivalent dans le XML (contrairement à
+    editorial_contact depuis le 2026-08-06, voir le test dédié ci-dessous,
+    ou à publication_year/isbn_print) — vérifie juste qu'il existe comme
+    champ simple, jamais peuplé par extract_latei_metadata."""
     metadata = LateiMetadata()
     assert metadata.cover_designer == ""
-    assert metadata.editorial_contact == ""
+
+
+def test_editorial_contact_defaults_from_edition_stmt_resp_stmt_name() -> None:
+    """Vérification humaine directe, 2026-08-06 : <editionStmt>/<respStmt>/
+    <name> désigne fiablement la personne chargée de la mise en forme/mise
+    en pages (jamais un rôle scientifique, contrairement à <author
+    role="pbd"> — voir directors/parse_directors_override) — utilisé par
+    défaut pour "Suivi éditorial :", sans saisie manuelle nécessaire."""
+    from purh_site.latei_metadata import extract_latei_metadata
+
+    root = etree.fromstring(
+        """<TEI xmlns="http://www.tei-c.org/ns/1.0">
+          <teiHeader><fileDesc>
+            <titleStmt><title type="main">Livre</title></titleStmt>
+            <editionStmt>
+              <edition><date/></edition>
+              <respStmt><resp/><name>Anais Lebreton</name></respStmt>
+              <sponsor/>
+            </editionStmt>
+            <publicationStmt><publisher>PURH</publisher></publicationStmt>
+            <sourceDesc><p/></sourceDesc>
+          </fileDesc></teiHeader>
+          <text><body><p>Texte.</p></body></text>
+        </TEI>""".encode("utf-8")
+    )
+    metadata = extract_latei_metadata(root)
+    assert metadata.editorial_contact == "Anais Lebreton"
+
+    # An empty <name/> (real case: Beautés vitales) stays empty, never a
+    # fabricated placeholder.
+    root_empty = etree.fromstring(
+        """<TEI xmlns="http://www.tei-c.org/ns/1.0">
+          <teiHeader><fileDesc>
+            <titleStmt><title type="main">Livre</title></titleStmt>
+            <editionStmt>
+              <edition><date/></edition>
+              <respStmt><resp/><name/></respStmt>
+              <sponsor/>
+            </editionStmt>
+            <publicationStmt><publisher>PURH</publisher></publicationStmt>
+            <sourceDesc><p/></sourceDesc>
+          </fileDesc></teiHeader>
+          <text><body><p>Texte.</p></body></text>
+        </TEI>""".encode("utf-8")
+    )
+    assert extract_latei_metadata(root_empty).editorial_contact == ""
+
+
+def test_editorial_contact_gui_override_still_takes_precedence_over_xml() -> None:
+    """La saisie manuelle (GUI, dialogue colophon) reste prioritaire quand
+    elle est fournie — le défaut XML ne s'applique que si le champ GUI est
+    laissé vide (voir reversible_integration.run_reversible_export_for_file)."""
+    import tempfile
+    from pathlib import Path as _Path
+
+    from purh_site.reversible_integration import run_reversible_export_for_file
+
+    xml = """<TEI xmlns="http://www.tei-c.org/ns/1.0">
+      <teiHeader><fileDesc>
+        <titleStmt><title type="main">Livre</title></titleStmt>
+        <editionStmt>
+          <edition><date/></edition>
+          <respStmt><resp/><name>Anais Lebreton</name></respStmt>
+          <sponsor/>
+        </editionStmt>
+        <publicationStmt><publisher>PURH</publisher></publicationStmt>
+        <sourceDesc><p/></sourceDesc>
+      </fileDesc></teiHeader>
+      <text><group type="book">
+        <group type="introduction" data-page-title="Introduction" xml:id="intro">
+          <front><div type="titlePage"><p rend="title-main">Introduction</p></div></front>
+          <body><div><p>Corps.</p></div></body>
+        </group>
+      </group></text>
+    </TEI>"""
+    with tempfile.TemporaryDirectory() as tmp:
+        xml_path = _Path(tmp) / "book.xml"
+        xml_path.write_text(xml, encoding="utf-8")
+
+        default_result = run_reversible_export_for_file(xml_path, _Path(tmp) / "out_default")
+        default_main = default_result.latei_main_path.read_text(encoding="utf-8")
+        assert "Suivi éditorial : Anais Lebreton" in default_main
+
+        override_result = run_reversible_export_for_file(
+            xml_path, _Path(tmp) / "out_override", editorial_contact="Paul Durand"
+        )
+        override_main = override_result.latei_main_path.read_text(encoding="utf-8")
+        assert "Suivi éditorial : Paul Durand" in override_main
+        assert "Anais Lebreton" not in override_main
 
 
 def test_export_accepts_cover_designer_and_editorial_contact_overrides(colophon_export) -> None:

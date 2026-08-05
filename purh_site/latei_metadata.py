@@ -55,9 +55,13 @@ class LateiMetadata:
     abstract: str = ""
     keywords: list[str] = field(default_factory=list)
     rights: str = ""
-    # Sans équivalent dans la source TEI/Métopes : renseignés par l'éditrice
-    # via la boîte de dialogue optionnelle du GUI (référentiel PURH v0.6
-    # §8.1, colophon, 2026-08-04), jamais extraits du XML.
+    # cover_designer : sans équivalent dans la source TEI/Métopes, renseigné
+    # par l'éditrice via la boîte de dialogue optionnelle du GUI
+    # (référentiel PURH v0.6 §8.1, colophon, 2026-08-04), jamais extrait du
+    # XML. editorial_contact : a un équivalent TEI depuis le 2026-08-06
+    # (<editionStmt>/<respStmt>/<name>, voir extract_latei_metadata) — la
+    # valeur GUI, quand fournie, reste prioritaire (voir
+    # reversible_integration.run_reversible_export_for_file).
     cover_designer: str = ""
     editorial_contact: str = ""
 
@@ -83,6 +87,7 @@ def extract_latei_metadata(root: etree._Element) -> LateiMetadata:
     title_stmt = header.find("./tei:fileDesc/tei:titleStmt", namespaces=NS)
     publication_stmt = header.find("./tei:fileDesc/tei:publicationStmt", namespaces=NS)
     series_stmt = header.find("./tei:fileDesc/tei:seriesStmt", namespaces=NS)
+    edition_stmt = header.find("./tei:fileDesc/tei:editionStmt", namespaces=NS)
     profile_desc = header.find("./tei:profileDesc", namespaces=NS)
 
     return LateiMetadata(
@@ -140,6 +145,18 @@ def extract_latei_metadata(root: etree._Element) -> LateiMetadata:
                 "./tei:abstract[@rend='abstract']/tei:p",
             ],
         ),
+        # <editionStmt>/<respStmt>/<name> : constaté sur *Dissimuler pour
+        # mieux régner* et *Beautés vitales*, c'est le seul emplacement TEI
+        # qui désigne fiablement la personne chargée de la mise en forme/
+        # mise en pages (jamais un rôle scientifique — <author role="pbd">
+        # reste le seul emplacement pour les éditeurs scientifiques, voir
+        # `directors`/`parse_directors_override` ci-dessous). Utilisé par
+        # défaut pour "Suivi éditorial :" au colophon (référentiel PURH
+        # v0.7 §7.4, 2026-08-06) ; le champ editorial_contact du GUI reste
+        # disponible pour le corriger explicitement si besoin — voir
+        # reversible_integration.run_reversible_export_for_file, qui
+        # n'écrase cette valeur que si le GUI en fournit une autre.
+        editorial_contact=_first_text(edition_stmt, ["./tei:respStmt/tei:name"]),
     )
 
 

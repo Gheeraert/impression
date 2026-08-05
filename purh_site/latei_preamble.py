@@ -151,14 +151,25 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % PDF imprimeur, où le titre courant est « presque noir » : remonté à 85 %
 % noir. La cinquième vérification, sur une page réelle complète d'un livre
 % du corpus (pas seulement les liminaires), a de nouveau jugé le résultat
-% trop clair à 85 % — cette fois poussé au maximum possible, 100 % noir
-% (K plein), plutôt que de continuer à tâtonner par incréments : la fonte
-% Thin elle-même, à traits fins, absorbe visuellement une partie de la
-% densité d'encre même à pleine saturation (un trait fin
-% couvre moins de surface qu'un trait gras à teinte égale) — sans revenir
-% sur la graisse Thin elle-même (toujours demandée telle quelle), 100 % est
-% la valeur la plus sombre atteignable par ce seul levier.
-\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,1}}}}
+% trop clair à 85 % — poussé au maximum possible, 100 % noir (K plein),
+% sans changer de famille (\PURHTitreFont, Josefin Sans Thin) : le résultat
+% restait visiblement plus clair que le PDF imprimeur, confirmant qu'à ce
+% stade le levier couleur seul était épuisé — un trait Thin, même à pleine
+% saturation d'encre, couvre trop peu de surface pour lire aussi sombre
+% qu'un trait plus épais à la même teinte.
+%
+% Sixième vérification (2026-08-06), comparaison directe côte à côte avec
+% le PDF imprimeur (recadrage du bandeau à haute résolution) : la graisse
+% du PDF imprimeur n'est PAS aussi fine qu'un trait Thin — plutôt un trait
+% "Regular" (ni fin ni gras). Changement de levier plutôt que nouvel
+% incrément de couleur : \PURHTitleFont (famille Josefin Sans complète,
+% graisse Regular par défaut sans \bfseries — PAS \PURHTitreFont/Thin) à
+% 75 % noir, un compromis délibéré entre les deux réglages précédents (ni
+% le gris à 50 % jugé trop clair, ni l'aspect "gras" que la graisse
+% Regular pourrait donner à 100 %) — comparé visuellement à un jeu
+% d'échantillons Thin/Light/Regular/Medium × 75 %/100 % avant d'être
+% retenu comme la combinaison la plus proche du PDF imprimeur.
+\newcommand{{\PURHHeaderFont}}{{\PURHTitleFont\small\color[cmyk]{{0,0,0,0.75}}}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un
