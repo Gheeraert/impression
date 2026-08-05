@@ -7,6 +7,7 @@ rebuild, normalize, or remove the TEI header; the reversible body keeps the
 original documentary structure.
 """
 
+import re
 from dataclasses import dataclass, field
 
 from lxml import etree
@@ -15,6 +16,21 @@ from .utils import TEI_NS
 
 NS = {"tei": TEI_NS}
 EMPTY_MARKERS = {"", "#", "-", "##"}
+
+
+def parse_directors_override(value: str) -> list[str]:
+    """Split a " et "/","/";"-separated string of director names.
+
+    Shared by the LaTEI PDF pipeline (reversible_integration.py) and the
+    HTML site pipeline (site_builder.py) — both read a TEI <author
+    role="pbd"> to identify "sous la direction de" names, and both need the
+    same manual-correction escape hatch when that role is misattributed in
+    the TEI/Métopes source (constaté sur *Dissimuler pour mieux régner* :
+    le seul role="pbd" du livre y désigne la compositrice, pas les
+    éditrices scientifiques — un défaut du balisage source, jamais deviné
+    depuis le contenu, corrigé par saisie explicite uniquement).
+    """
+    return [name.strip() for name in re.split(r"\s+et\s+|[,;]", value) if name.strip()]
 
 
 @dataclass(slots=True)

@@ -403,6 +403,7 @@ class App(ttk.Frame):
                 "L'année de publication et l'ISBN sont repris du XML.\n"
                 "\"Sous la direction de\" : noms séparés par \"et\" ou une virgule ;"
                 " remplace, si renseigné, les auteurs extraits du XML sur la page de titre"
+                " ET sur la page d'accueil du site HTML"
                 " (le TEI Métopes ne distingue pas toujours fiablement les éditeurs"
                 " scientifiques d'un autre rôle, ex. compositeur/trice)."
             ),

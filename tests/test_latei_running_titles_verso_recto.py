@@ -63,7 +63,7 @@ def test_header_font_is_roman_not_italic() -> None:
     test_latei_titraille.py pour le détail) ; seule l'absence d'italique
     reste vérifiée ici, inchangée à travers ces passes."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
-    assert r"\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.85}}}}" in preamble_source
+    assert r"\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,1}}}}" in preamble_source
     assert r"itshape" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 
 

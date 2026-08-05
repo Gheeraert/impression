@@ -111,19 +111,21 @@ def test_subsection_and_subsubsection_titleformat_are_bold() -> None:
 
 
 def test_running_title_header_uses_thin_family_with_explicit_color() -> None:
-    """Quatre vérifications humaines successives (2026-08-04) : la première
-    jugeait le gris trop clair (Thin -> famille standard, sans succès) ; la
-    seconde a trouvé ce résultat trop noir et visuellement gras — retour à
-    la famille Thin (« pas de graisse » sur le PDF imprimeur) ; la
-    troisième a trouvé le gris qui en résultait encore trop clair — passé au
-    système noir X % (CMJN) à 50 % ; la quatrième a de nouveau jugé ce
-    résultat trop clair (« presque noir » sur le PDF imprimeur) — remonté à
-    85 %, voir test_latei_colophon.py."""
+    """Cinq vérifications humaines successives (2026-08-04/06) : la
+    première jugeait le gris trop clair (Thin -> famille standard, sans
+    succès) ; la seconde a trouvé ce résultat trop noir et visuellement
+    gras — retour à la famille Thin (« pas de graisse » sur le PDF
+    imprimeur) ; la troisième a trouvé le gris qui en résultait encore trop
+    clair — passé au système noir X % (CMJN) à 50 % ; la quatrième a de
+    nouveau jugé ce résultat trop clair (« presque noir » sur le PDF
+    imprimeur) — remonté à 85 % ; la cinquième, sur une page réelle complète
+    (pas seulement les liminaires), a de nouveau jugé 85 % trop clair —
+    remonté au maximum possible, 100 % noir, voir test_latei_colophon.py."""
     preamble_source = Path("purh_site/latei_preamble.py").read_text(encoding="utf-8")
     # xcolor (pas le simple package color) depuis la passe P2 tableaux —
     # nécessaire pour \rowcolor sur les lignes d'entête.
     assert r"\usepackage[table]{{xcolor}}" in preamble_source
-    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.85}}}}" in preamble_source
+    assert r"\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,1}}}}" in preamble_source
     assert r"\PURHTitleFont" not in preamble_source.split(r"\newcommand{{\PURHHeaderFont}}")[1].split("\n")[0]
 
 

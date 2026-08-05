@@ -138,7 +138,7 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % Sans Thin/Light, 10 pt, romain" — l'italique systématique précédente était
 % un défaut confirmé, pas un choix).
 %
-% Quatre vérifications humaines successives (2026-08-04) ont porté sur ce
+% Cinq vérifications humaines successives (2026-08-04/06) ont porté sur ce
 % même réglage : la première jugeait le gris trop clair (corrigé en passant
 % de \PURHTitreFont, famille Thin, à \PURHTitleFont, famille standard, sans
 % \bfseries) ; la seconde a trouvé ce résultat trop noir et visuellement
@@ -149,9 +149,16 @@ def render_purh_latex_preamble(data: PurhPreambleData) -> str:
 % (§11.3/§12.1) — une teinte CMJN noir X % plutôt qu'un gris RVB — à 50 %
 % noir ; la quatrième a de nouveau jugé ce résultat trop clair au regard du
 % PDF imprimeur, où le titre courant est « presque noir » : remonté à 85 %
-% noir, sans changer de famille ni de graisse (toujours Thin, cf. ci-dessus
-% — seule la teinte a bougé, comme aux trois vérifications précédentes).
-\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,0.85}}}}
+% noir. La cinquième vérification, sur une page réelle complète d'un livre
+% du corpus (pas seulement les liminaires), a de nouveau jugé le résultat
+% trop clair à 85 % — cette fois poussé au maximum possible, 100 % noir
+% (K plein), plutôt que de continuer à tâtonner par incréments : la fonte
+% Thin elle-même, à traits fins, absorbe visuellement une partie de la
+% densité d'encre même à pleine saturation (un trait fin
+% couvre moins de surface qu'un trait gras à teinte égale) — sans revenir
+% sur la graisse Thin elle-même (toujours demandée telle quelle), 100 % est
+% la valeur la plus sombre atteignable par ce seul levier.
+\newcommand{{\PURHHeaderFont}}{{\PURHTitreFont\small\color[cmyk]{{0,0,0,1}}}}
 
 % Le corps et son pas de ligne sont fixés explicitement au lieu de dépendre
 % de la table de tailles du \documentclass{{book}} choisi : elle donne un

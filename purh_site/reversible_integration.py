@@ -9,7 +9,6 @@ LaTeX, round-trip TEI, and a human-readable diagnostics report for one XML file.
 
 import argparse
 import json
-import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,7 +23,7 @@ from .latei_driver import (
     compile_latei_pdf,
 )
 from .latei_image_validation import validate_latei_images
-from .latei_metadata import extract_latei_metadata
+from .latei_metadata import extract_latei_metadata, parse_directors_override
 from .latei_metadata_validation import validate_latei_metadata
 from .latei_running_titles import package_latei_running_titles
 from .reversible import (
@@ -294,11 +293,7 @@ def run_reversible_export_for_file(
     if editorial_contact:
         metadata.editorial_contact = editorial_contact
     if directors_override:
-        metadata.directors = [
-            name.strip()
-            for name in re.split(r"\s+et\s+|[,;]", directors_override)
-            if name.strip()
-        ]
+        metadata.directors = parse_directors_override(directors_override)
     metadata_diagnostics = validate_latei_metadata(metadata)
     image_diagnostics = validate_latei_images(element, source_xml_path=source_path)
     result = run_tei_latex_tei_roundtrip(element)

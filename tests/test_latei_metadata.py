@@ -4,7 +4,7 @@ from pathlib import Path
 
 from lxml import etree
 
-from purh_site.latei_metadata import extract_latei_metadata
+from purh_site.latei_metadata import extract_latei_metadata, parse_directors_override
 from purh_site.reversible import compare_tei_elements, read_latex_document, write_tei_element
 from purh_site.reversible_integration import run_reversible_export_for_file
 
@@ -156,6 +156,20 @@ def test_extract_latei_metadata_keeps_missing_fields_empty() -> None:
     assert metadata.language == ""
     assert metadata.abstract == ""
     assert metadata.keywords == []
+
+
+def test_parse_directors_override_splits_on_et_comma_or_semicolon() -> None:
+    """Fonction partagée entre le pipeline LaTeX/PDF
+    (reversible_integration.py) et le pipeline HTML (site_builder.py) —
+    voir référentiel PURH v0.7 §4.4."""
+    assert parse_directors_override("Floriane Daguise et Florence Fix") == [
+        "Floriane Daguise",
+        "Florence Fix",
+    ]
+    assert parse_directors_override("Jean Dupont, Marie Martin") == ["Jean Dupont", "Marie Martin"]
+    assert parse_directors_override("Jean Dupont; Marie Martin") == ["Jean Dupont", "Marie Martin"]
+    assert parse_directors_override("  Jean Dupont  ") == ["Jean Dupont"]
+    assert parse_directors_override("") == []
 
 
 def test_latei_roundtrip_preserves_full_metopes_header(tmp_path: Path) -> None:

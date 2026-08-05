@@ -19,6 +19,7 @@ from .site_latei_pdf_export import SiteLateiPdfExportResult, build_site_latei_pd
 from .site_quality import run_site_quality_checks
 from .site_sitemap import write_sitemap_and_robots
 from .site_social_meta import render_social_meta
+from .latei_metadata import parse_directors_override
 from .site_structure import AuthorEntry, NavItem, PageDef, SiteMeta, SiteStructureBuilder
 from .site_structured_data import render_canonical_link, render_json_ld
 from .site_zotero import build_page_description, render_zotero_meta
@@ -468,6 +469,19 @@ class SiteBuilder:
             site_meta.collection_issn = config.collection_issn
         if not site_meta.issn:
             site_meta.issn = config.collection_issn
+        # Éditeurs scientifiques mal attribués (référentiel PURH v0.7 §4.4,
+        # 2026-08-05, complété le 2026-08-06) : le même TEI <author
+        # role="pbd"> alimente à la fois la page de titre LaTeX/PDF
+        # (reversible_integration.run_reversible_export_for_file) et cette
+        # page d'accueil HTML (SiteStructureBuilder._extract_site_meta) —
+        # le premier correctif n'avait câblé directors_override QUE pour le
+        # PDF, laissant le HTML afficher le même nom erroné (constaté :
+        # "Anaïs Lebreton" deux fois sur Dissimuler pour mieux régner, à la
+        # place de "Floriane Daguisé"/"Florence Fix"). Appliqué ici aussi,
+        # avec le même label "Dir." que le cas role="pbd" normal.
+        if config.directors_override:
+            site_meta.creators = parse_directors_override(config.directors_override)
+            site_meta.creator_role_label = "Dir."
 
     def _copy_static_resources(self, output_assets_dir: Path) -> None:
         for name in ("site.css", "app.js"):

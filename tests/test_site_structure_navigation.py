@@ -98,6 +98,54 @@ def test_simple_book_generates_ordered_pages_toc_sidebar_and_pager(tmp_path: Pat
     assert second_doc.xpath("//nav[contains(@class, 'pager')]//a[contains(@class, 'pager-link--next')]") == []
 
 
+def test_directors_override_corrects_misattributed_pbd_author_on_the_homepage(tmp_path: Path) -> None:
+    """Constaté sur *Dissimuler pour mieux régner* (2026-08-06) : le même
+    TEI <author role="pbd"> alimente à la fois la page de titre LaTeX/PDF
+    (reversible_integration.run_reversible_export_for_file) et cette page
+    d'accueil HTML (SiteStructureBuilder._extract_site_meta) — un premier
+    correctif n'avait câblé directors_override QUE pour le PDF, laissant le
+    HTML afficher le même nom erroné ("Anaïs Lebreton" deux fois, faute
+    d'éditrices scientifiques correctement balisées dans le TEI source)."""
+    xml_path = tmp_path / "book.xml"
+    xml_path.write_text(
+        """<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns='http://www.tei-c.org/ns/1.0'>
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title type='main'>Dissimuler pour mieux regner</title>
+        <author role="pbd">Lebreton, Anais</author>
+        <author role="pbd">Lebreton, Anais</author>
+      </titleStmt>
+      <publicationStmt><publisher>PURH</publisher><date when='2024'>2024</date></publicationStmt>
+      <sourceDesc><p/></sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <group type='book'>
+      <group xml:id="intro" type="introduction" data-page-title="Introduction">
+        <body><div type="section1"><head>Introduction</head><p>Texte.</p></div></body>
+      </group>
+    </group>
+  </text>
+</TEI>
+""",
+        encoding="utf-8",
+    )
+    result = SiteBuilder().build_from_master(
+        xml_path,
+        BuildConfig(
+            output_dir=tmp_path / "site",
+            directors_override="Floriane Daguise et Florence Fix",
+        ),
+    )
+    index_doc = parse_page(result.output_dir / "index.html")
+    index_text = index_doc.xpath("string(//body)")
+    assert "Floriane Daguise" in index_text
+    assert "Florence Fix" in index_text
+    assert "Lebreton" not in index_text
+
+
 def test_part_hierarchy_is_preserved_in_toc_sidebar_and_header_chain(tmp_path: Path) -> None:
     output_dir = build_structure_site(
         tmp_path,
