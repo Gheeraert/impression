@@ -124,6 +124,60 @@ def test_verse_number_is_leading_child_of_verse_line_for_margin_display(tmp_path
     assert not verse_lines[1].xpath(".//*[contains(@class, 'tei-num')]")
 
 
+def test_sp_wraps_each_speech_in_its_own_div_for_spacing(tmp_path: Path) -> None:
+    """Vérification humaine directe, 2026-08-06 : <sp> retombait jusqu'ici
+    sur le comportement XSLT par défaut (aucune enveloppe, simple
+    récursion), laissant deux répliques consécutives se toucher sans
+    séparation visuelle."""
+    doc = render_chapter(
+        tmp_path,
+        """
+        <sp><speaker>Locuteur 1</speaker><p>Premiere replique.</p></sp>
+        <sp><speaker>Locuteur 2</speaker><p>Seconde replique.</p></sp>
+        """,
+    )
+
+    speeches = doc.xpath("//div[contains(@class, 'speech')]")
+    assert len(speeches) == 2
+    assert "Premiere replique" in speeches[0].text_content()
+    assert "Seconde replique" in speeches[1].text_content()
+
+
+def test_theatre_verse_dialogue_l_directly_in_sp_renders_as_verse_lines(tmp_path: Path) -> None:
+    """<l> directement enfant de <sp>, sans <lg> intermédiaire (théâtre en
+    vers, cas authentique constaté sur *Dissimuler pour mieux régner*,
+    chapitre "Secrets de théâtre") — doit rendre chaque vers comme une
+    ligne de vers à part, exactement comme un <l> dans un <lg> autonome."""
+    doc = render_chapter(
+        tmp_path,
+        """
+        <sp>
+          <speaker>Maguelonne</speaker>
+          <stage>riant</stage>
+          <l>Monsieur, vous m'avez l'air d'un libertin parfait !</l>
+        </sp>
+        """,
+    )
+
+    speech = doc.xpath("//div[contains(@class, 'speech')]")
+    assert len(speech) == 1
+    verse_lines = speech[0].xpath(".//div[contains(@class, 'verse-line')]")
+    assert len(verse_lines) == 1
+    assert "libertin parfait" in verse_lines[0].text_content()
+
+
+def test_poem_block_css_rule_exists(tmp_path: Path) -> None:
+    """<lg> avait un template XSLT (poem-block) mais aucune règle CSS
+    associée : un simple <div> sans marge, indiscernable du texte
+    environnant."""
+    doc = render_chapter(tmp_path, "<lg><l>Un vers.</l></lg>")
+
+    css_path = doc.xpath("//link[@rel='stylesheet']/@href")
+    assert css_path, "la page doit référencer la feuille de style du site"
+    css_content = (tmp_path / "site" / css_path[0]).read_text(encoding="utf-8")
+    assert ".poem-block" in css_content
+
+
 def test_inline_citation_quotes_are_not_duplicated_by_browser_default(tmp_path: Path) -> None:
     doc = render_chapter(
         tmp_path,

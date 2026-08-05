@@ -116,6 +116,21 @@ def test_latei_direct_bibliography_macros_follow_stable_contract(
     assert "biblatex" not in macros
 
 
+def test_lateibibliographyentry_resets_font_shape_defensively() -> None:
+    """Bug réel constaté par vérification humaine directe, 2026-08-06, sur
+    *Héraldique et papauté* : certaines entrées bibliographiques
+    s'affichaient entièrement en italique dans le PDF, y compris la partie
+    censée rester romaine — alors que le LaTeX généré pour ces mêmes
+    entrées était, vérifié directement, correctement refermé
+    (\\teiHi[rend={italic}]{...} scope bien sa propre portée). Non reproduit
+    de façon fiable en isolant quelques entrées ; la cause exacte reste
+    incertaine (probablement un état hérité d'ailleurs dans un document de
+    394 pages). \\normalfont, ajouté au début de \\lateiBibliographyEntry,
+    neutralise défensivement tout état hérité, quelle qu'en soit la source."""
+    macros = Path("purh_site/resources/latei_macros.tex").read_text(encoding="utf-8")
+    assert r"\par\noindent\normalfont\fontsize{10pt}{12pt}\selectfont\hangindent=5mm\hangafter=1 #1\par" in macros
+
+
 def test_latei_direct_bibliography_compiles_when_lualatex_is_available(
     bibliography_export: ReversibleExportResult,
 ) -> None:

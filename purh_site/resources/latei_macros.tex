@@ -586,8 +586,23 @@
 % Référentiel PURH v0.6 §11.2 : Chaparral Pro 10 pt, retrait suspendu 5 mm.
 % \hangindent en em dépendait de la taille de fonte ambiante (jamais fixée
 % par cette macro) ; passé en mm, valeur absolue conforme à la cible.
+% \normalfont avant \fontsize...\selectfont (2026-08-06) : bug réel constaté
+% par vérification humaine directe sur *Héraldique et papauté* — certaines
+% entrées bibliographiques s'affichaient entièrement en italique (y compris
+% la partie hors de leur propre \teiHi[rend={italic}]{...}, pourtant bien
+% refermé dans le LaTeX généré, vérifié directement), alors que la plupart
+% des autres entrées du même chapitre s'affichaient correctement. Non
+% reproduit de façon fiable en isolant seulement quelques entrées : la cause
+% exacte (probablement un état de police mal refermé ailleurs dans un
+% document de 394 pages, en amont de la bibliographie) reste incertaine.
+% \normalfont réinitialise ici, au début de CHAQUE entrée, la graisse/forme
+% héritée quelle qu'en soit la source — un correctif défensif plutôt qu'une
+% correction du point de départ exact du problème, qui n'a pas pu être
+% isolé. Sans risque pour le rendu voulu : les titres en italique
+% (\teiHi[rend={italic}]{...}) restent corrects, puisqu'ils rappliquent
+% \textit localement, après ce \normalfont, sur leur propre portée.
 \NewDocumentCommand{\lateiBibliographyEntry}{+m}{%
-  \par\noindent\fontsize{10pt}{12pt}\selectfont\hangindent=5mm\hangafter=1 #1\par
+  \par\noindent\normalfont\fontsize{10pt}{12pt}\selectfont\hangindent=5mm\hangafter=1 #1\par
 }
 \NewDocumentCommand{\lateiBibliographyBlock}{+m}{%
   \par
@@ -784,6 +799,43 @@
   \end{verse}
 }{}
 \NewDocumentCommand{\teiL}{O{} +m}{#2\\}
+
+% Théâtre (TEI <sp>/<speaker>/<stage>, référentiel Commons-Publishing) :
+% jusqu'ici sans macro dédiée, <sp> retombait sur le générique \teiElement
+% (aucun habillage) et <speaker>/<stage> de même — un nom de locuteur, une
+% didascalie et le texte de la réplique s'enchaînaient tous en un seul
+% paragraphe justifié indifférencié (bug réel constaté par vérification
+% humaine directe, 2026-08-06, sur un extrait théâtre/poésie de *Dissimuler
+% pour mieux régner* mêlant les deux : "Maguelonne, riant." etc.).
+%
+% \teiSp : \raggedright plutôt que justifié (comme \teiLg/`verse` déjà pour
+% la poésie, référentiel §11.4) — une réplique de théâtre, qu'elle soit en
+% vers (<l>, qui produit déjà ses propres \\ sans \teiLg autour dans ce cas :
+% le TEI Commons-Publishing autorise <l> directement enfant de <sp>, sans
+% <lg> intermédiaire) ou en prose (<p>), est un extrait cité, pas le corps
+% de texte courant. \addvspace avant chaque réplique la sépare visuellement
+% de la précédente.
+\NewDocumentEnvironment{teiSp}{O{} +b}{%
+  \par\addvspace{0.4\baselineskip}%
+  \begingroup\raggedright\noindent
+  #2\par
+  \endgroup
+}{}
+% \teiSpeaker / \teiStage se terminent chacun par un retour à la ligne
+% forcé : le nom du locuteur, la didascalie éventuelle, puis le texte de la
+% réplique apparaissent donc chacun sur leur propre ligne — un choix
+% délibérément simple et uniforme (plutôt que, par exemple, regrouper
+% locuteur et didascalie sur la même ligne quand les deux sont présents),
+% qui évite d'avoir à distinguer par le contexte si une didascalie suit un
+% <speaker> ou apparaît seule, isolée entre deux <sp> (cas également valide
+% en TEI, référentiel Commons-Publishing).
+\NewDocumentCommand{\teiSpeaker}{O{} +m}{{\bfseries #2}\\}
+\NewDocumentCommand{\teiStage}{O{} +m}{{\itshape (#2)}\\}
+% \teiStageInline : même famille de rendu que \teiStage (italique, parenthèses)
+% mais SANS retour à la ligne forcé — utilisée quand la didascalie apparaît
+% mid-phrase ou mid-vers (<p>/<stage> ou <l>/<stage>, voir
+% latex_writer._write_stage), où un \\ romprait la ligne en plein milieu.
+\NewDocumentCommand{\teiStageInline}{O{} +m}{{\itshape (#2)}}
 \NewDocumentEnvironment{teiFigure}{O{} +b}{%
   \begingroup
   \lateiSetHeadContext{figure}%

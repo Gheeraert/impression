@@ -1,0 +1,260 @@
+J'ai fait faire un audit de comparaison entre les PDF générés et d'authentiques PDF imprimeur PURH. Ils sont dans le dossier "commons-publishing". J'ai ajouté un fichier de références
+
+# Mise en conformité progressive du PDF LaTEI avec la composition PURH "Referentiel_mise_en_page_PURH_audit"
+
+Tu connais déjà le projet et son architecture. Tu travailles dans le dépôt actuel, en respectant `AGENTS.md` et les documents de cadrage du projet.
+
+Le référentiel constitue désormais la référence probatoire pour ce travail. N’utilise surtout pas l’ancienne charte PURH, qui est périmée. Le référentiel pourra être mis à jour si nécessaire pour que la chaîne que nous mettons en place produise un PDF le plus proche possible des PDF imprimeur PURH, nouvelle charte
+
+## Objectif
+
+Améliorer le générateur LaTEI/LaTeX et son processus de compilation afin que le PDF produit par la chaîne « Impression » se rapproche réellement des PDF imprimeur PURH.
+
+La mission principale concerne la mise en page et la composition typographique. La mission secondaire consiste à corriger les pertes de mise en forme ou de fidélité documentaire rencontrées au passage.
+
+Les deux PDF imprimeur étudiés, *Beautés vitales* et *Dissimuler pour mieux régner*, convergent suffisamment pour définir un profil observé :
+
+`purh_155x230_production_2025`
+
+Il ne faut cependant pas le confondre avec la maquette normative actuelle :
+
+`purh_155x230_current_2026`
+
+Ces deux profils doivent rester distincts et versionnés. Ne crée aucun compromis moyen entre eux.
+
+Pour cette passe, la cible visuelle de comparaison est `purh_155x230_production_2025`, puisque l’objectif est de reproduire au plus près le PDF imprimeur de *Dissimuler pour mieux régner*.
+
+## Rectification importante du diagnostic
+
+L’analyse du monofichier LaTEI `book.tex` de *Dissimuler* permet de localiser plus précisément les défauts.
+
+### 1. Les italiques ne sont pas perdus par le writer LaTEI
+
+Le fichier contient 1 458 occurrences simples de :
+
+```latex
+\teiHi[rend={italic}]{...}
+```
+
+La macro `\teiHi` les route bien vers `\textit`.
+
+Le PDF produit n’embarque pourtant que `ChaparralPro-Regular`, sans variante italique. La disparition visuelle des italiques vient donc du chargement ou du mappage de la famille Chaparral au moment de la compilation, et non d’une perte XML → LaTEI pour l’italique simple.
+
+Il faut :
+
+* déclarer explicitement les variantes Regular, Italic, Bold et Bold Italic de Chaparral Pro ;
+* vérifier qu’elles sont réellement trouvées ;
+* interdire l’export de production si une variante nécessaire manque ;
+* vérifier dans le PDF que les variantes attendues sont bien embarquées et utilisées ;
+* ajouter des tests avec des mots témoins en romain, italique, gras, gras italique et petites capitales.
+
+Ne supprime pas ou ne réécris pas inutilement le mécanisme `\teiHi` qui fonctionne déjà pour l’italique simple.
+
+### 2. Les mauvais réglages de composition sont inscrits dans le préambule généré
+
+Le monofichier demande actuellement :
+
+* classe `book` en 12 pt ;
+* interligne courant d’environ 14,45 pt ;
+* notes en 9,5/10,5 pt ;
+* citations en 11/14 pt ;
+* marges intérieure et extérieure symétriques de 23 mm ;
+* chapitres en `\huge\bfseries` ;
+* sections en `\Large\bfseries`.
+
+Il ne s’agit donc pas de dérives accidentelles de LuaLaTeX : ces valeurs viennent du profil généré.
+
+Pour `purh_155x230_production_2025`, la cible observée est notamment :
+
+* format fini : 155 × 230 mm ;
+* corps courant : Chaparral Pro 11 pt ;
+* interligne : 13,5 pt ;
+* notes : Chaparral Pro 8,5/10,2 pt ;
+* citations : 9/11 pt, retrait gauche 10 mm, environ 4 mm avant et après ;
+* bloc courant : environ 105–106 mm de largeur ;
+* marges alternées proches de 20/30 mm ;
+* titres de partie et d’article : Josefin Sans Thin 16 pt ;
+* sous-titre d’article : Josefin Sans Thin Italic 12 pt ;
+* titres de section : Josefin Sans Thin 12 pt ;
+* titres courants et folios : Josefin Sans Thin 10 pt romain ;
+* partie ou titre du livre au verso, titre court de la contribution au recto ;
+* pagination arabe continue.
+
+Les valeurs distinctes de la maquette 2026 sont consignées dans le référentiel v0.4. Elles doivent être conservées dans un second profil, pas écrasées.
+
+## Autres causes désormais établies
+
+### Ouvertures de contribution
+
+Les groupes LaTEI possèdent déjà :
+
+* `data-page-title` ;
+* `data-page-subtitle` ;
+* `data-page-authors`.
+
+Mais le préambule ne lit que `data-page-title`, tandis que les `<div type="titlePage">` sont entièrement supprimées.
+
+Cela explique :
+
+* l’omission des sous-titres ;
+* l’omission des auteurs et affiliations ;
+* l’ajout inapproprié de « Chapitre 1 », « Chapitre 2 », etc.
+
+Il faut créer une macro sémantique d’ouverture de contribution qui consomme titre, sous-titre, auteur et affiliation, sans libellé ni numérotation de chapitre. Ne duplique pas les informations provenant de la `titlePage`.
+
+### Titres courants
+
+Le préambule emploie le même `lateiCurrentRunningTitle` sur les deux côtés, passe deux fois la même valeur à `\markboth` et impose l’italique dans `\PURHHeaderFont`.
+
+Il faut conserver deux états distincts :
+
+* verso : titre du livre ou de la partie ;
+* recto : titre court de la contribution.
+
+Le rendu cible est Josefin Sans Thin ou Light, 10 pt, romain, avec folio à l’extérieur.
+
+### Pagination
+
+Le monofichier appelle une seule fois `\frontmatter`, puis une seule fois `\mainmatter`.
+
+Cela explique :
+
+* les chiffres romains de l’introduction ;
+* le redémarrage à 1 lors du passage au corps.
+
+En revanche, ce monofichier ne réinitialise pas la pagination à chaque contribution. Si la sortie assemblée présente d’autres redémarrages, il faut les chercher dans la génération ou la compilation des fragments et dans leur assemblage.
+
+Ne modifie donc pas à l’aveugle la machine d’état avant d’avoir comparé :
+
+1. la compilation monofichier ;
+2. les éventuelles compilations fragmentaires ;
+3. l’assemblage final.
+
+La cible PURH est ici une pagination arabe continue, y compris pour les liminaires paginés.
+
+### Table des matières
+
+Le `book.tex` de *Dissimuler* ne contient aucune entrée de *Beautés vitales*. La table étrangère provient donc d’anciens fichiers auxiliaires LaTeX réutilisés.
+
+Chaque compilation doit :
+
+* utiliser un répertoire propre et isolé ;
+* ne jamais réutiliser un ancien `.aux`, `.toc`, `.out` ou fichier apparenté ;
+* effectuer le nombre de passes nécessaire ;
+* refuser de publier une table après une compilation incomplète ;
+* vérifier qu’aucune entrée de TDM n’est étrangère au document courant.
+
+### Poésie
+
+Les vers sont actuellement rendus comme un bloc de citation justifié contenant des `\linebreak`. Cela produit des lignes démesurément espacées.
+
+Il faut router la poésie vers un environnement spécifique, aligné à gauche et non justifié ligne par ligne. Si la TEI possède de véritables `<lg>/<l>`, utiliser cette structure. Sinon, conserver un traitement transitoire explicite et testé, sans confondre citation en prose et poésie.
+
+### Métadonnées déjà défectueuses en amont
+
+Le sous-titre général contient déjà `<em>…</em>` comme texte littéral et Anaïs Lebreton apparaît deux fois dans les métadonnées d’auteur.
+
+Ces défauts sont antérieurs à la composition LaTeX. Il faut :
+
+* identifier précisément le module qui les introduit ;
+* ajouter un diagnostic structuré ;
+* corriger la cause si elle relève bien du projet ;
+* ne pas masquer silencieusement ces erreurs par une rustine dans le préambule LaTeX.
+
+### Frontières inline et appels de note
+
+Le LaTEI contient des frontières fragiles autour de `hi`, `sup` et `note`. Certaines espaces sont placées à l’intérieur des commandes ; des espaces parasites apparaissent aussi avant certains appels de note.
+
+Il faut préserver explicitement texte, `tail`, espaces ordinaires et espaces insécables. Ajouter des fixtures minimales couvrant notamment :
+
+* `Louis XIV` ;
+* `François Ier` ;
+* un mot suivi immédiatement d’une note ;
+* italique suivi de ponctuation ;
+* petite capitale suivie d’un exposant ;
+* combinaisons de rendus.
+
+## Architecture attendue
+
+Ne corrige pas directement le `book.tex` généré : toute correction doit être appliquée dans le writer, le profil LaTeX ou le processus de compilation qui le produit.
+
+Conserver la séparation suivante :
+
+1. corps LaTEI réversible ;
+2. profil de composition versionné ;
+3. environnement de fontes ;
+4. processus de compilation ;
+5. contrôles de production PDF.
+
+Dans l’idéal, les profils doivent être décrits dans une configuration structurée — YAML, JSON ou dataclass sérialisable — servant de source unique au générateur, aux tests et à la documentation.
+
+Évite de multiplier les valeurs codées en dur et les cascades de `IfSubStr` pour les rôles structurants.
+
+## Méthode de travail
+
+Commence par inspecter le dépôt et localiser exactement :
+
+* le writer de `book.tex` ;
+* les macros ou templates du préambule ;
+* la configuration des profils ;
+* la résolution des fontes ;
+* la compilation LuaLaTeX ;
+* la compilation éventuelle des fragments ;
+* l’assemblage final ;
+* la gestion des auxiliaires.
+
+Avant toute modification, donne un diagnostic bref reliant chaque défaut au fichier ou module responsable.
+
+Puis travaille par micropasses cohérentes et testées, dans cet ordre :
+
+1. compilation propre et contrôles de fontes ;
+2. restauration effective des variantes typographiques ;
+3. profil 11/13,5 et notes 8,5/10,2 ;
+4. pagination arabe continue ;
+5. ouvertures de contribution et métadonnées ;
+6. titres courants recto/verso ;
+7. titraille ;
+8. citations et poésie ;
+9. frontières inline et appels de note.
+
+Si l’ensemble est trop vaste pour une seule intervention, arrête-toi après une passe cohérente entièrement testée. Ne laisse pas plusieurs familles de correctifs à moitié implémentées.
+
+## Tests attendus
+
+Ajouter au minimum :
+
+* tests unitaires du writer et des profils ;
+* test de compilation dans un dossier initialement pollué par de faux `.toc/.aux` ;
+* test vérifiant qu’aucune entrée étrangère ne survit ;
+* inspection automatisée des fontes embarquées ;
+* test bloquant si la TEI demande une italique mais que le PDF n’en utilise aucune ;
+* mesure du corps, du pas de ligne et des marges dans le PDF ;
+* pagination arabe continue sur une fixture comportant liminaire, partie et deux contributions ;
+* titres courants recto/verso distincts ;
+* absence du libellé « Chapitre » ;
+* conservation du titre, du sous-titre, de l’auteur et de l’affiliation ;
+* régression des espaces autour des éléments inline et des appels de note ;
+* test de poésie sans justification des vers.
+
+Si les outils disponibles le permettent, produire aussi quelques pages homologues de contrôle :
+
+* ouverture de partie ;
+* ouverture de contribution ;
+* page courante avec notes et italiques ;
+* page de poésie ;
+* table des matières.
+
+## Livraison
+
+À la fin, indique précisément :
+
+1. les fichiers modifiés ;
+2. les causes effectivement confirmées ;
+3. les corrections réalisées ;
+4. les tests ajoutés et leur résultat ;
+5. les mesures du PDF obtenu ;
+6. les écarts restant avec le PDF imprimeur ;
+7. les points laissés volontairement hors périmètre ;
+8. la prochaine micropasse recommandée.
+
+Ne fais pas de commit.

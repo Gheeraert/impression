@@ -18,6 +18,7 @@ ENVIRONMENT_ELEMENTS = {
     "figure": "teiFigure",
     "lg": "teiLg",
     "list": "teiList",
+    "sp": "teiSp",
     "table": "teiTable",
 }
 
@@ -25,8 +26,11 @@ ENVIRONMENT_ELEMENTS = {
 # sticky like the HTML XSLT's "note//cit" match; p/item are not sticky in
 # the XSLT — it only matches "p/cit" one level down — but nothing block-level
 # can legally nest deeper inside a TEI <p>/<item> anyway, so treating them as
-# sticky too is harmless and simpler). See _write_quote.
-_INLINE_QUOTE_HOST_ELEMENTS = {"p", "item", "note"}
+# sticky too is harmless and simpler). See _write_quote. Also reused by
+# _write_stage: "l" (verse line) is inline prose in exactly the same sense
+# — a <stage> mid-verse (tei:l/tei:stage in the HTML XSLT, matched
+# separately from a standalone <stage>) must not force a line break either.
+_INLINE_QUOTE_HOST_ELEMENTS = {"p", "item", "note", "l"}
 
 EMPTY_MACRO_ELEMENTS = {
     "anchor": "teiAnchor",
@@ -60,6 +64,7 @@ MACRO_ELEMENTS = {
     "q": "teiQ",
     "ref": "teiRef",
     "said": "teiSaid",
+    "speaker": "teiSpeaker",
     "term": "teiTerm",
     "title": "teiTitle",
 }
@@ -122,6 +127,8 @@ def _write_element(node: ElementNode, inline_quote_context: bool) -> str:
         return _write_cell(node, inline_quote_context)
     if name == "quote":
         return _write_quote(node, inline_quote_context)
+    if name == "stage":
+        return _write_stage(node, inline_quote_context)
     if name in ENVIRONMENT_ELEMENTS:
         return _environment(ENVIRONMENT_ELEMENTS[name], _options(node), _children_latex(node, inline_quote_context))
     if name in EMPTY_MACRO_ELEMENTS:
@@ -263,6 +270,19 @@ def _write_quote(node: ElementNode, inline_quote_context: bool) -> str:
         children = _strip_redundant_straight_quote_marks(node.children)
         return _macro("teiQuoteInline", _options(node), _join_children_latex(children, True))
     return _environment("teiQuote", _options(node), _children_latex(node, inline_quote_context))
+
+
+def _write_stage(node: ElementNode, inline_quote_context: bool) -> str:
+    """<stage> (didascalie) draws the same block/inline distinction as
+    <quote> above, and reuses the same context flag: a standalone <stage>
+    (sibling of <sp>, référentiel Commons-Publishing) is a block-level
+    direction between speeches and forces a line break after it
+    (\\teiStage) ; a <stage> nested inside <p>/<l> — mid-sentence or
+    mid-verse (matching the HTML XSLT's separate "tei:p/tei:stage |
+    tei:l/tei:stage" template) — must not break the surrounding line
+    (\\teiStageInline)."""
+    macro = "teiStageInline" if inline_quote_context else "teiStage"
+    return _macro(macro, _options(node), _children_latex(node, inline_quote_context))
 
 
 _STRAIGHT_DOUBLE_QUOTE = '"'

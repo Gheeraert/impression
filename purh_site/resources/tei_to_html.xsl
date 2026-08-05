@@ -247,6 +247,17 @@
     </xsl:if>
   </xsl:template>
 
+  <!-- Réplique de théâtre (<sp>) : jusqu'ici sans template dédié, elle
+       retombait sur le comportement par défaut de XSLT (aucune enveloppe,
+       simple récursion sur les enfants) — locuteur/didascalie/texte de
+       chaque réplique se suivaient sans séparation visuelle entre deux
+       <sp> consécutifs. Vérification humaine directe, 2026-08-06, sur un
+       extrait théâtre/poésie mêlant les deux (voir aussi tei:l/tei:lg et
+       tei:speaker/tei:stage ci-dessous, déjà stylés). -->
+  <xsl:template match="tei:sp">
+    <div class="speech"><xsl:apply-templates/></div>
+  </xsl:template>
+
   <xsl:template match="tei:lg">
     <div class="poem-block"><xsl:apply-templates/></div>
   </xsl:template>

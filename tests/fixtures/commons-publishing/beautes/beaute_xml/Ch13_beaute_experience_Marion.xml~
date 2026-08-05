@@ -1,0 +1,1204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI
+change="commons_edition"
+xmlns="http://www.tei-c.org/ns/1.0"
+xmlns:ns4="http://www.w3.org/2001/XInclude"
+xmlns:ns22="http://www.w3.org/1998/Math/MathML"
+xmlns:ns2="http://www.w3.org/1999/xlink"
+xmlns:ns="http://www.tei-c.org/ns/1.0"
+><teiHeader
+><fileDesc
+><titleStmt
+><title
+type="main"
+>La beauté, une expérience socialement définie ?</title
+><title
+type="sub"
+>Sociologie de la perception musicale</title
+><author
+role="aut"
+><persName
+><forename
+>Guilhem</forename
+><surname
+>Marion</surname
+></persName
+><affiliation
+><orgName
+>New York University, Psychology Department, États-Unis</orgName
+></affiliation
+></author
+></titleStmt
+><publicationStmt
+><ab
+type="expression"
+><bibl
+><publisher
+></publisher
+><availability
+><licence
+target="#"
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+type="book"
+><bibl
+><date
+type="publishing"
+></date
+><biblScope
+from=""
+unit="page"
+></biblScope
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+subtype="PDF"
+type="digital_download"
+><bibl
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><distributor
+></distributor
+><date
+type="publishing"
+></date
+><dim
+extent=""
+type="weight"
+unit="Mo"
+></dim
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+subtype="EPUB"
+type="digital_download"
+><bibl
+><idno
+type="ISBN-13"
+></idno
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><distributor
+></distributor
+><date
+type="publishing"
+></date
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+><dim
+extent=""
+type="weight"
+unit="Ko"
+></dim
+></bibl
+><desc
+type="accessMode"
+>textual</desc
+><desc
+type="accessibilityFeature"
+>ARIA</desc
+><desc
+type="accessibilityFeature"
+>highContrastDisplay</desc
+><desc
+type="accessibilityFeature"
+>readingOrder</desc
+><desc
+type="accessibilityFeature"
+>structuralNavigation</desc
+><desc
+type="accessibilityFeature"
+>tableOfContents</desc
+><desc
+type="accessibilityFeature"
+>unlocked</desc
+><desc
+type="accessibilityFeature"
+>alternativeText</desc
+><desc
+subtype="soundHazard"
+type="accessibilityHazard"
+>noSoundHazard</desc
+><desc
+subtype="flashingHazard"
+type="accessibilityHazard"
+>noFlashingHazard</desc
+><desc
+subtype="motionSimulationHazard"
+type="accessibilityHazard"
+>noMotionSimulationHazard</desc
+><desc
+type="accessModeSufficient"
+>textual</desc
+><desc
+type="accessibilitySummary"
+>Cette publication est conforme aux normes d’accessibilité WCAG 2.0, au moins au niveau A.</desc
+></ab
+><ab
+subtype="HTML"
+type="digital_online"
+><bibl
+><distributor
+></distributor
+><name
+type="CMS"
+></name
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><date
+type="publishing"
+></date
+><date
+type="embargoend"
+></date
+><idno
+type="documentnumber"
+></idno
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+></publicationStmt
+><sourceDesc
+><p
+>COMMONS/Métopes : 1.0</p
+></sourceDesc
+></fileDesc
+><encodingDesc
+><appInfo
+><application
+ident="Word-tpl"
+version="1.0"
+><label
+>Word template</label
+><desc
+>Version of MS Word template used</desc
+><ref
+target="#"
+></ref
+></application
+><application
+ident="circe-Metopes"
+version="0.0.103"
+><label
+>Circé</label
+><desc
+>Document converted into TEI using Circé application (doc2tei pipeline)</desc
+><ref
+target="#"
+></ref
+></application
+></appInfo
+><editorialDecl
+><normalization
+rendition="notes"
+><p
+rendition="note"
+select="restart"
+></p
+><p
+rendition="table"
+select="restart"
+></p
+><p
+rendition="annexe"
+select="restart"
+></p
+><p
+rendition="floatingText"
+select="restart"
+></p
+></normalization
+></editorialDecl
+></encodingDesc
+><profileDesc
+><langUsage
+><language
+ident="fr-FR"
+></language
+></langUsage
+></profileDesc
+><revisionDesc
+><listChange
+><change
+type="creation"
+when="2025-09-17"
+>XML-TEI file creation</change
+></listChange
+></revisionDesc
+></teiHeader
+><text
+type="chapter"
+xml:id="text"
+><front
+><div
+type="titlePage"
+><p
+rend="title-main"
+>La beauté, une expérience socialement définie ?</p
+><p
+rend="title-sub"
+>Sociologie de la perception musicale</p
+><p
+rend="author-aut"
+>Guilhem <hi
+rend="small-caps"
+>Marion</hi
+></p
+><p
+rend="authority_affiliation"
+>New York University, Psychology Department, États-Unis</p
+></div
+></front
+><body
+><p
+xml:id="p1"
+>Il est évident que les préférences musicales et, plus généralement, les comportements liés à l’écoute de la musique diffèrent d’un individu à l’autre. Les plateformes de streaming peuvent aujourd’hui fournir des bases de données pour étudier ces questions et montrent des différences radicales entre les individus dont une grande partie de la variance peut être expliquée par des facteurs socioculturels et démographiques.</p
+><p
+xml:id="p2"
+>Tout d’abord, les auditeurs préfèrent la musique à laquelle ils s’identifient culturellement, comme mesurés par l’identification ethnique<note
+n="1"
+place="foot"
+xml:id="ftn1"
+><p
+>Jourdan McCrary et Donna Gauthier, « The Effects of Performers’ Ethnic Identities on Preadolescents’ Music Preferences », <hi
+rend="italic"
+>Update: Applications of Research in Music Education</hi
+>, vol. 14, n<hi
+rend="sup"
+>o</hi
+> 1, 1995, p. 20-22.</p
+></note
+> ou géographique<note
+n="2"
+place="foot"
+xml:id="ftn58"
+><p
+>Charlotta Mellander, Richard Florida, Peter J. Rentfrow <hi
+rend="italic"
+>et al</hi
+>., « The Geography of Music Preferences », <hi
+rend="italic"
+>Journal of Cultural Economics</hi
+>, vol. 42, 2018, p. 593-618.</p
+></note
+>. Deux modèles ont été présentés pour expliquer la relation entre le milieu socioéconomique et les préférences musicales au sein d’un même pays. Premièrement, le modèle de la légitimité culturelle a été présenté et validé en France<note
+n="3"
+place="foot"
+xml:id="ftn59"
+><p
+>Pierre Bourdieu, <hi
+rend="italic"
+>La Distinction. Critique sociale du jugement</hi
+>, Paris, Éditions de Minuit, « Le sens commun », 1979.</p
+></note
+> et aux États-Unis<note
+n="4"
+place="foot"
+xml:id="ftn60"
+><p
+>Karl F. Schuessler, « Social Background and Musical Taste », <hi
+rend="italic"
+>American Sociological Review</hi
+>, vol. 13, n<hi
+rend="sup"
+>o</hi
+> 3, 1948, p. 330-335.</p
+></note
+> avant les années 1980. Selon ce modèle, les classes sociales supérieures consomment essentiellement de la musique considérée comme plus sophistiquée ou associée à une valeur culturelle plus élevée (comme la musique classique, la musique contemporaine et l’opéra) et rejettent les autres formes de musique populaire, ce qui relève d’un mécanisme de légitimation de l’appartenance à leur groupe social. Cependant, depuis les années 1990, un autre modèle appelé omnivore/univore a été présenté<note
+n="5"
+place="foot"
+xml:id="ftn61"
+><p
+>Richard A. Peterson, « Understanding Audience Segmentation: From Elite and Mass to Omnivore and Univore », <hi
+rend="italic"
+>Poetics</hi
+>, vol. 21, n<hi
+rend="sup"
+>o</hi
+> 4, 1992, p. 243-258.</p
+></note
+> et validé empiriquement par des études en France<note
+n="6"
+place="foot"
+xml:id="ftn62"
+><p
+>Philippe Coulangeon, « Social Stratification of Musical Tastes: Questioning the Cultural Legitimacy Model », <hi
+rend="italic"
+>Revue française de sociologie</hi
+>, vol. 46, n<hi
+rend="sup"
+>o</hi
+> 5, 2005, p. 123-154.</p
+></note
+>, aux États-Unis<note
+n="7"
+place="foot"
+xml:id="ftn63"
+><p
+>Richard A. Peterson et Roger M. Kern, « Changing Highbrow Taste: From Snob to Omnivore », <hi
+rend="italic"
+>American Sociological Review</hi
+>, vol. 61, n<hi
+rend="sup"
+>o</hi
+> 5, 1996, p. 900-907.</p
+></note
+> et aux Pays-Bas<note
+n="8"
+place="foot"
+xml:id="ftn64"
+><p
+>Koen Van Eijck, « Social Differentiation in Musical Taste Patterns », <hi
+rend="italic"
+>Social Forces</hi
+>, vol. 79, n<hi
+rend="sup"
+>o</hi
+> 3, 2001, p. 1163-1185.</p
+></note
+>. Cette hypothèse alternative affirme que les classes sociales se différencient par la variété de leurs préférences musicales plutôt que par un genre spécifique, avec une tendance des classes supérieures à écouter un éventail plus large de genres musicaux. Des études<note
+n="9"
+place="foot"
+xml:id="ftn65"
+><p
+>Christina G. White, <hi
+rend="italic"
+>The Effects of Class, Age, Gender and Race on Musical Preferences: an Examination of the Omnivore/Univore Framework</hi
+>, thèse, Blacksburg, Virginia Tech, 2001, p. 11.</p
+></note
+> utilisant des données entre 1982 et 1997 aux États-Unis montrent une tendance au remplacement du modèle de légitimité culturelle par le modèle omnivore/univore : « l’exclusivité culturelle n’est plus appréciée comme elle a pu l’être dans le passé et elle est plus souvent un signe d’ignorance que de statut<hi
+rend="sup"
+>9</hi
+>. »</p
+><p
+xml:id="p3"
+>Cependant, il a aussi été démontré en France en 2003 que les classes supérieures, même si elles se distinguent principalement par leur omnivorité, ont également tendance à écouter plus de musique savante (musique classique et opéra principalement) que les autres<note
+n="10"
+place="foot"
+xml:id="ftn66"
+><p
+>Philippe Coulangeon, art. cité.</p
+></note
+>, ce qui montre que, même si le modèle le plus explicatif est passé de la légitimité culturelle à l’omnivorité/univorité, les deux modèles cohabitent toujours. L’hypothèse de l’accord social pourrait expliquer pourquoi les individus appartenant à un même groupe social partagent des préférences musicales similaires. Il a en effet été démontré que les auditeurs modifient leurs préférences musicales pour être en accord avec leurs pairs<note
+n="11"
+place="foot"
+xml:id="ftn67"
+><p
+>Craig E. Furman et Robert A. Duke, « Effect of Majority Consensus on Preferences for Recorded Orchestral and Popular Music », <hi
+rend="italic"
+>Journal of Research in Music Education</hi
+>, vol. 36, n<hi
+rend="sup"
+>o</hi
+> 4, 1988, p. 220-231.</p
+></note
+> ou pour éviter les désaccords<note
+n="12"
+place="foot"
+xml:id="ftn68"
+><p
+>Harold G. Inglefield, « Conformity Behavior Reflected in the Musical Preference of Adolescents », <hi
+rend="italic"
+>Contributions to Music Education</hi
+>, n<hi
+rend="sup"
+>o</hi
+> 1, 1972, p. 56-67.</p
+></note
+>, en particulier lorsque les pairs représentent une figure d’autorité en termes de goûts musicaux<note
+n="13"
+place="foot"
+xml:id="ftn69"
+><p
+>Jesse Alpert, « The Effect of Disc Jockey, Peer, and Music Teacher Approval of Music on Music Selection and Preference », <hi
+rend="italic"
+>Journal of Research in Music Education</hi
+>, vol. 30, n<hi
+rend="sup"
+>o</hi
+> 3, 1982, p. 173-186.</p
+></note
+>. Cette idée suit l’idée générale selon laquelle la familiarité socioculturelle augmente les préférences musicales et suscite des réponses émotionnelles plus fortes.</p
+><p
+xml:id="p4"
+>Les auditeurs ont, en effet, tendance à préférer un contenu musical déjà connu, comme le montre la répétition de courts extraits de musique classique, y compris de compositions tonales et atonales<note
+n="14"
+place="foot"
+xml:id="ftn70"
+><p
+>Elizabeth Hellmuth Margulis, « Aesthetic Responses to Repetition in Unfamiliar Music », <hi
+rend="italic"
+>Empirical Studies of the Arts</hi
+>, vol. 31, n<hi
+rend="sup"
+>o</hi
+> 1, 2013, p. 45-57.</p
+></note
+>, de musique de jazz<note
+n="15"
+place="foot"
+xml:id="ftn71"
+><p
+>E. M. Verveer, H. Barry et W. A. Bousfield, « Change in Affectivity with Repetition », <hi
+rend="italic"
+>American Journal of Psychology</hi
+>, vol. 45, n<hi
+rend="sup"
+>o</hi
+> 1, 1933, p. 130-134.</p
+></note
+>, de musique coréenne<note
+n="16"
+place="foot"
+xml:id="ftn72"
+><p
+>Marcia K. Johnson, Jung K. Kim et Gail Risse, « Do Alcoholic Korsakoff’s Syndrome Patients Acquire Affective Reactions? », <hi
+rend="italic"
+>Journal of Experimental Psychology: Learning, Memory, and Cognition</hi
+>, vol. 11, n<hi
+rend="sup"
+>o</hi
+> 1, 1985, p. 22-36.</p
+></note
+>, pakistanaise<note
+n="17"
+place="foot"
+xml:id="ftn73"
+><p
+>Annelies Heingartner et James V Hall, « Affective Consequences in Adults and Children of Repeated Exposure to Auditory Stimuli », <hi
+rend="italic"
+>Journal of Personality and Social Psychology</hi
+>, vol. 29, n<hi
+rend="sup"
+>o</hi
+> 6, 1974, p. 719-723.</p
+></note
+>, etc. Dans ces expériences, de courts extraits sont répétés plusieurs fois et sont préférés aux versions complètes des mêmes pièces musicales. Au-delà de la reconnaissance exacte d’un fragment musical, la familiarité peut également être définie à l’aide de l’idée de prévisibilité. Les auditeurs, lorsqu’on leur présente un nouveau contenu musical, préfèrent des morceaux contenant des structures musicales proches de celles issues de leur propre culture musicale. Par exemple, les enfants américains préfèrent (en mesurant le temps de regard) les métriques rythmiques occidentales (mesures composées de 3 ou 4 temps) aux métriques balkaniques (en 7, 9 ou 10 temps), tandis que les enfants turcs, qui connaissent à la fois les métriques occidentales et balkaniques, ne manifestent aucune préférence<note
+n="18"
+place="foot"
+xml:id="ftn74"
+><p
+>Gaye Soley et Erin Hannon, « Infants Prefer the Musical Meter of their Own Culture: a Cross-Cultural Comparison », <hi
+rend="italic"
+>Developmental Psychology</hi
+>, vol. 46, n<hi
+rend="sup"
+>o</hi
+> 1, 2010, p. 286-292.</p
+></note
+>. Il a même été démontré que la précision de la mémoire était influencée par la familiarité culturelle : les participants occidentaux se souvenaient mieux des mélodies occidentales que les participants turcs, et inversement pour les mélodies turques. En revanche, les mélodies chinoises (utilisées comme contrôle) entraînaient une faible précision de la mémoire pour les deux groupes<note
+n="19"
+place="foot"
+xml:id="ftn75"
+><p
+>Steven M. Demorest, Steven J. Morrison, Münir N. Beken <hi
+rend="italic"
+>et al</hi
+>., « Lost in Translation: an Enculturation Effect in Music Memory Performance », <hi
+rend="italic"
+>Music Perception</hi
+>, vol. 25, n<hi
+rend="sup"
+>o</hi
+> 3, 2008, p. 213-223.</p
+></note
+>. Ces résultats ont été répliqués avec des séquences composées spécifiquement pour correspondre aux structures musicales des auditeurs<note
+n="20"
+place="foot"
+xml:id="ftn76"
+><p
+>Kat Agres, Samer Abdallah et Marcus Pearce, « Information-Theoretic Properties of Auditory Sequences Dynamically Influence Expectation and Memory », <hi
+rend="italic"
+>Cognitive Science</hi
+>, vol. 42, n<hi
+rend="sup"
+>o</hi
+> 1, 2018, p. 43-76.</p
+></note
+>.</p
+><div
+type="section1"
+xml:id="div01"
+><head
+>La théorie du traitement prédictif</head
+><p
+xml:id="p5"
+>Si la perception implique clairement le traitement d’informations sensorielles, les entrées sensorielles ne suffisent pas à rendre compte de l’ensemble des processus perceptifs. En effet, des stimuli sensoriels (par exemple, un son ou une image) peuvent être perçus différemment par différentes personnes<note
+n="21"
+place="foot"
+xml:id="ftn77"
+><p
+>David H. Brainard et Anya C. Hurlbert, « Colour Vision: Understanding the Dress », <hi
+rend="italic"
+>Current Biology</hi
+>, vol. 25, n<hi
+rend="sup"
+>o</hi
+> 13, 2015, p. R551-R554 ; Daniel Pressnitzer, Jackson Graves, Claire Cambers <hi
+rend="italic"
+>et al</hi
+>., « Auditory Perception: Laurel and Yanny Together at Last », <hi
+rend="italic"
+>Current Biology</hi
+>, vol. 28, n<hi
+rend="sup"
+>o</hi
+> 13, 2018, p. R739-R741.</p
+></note
+> ou même par la même personne, mais dans des conditions différentes<note
+n="22"
+place="foot"
+xml:id="ftn78"
+><p
+>Joel S. Snyder, Caspar M. Schwiedrzik, A. Davi Vitela <hi
+rend="italic"
+>et al</hi
+>., « How Previous Experience Shapes Perception in Different Sensory Modalities », <hi
+rend="italic"
+>Frontiers in Human Neuroscience</hi
+>, vol. 9, 2015, p. 594.</p
+></note
+>. Les réseaux sociaux regorgent de tels exemples, dont <hi
+rend="italic"
+>#theDress</hi
+> pour la vision et <hi
+rend="italic"
+>#Laurel #Yanny</hi
+> pour l’audition. Une explication de ce phénomène est fournie par la théorie du traitement prédictif<note
+n="23"
+place="foot"
+xml:id="ftn79"
+><p
+>Karl J. Friston, Jean Daunizeau, James Kilner <hi
+rend="italic"
+>et al</hi
+>., « Action and Behavior: A Free-Energy Formulation », <hi
+rend="italic"
+>Biological Cybernetics</hi
+>, vol. 102, n<hi
+rend="sup"
+>o</hi
+> 3, 2010, p. 227-260 ; Andy Clark, « Whatever next? Predictive Brains, Situated Agents, and the Future of Cognitive Science », <hi
+rend="italic"
+>Behavioral and Brain Sciences</hi
+>, vol. 36, n<hi
+rend="sup"
+>o</hi
+> 3, 2013, p. 181-204.</p
+></note
+>. Ce cadre théorique s’articule autour de l’idée que le cerveau développe un modèle du monde qui est utilisé pour prédire les entrées sensorielles et qui est continuellement mis à jour en comparant les <hi
+rend="italic"
+>stimuli</hi
+> prédits et perçus<note
+n="24"
+place="foot"
+xml:id="ftn80"
+><p
+>Horace B. Barlow, « Possible Principles Underlying the Transformation of Sensory Messages », dans Walter A. Rosenblith (dir.), <hi
+rend="italic"
+>Sensory Communication</hi
+>, Cambridge, MIT Press, 1961, p. 217-234.</p
+></note
+>. Ainsi, la perception émerge de l’interaction entre les entrées sensorielles (S) et les attentes ou prédictions internes (P). La comparaison entre les entrées sensorielles et leur prédiction produit une erreur de prédiction (EP = S-P) qui, entre autres fonctions, permet la mise à jour du modèle de prédiction interne lui-même<note
+n="25"
+place="foot"
+xml:id="ftn81"
+><p
+>Risto Näätänen, Petri Paavilainen, Teemu Rinne <hi
+rend="italic"
+>et al.</hi
+>, « The Mismatch Negativity (Mmn) in Basic Research of Central Auditory Processing: A Review », <hi
+rend="italic"
+>Clinical Neurophysiology</hi
+>, vol. 102, n<hi
+rend="sup"
+>o</hi
+> 3, 2007, p. 227-260.</p
+></note
+>. Par conséquent, la perception est un processus actif par lequel notre cerveau surveille en permanence les statistiques des informations sensorielles entrantes afin (i) d’apprendre et de mettre à jour un modèle interne des régularités du monde qui nous entoure ; et (ii) de prédire, sur la base de ce modèle, les entrées sensorielles afin de moduler leur encodage neuronal et de faciliter leur perception dans des conditions difficiles<note
+n="26"
+place="foot"
+xml:id="ftn82"
+><p
+>Matthew K. Leonard, Maxime O. Baud, Matthias J. Sjerps <hi
+rend="italic"
+>et</hi
+> <hi
+rend="italic"
+>al</hi
+>., « Perceptual Restoration of Masked Speech in Human Cortex », <hi
+rend="italic"
+>Nature Communications</hi
+>, vol. 7, n<hi
+rend="sup"
+>o</hi
+> 1, 2016, p. 1-9.</p
+></note
+> ou en biaisant la perception d’images ou de sons ambigus<note
+n="27"
+place="foot"
+xml:id="ftn83"
+><p
+>David H. Brainard et Anya C. Hurlbert, « Colour Vision: Understanding the Dress », <hi
+rend="italic"
+>Current Biology</hi
+>, vol. 25, n<hi
+rend="sup"
+>o</hi
+> 13, 2015, p. R551-R554 ; Daniel Pressnitzer, Jackson Graves, Claire Cambers <hi
+rend="italic"
+>et al</hi
+>., art. cité.</p
+></note
+>.</p
+><p
+xml:id="p6"
+>La perception musicale, en raison de ses régularités structurelles, temporelles, spectrale, mélodiques ou harmoniques, offre un paradigme éclairant pour explorer les implémentations des principes du traitement prédictif<note
+n="28"
+place="foot"
+xml:id="ftn84"
+><p
+>Stefan Koelsch, Peter Vuust et Karl Friston, « Predictive Processes and the Peculiar Case of Music », <hi
+rend="italic"
+>Trends in Cognitive Sciences</hi
+>, vol. 23, n<hi
+rend="sup"
+>o</hi
+> 1, 2019, p. 63-77.</p
+></note
+>. La musique peut présenter des régularités dues à la répétition du même motif, ainsi que des régularités qui peuvent être imprévisibles en fonction du seul contexte proximal, mais qui sont néanmoins conformes aux règles d’un style musical ou d’une culture particulière<note
+n="29"
+place="foot"
+xml:id="ftn85"
+><p
+>Elizabeth Hellmuth Margulis, « On Repeat », dans <hi
+rend="italic"
+>On Repeat</hi
+>, Oxford, Oxford University Press, 2014.</p
+></note
+>.</p
+><p
+xml:id="p7"
+>Lorsqu’on écoute de la musique, les prédictions formulées se distinguent à la fois par leur contenu et par le degré de certitude qui leur est associé<note
+n="30"
+place="foot"
+xml:id="ftn86"
+><p
+>Stefan Koelsch, Peter Vuust et Karl Friston, « Predictive Processes and the Peculiar Case of Music », <hi
+rend="italic"
+>Trends in Cognitive Sciences</hi
+>, vol. 23, n<hi
+rend="sup"
+>o</hi
+> 1, 2019, p. 63-77.</p
+></note
+>. Par exemple, dans le cadre d’une progression d’accords tonale (le système harmonique le plus répandu en Occident décrivant l’enchaînement des accords autour d’un centre tonal), il est possible d’anticiper l’accord suivant. Ce processus implique non seulement une prédiction sur le contenu (quel accord exact sera joué ensuite), mais aussi une estimation de la confiance accordée à cette prédiction en fonction du contexte musical. Ainsi, une séquence d’accords inhabituelle peut créer un contexte imprévisible, rendant plus difficile pour l’auditeur de formuler des prédictions précises sur les événements musicaux à venir. La certitude de la prédiction module le gain associé à l’erreur de réponse<note
+n="31"
+place="foot"
+xml:id="ftn87"
+><p
+>Karl Friston, « The Free-Energy Principle: A Rough Guide to the Brain? », <hi
+rend="italic"
+>Trends in Cognitive Sciences</hi
+>, vol. 13, n<hi
+rend="sup"
+>o</hi
+> 7, 2009, p. 293-301.</p
+></note
+>, même dans le contexte de l’écoute de musique naturelle<note
+n="32"
+place="foot"
+xml:id="ftn88"
+><p
+>Yi-Fang Hsu, Solene Le Bars, Jarmo A. Hämäläinen <hi
+rend="italic"
+>et al</hi
+>., « Distinctive Representation of Mispredicted and Unpredicted Prediction Errors in Human Electroencephalography », <hi
+rend="italic"
+>Journal of Neuroscience</hi
+>, vol. 35, n<hi
+rend="sup"
+>o</hi
+> 43, 2015, p. 14653-14660.</p
+></note
+> et joue donc finalement un rôle dans la manière dont les événements inattendus sont utilisés pour mettre à jour le modèle de prédiction<note
+n="33"
+place="foot"
+xml:id="ftn89"
+><p
+>Stefan Koelsch, Peter Vuust et Karl Friston, « Predictive Processes and the Peculiar Case of Music », <hi
+rend="italic"
+>Trends in Cognitive Sciences</hi
+>, vol. 223, n<hi
+rend="sup"
+>o</hi
+> 1, 2019, p. 63-77.</p
+></note
+>.</p
+></div
+><div
+type="section1"
+xml:id="div02"
+><head
+>Données comportementales et neuronales</head
+><p
+xml:id="p8"
+>Des preuves empiriques du traitement prédictif pendant l’écoute de la musique ont été observées en réponse à des <hi
+rend="italic"
+>stimuli</hi
+> artificiels contenant des événements plus ou moins attendus (par exemple, un accord de dominante se résolvant soit sur une tonique, soit sur une sixte napolitaine). Lorsqu’on demande aux auditeurs de détecter des changements de timbre (la mélodie est soudainement jouée par un violon plutôt que par la flûte), des temps de réponse plus rapides sont associés à des <hi
+rend="italic"
+>stimuli</hi
+> musicaux plus attendus<note
+n="34"
+place="foot"
+xml:id="ftn90"
+><p
+>Barbara Tillmann, Emmanuel Bigand, Nicolas Escoffier <hi
+rend="italic"
+>et al</hi
+>., « The influence of musical relatedness on timbre discrimination », <hi
+rend="italic"
+>European Journal of Cognitive Psychology</hi
+>, vol. 18, n<hi
+rend="sup"
+>o</hi
+> 3, 2006, p. 343-358.</p
+></note
+>. Il a également été démontré que la précision des performances s’améliorait avec la prévisibilité des notes<note
+n="35"
+place="foot"
+xml:id="ftn91"
+><p
+>Jamshed J. Bharucha et Keiko Stoeckig, « Priming of Chords: Spreading Activation or Overlapping Frequency Spectra? » <hi
+rend="italic"
+>Perception &amp; Psychophysics</hi
+>, vol. 41, 1987, p. 519-524.</p
+></note
+>. Il est important de noter que les auditeurs sans formation musicale formelle ont montré des effets similaires à ceux des musiciens expérimentés<note
+n="36"
+place="foot"
+xml:id="ftn92"
+><p
+>Emmanuel Bigand et Marion Pineau, « Global Context Effects on Musical Expectancy », <hi
+rend="italic"
+>Perception &amp; Psychophysics</hi
+>, vol. 59, n<hi
+rend="sup"
+>o</hi
+> 7, 1997, p. 1098-1107.</p
+></note
+>, ce qui confirme l’hypothèse selon laquelle le traitement prédictif pendant l’écoute de la musique ne nécessite pas de formation musicale formelle.</p
+><p
+xml:id="p9"
+>De nombreuses études de neuro-imagerie et de neurophysiologie ont été menées pour mettre en évidence les marqueurs neuronaux du codage prédictif pendant l’écoute de la musique. Les premières mesures de ce type ont utilisé des séquences d’accords irréguliers comprenant des accords de sixte napolitaine qui étaient éloignés du contexte harmonique<note
+n="37"
+place="foot"
+xml:id="ftn93"
+><p
+>Sakari Leino, Elvira Brattico, Mari Tervaniemi <hi
+rend="italic"
+>et al</hi
+>., « Representation of Harmony Rules in the Human Brain: Further Evidence from Event-Related Potentials », <hi
+rend="italic"
+>Brain Research</hi
+>, n<hi
+rend="sup"
+>o</hi
+> 1142, 2007, p. 169-177.</p
+></note
+>. Les accords irréguliers ont déclenché des réponses cérébrales avec une polarité négative, observée au maximum sur les capteurs frontaux droits, et une latence maximale d’environ 150-180 ms, bien que des latences plus longues aient également été observées<note
+n="38"
+place="foot"
+xml:id="ftn94"
+><p
+>Stefan Koelsch et Juul Mulder, « Electric Brain Responses to Inappropriate Harmonies During Listening to Expressive Music », <hi
+rend="italic"
+>Clinical Neurophysiology</hi
+>, n<hi
+rend="sup"
+>o</hi
+> 113, 2002, p. 862-869.</p
+></note
+>. Cette réponse (ERAN) montre que le cerveau réagit en fonction de l’adéquation contextuelle des événements musicaux<note
+n="39"
+place="foot"
+xml:id="ftn95"
+><p
+>Stefan Koelsch, « Music-Syntactic Processing and Auditory Memory: Similarities and Differences between Eran and Mmn », <hi
+rend="italic"
+>Psychophysiology</hi
+>, vol. 46, n<hi
+rend="sup"
+>o</hi
+> 1, 2009, p. 179-190.</p
+></note
+>. Des études plus récentes utilisent des modèles statistiques de la musique pour révéler que les notes les moins prévisibles de mélodies non modifiées génèrent des réponses neuronales plus grandes, compatibles avec l’ERAN<note
+n="40"
+place="foot"
+xml:id="ftn96"
+><p
+>Giovanni Di Liberto, Claire Pelofi, Roberta Bianco <hi
+rend="italic"
+>et al</hi
+>., <hi
+rend="italic"
+>« Cortical Encoding of Melodic Expectations in Human Temporal Cortex »</hi
+>, <hi
+rend="italic"
+>eLife</hi
+>, 2020, DOI :<ref
+target="https://doi.org/10.7554/eLife.51784"
+> 10.7554/eLife.51784</ref
+>.</p
+></note
+>.</p
+></div
+><div
+type="section1"
+xml:id="div03"
+><head
+>Enculturation musicale : apprendre une nouvelle culture</head
+><p
+xml:id="p10"
+>Si nos cerveaux émettent des prédictions en fonction de leur connaissance de notre environnement, comment apprennent-ils à prédire ? S’il est évident que l’apprentissage effréné permet de construire une connaissance d’un domaine, il existe une autre forme d’apprentissage qui se produit sans effort : l’apprentissage implicite. « L’apprentissage implicite est l’apprentissage d’informations complexes de manière non intentionnelle, sans conscience de ce qui a été appris<note
+n="41"
+place="foot"
+xml:id="ftn97"
+><p
+>Arthur S. Reber « Implicit Learning and Tacit Knowledge », <hi
+rend="italic"
+>Journal of Experimental Psychology: General</hi
+>, vol. 118, n<hi
+rend="sup"
+>o</hi
+> 3, 1989, p. 219.</p
+></note
+> ».</p
+><p
+xml:id="p11"
+>Des exemples tirés de la vie quotidienne sont souvent utilisés, comme apprendre à faire du vélo ou à nager. Cet apprentissage se distingue de l’apprentissage explicite par l’absence de connaissances accessibles consciemment. Les recherches sur l’amnésie montrent souvent que l’apprentissage implicite est intact, mais que l’apprentissage explicite est altéré. Cette forme d’apprentissage est celle mise en avant dans la théorie du traitement prédictif comme forme d’apprentissage des régularités du monde extérieur utilisées pour prédire par la suite. Étant donné que les prédictions émises sont culturellement définies et conformes à la musique issue de la culture des auditeurs, cet apprentissage implicite des structures musicales est appelé <hi
+rend="italic"
+>enculturation musicale</hi
+>.</p
+><p
+xml:id="p12"
+>Il a été démontré que les enfants apprennent naturellement la musique de leur propre culture, tout comme ils apprennent leur langue maternelle<note
+n="42"
+place="foot"
+xml:id="ftn98"
+><p
+>Catherine E. Snow, « Mothers’ Speech to Children Learning Language », <hi
+rend="italic"
+>Child Development</hi
+>, vol. 43, n<hi
+rend="sup"
+>o</hi
+> 2, 1972, p. 549-565.</p
+></note
+>, grâce à un mélange d’engagement actif et d’exposition passive et sans nécessiter d’instructions explicites<note
+n="43"
+place="foot"
+xml:id="ftn99"
+><p
+>Patricia Shehan Campbell, <hi
+rend="italic"
+>Songs in Their Heads: Music and Its Meaning in Children’s Lives</hi
+>, Oxford, Oxford University Press, 2010.</p
+></note
+>. Des chercheurs ont utilisé des mélodies en métrique occidentale ou balkanique et ont ajouté ou enlevé un temps à certaines mesures afin de disrupter leur structure rythmique. Les enfants de plus d’un an et adultes occidentaux étaient capables de détecter des irrégularités métriques dans des morceaux de musique à métrique occidentale, mais pas dans des morceaux à métrique balkanique. Néanmoins, après seulement une semaine d’écoute de musique balkanique, tous les participants étaient capables de détecter les irrégularités dans les morceaux à métriques occidentales et balkaniques<note
+n="44"
+place="foot"
+xml:id="ftn100"
+><p
+>Erin E. Hannon et Sandra E. Trehub, « Tuning in to musical rhythms: Infants learn more readily than adults », <hi
+rend="italic"
+>Proceedings of the National Academy of Sciences</hi
+>, vol. 102, n<hi
+rend="sup"
+>o</hi
+> 35, 2005, p. 12639-12643.</p
+></note
+>. Il est à noter que les enfants de moins de 12 mois n’étaient capables de détecter les irrégularités dans aucune musique. Il semblerait donc que les mécanismes de prédiction (voire peut-être d’enculturation) ne soient effectifs qu’à l’âge de 12 mois. Il a été récemment démontré qu’un tel apprentissage explicite affectait directement la façon dont les adultes prédisent les notes de musique au sein de mélodies<note
+n="45"
+place="foot"
+xml:id="ftn101"
+><p
+>Psyche Loui, David Wessel et Carla Hudson Kam, « Acquiring New Musical Grammars: A Statistical Learning Approach », <hi
+rend="italic"
+>Proceedings of the Annual Meeting of the Cognitive Science Society</hi
+>, n<hi
+rend="sup"
+>o</hi
+> 28, 2006, p. 1711-1716. </p
+></note
+>.</p
+></div
+><div
+type="section1"
+xml:id="div04"
+><head
+>Pourquoi aimons-nous la musique (que nous aimons) ?</head
+><p
+xml:id="p13"
+>En 1971, Daniel Berlyne a proposé un modèle de ces mécanismes en suggérant qu’une forme en U inversé (effet de Wundt) relierait la familiarité et le plaisir musical<note
+n="46"
+place="foot"
+xml:id="ftn102"
+><p
+>D. E. Berlyne, <hi
+rend="italic"
+>Aesthetics and Psychobiology</hi
+>, New York : Appleton-Century-Crofts, 1971.</p
+></note
+>. Selon lui, le système de récompense est activé lors de l’exposition à certains motifs musicaux reconnus, mais avec le temps, le système d’aversion s’oppose à cette activation, ce qui conduit à une chute du plaisir ressenti (voir graphique 23). Cet effet a été validé par de nombreuses études<note
+n="47"
+place="foot"
+xml:id="ftn103"
+><p
+>Anthony Chmiel et Emery Schubert, « Back to the Inverted-U for Music Preference: A Review of the Literature », <hi
+rend="italic"
+>Psychology of Music</hi
+>, vol. 6, n<hi
+rend="sup"
+>o</hi
+> 8, 2017, p. 886-909.</p
+></note
+> et l’une d’entre elles, utilisant l’IRM fonctionnelle (procédé permettant de mesurer les zones du cerveau activées), a montré que la musique familière active les régions limbiques et paralimbiques liées à l’émotion ainsi que le circuit de la récompense dans une plus grande mesure que la musique non familière<note
+n="48"
+place="foot"
+xml:id="ftn104"
+><p
+>Carlos Silva Pereira, João Teixeira, Patrícia Figueiredo <hi
+rend="italic"
+>et al</hi
+>., « Music and emotions in the brain: Familiarity matters », <hi
+rend="italic"
+>Plos One</hi
+>, vol. 6, n<hi
+rend="sup"
+>o</hi
+> 11, 2011, DOI : <ref
+target="https://doi.org/10.1371/journal.pone.0027241"
+>10.1371/journal.pone.0027241</ref
+>.</p
+></note
+>. Récemment, deux études utilisant un modèle statistique de la musique ont montré un effet de Wundt entre la modélisation computationnelle des attentes musicales et les auto-évaluations du plaisir musical par les participants<note
+n="49"
+place="foot"
+xml:id="ftn105"
+><p
+>Benjamin P. Gold, Marcus T. Pearce, Ernest Mas-Herrero <hi
+rend="italic"
+>et al</hi
+>., « Predictability and Uncertainty in the Pleasure of Music: A Reward for Learning? », <hi
+rend="italic"
+>Journal of Neuroscience</hi
+>, vol. 39, no 47, 2019, p. 9397-9409 ; Vincent K. M. Cheung, Peter M. C. Harrison, Lars Meyer <hi
+rend="italic"
+>et al</hi
+>., « Uncertainty and Surprise Jointly Predict Musical Pleasure and Amygdala, Hippocampus, and Auditory Cortex Activity », <hi
+rend="italic"
+>Current Biology</hi
+>, vol. 29, n<hi
+rend="sup"
+>o</hi
+> 23, 2019, p. 4084-4092. </p
+></note
+>. Une modulation de l’activité dans la région liée à la récompense du striatum ventral induite par l’attente<note
+n="50"
+place="foot"
+xml:id="ftn106"
+><p
+>Ofir Shany, Neomi Singer, Benjamin Paul Gold <hi
+rend="italic"
+>et al</hi
+>., « Surprise-Related Activation in the Nucleus Accumbens Interacts with Music-Induced Pleasantness », <hi
+rend="italic"
+>Social Cognitive and Affective Neuroscience</hi
+>, vol. 14, n<hi
+rend="sup"
+>o</hi
+> 4, 2019p. 459-470.</p
+></note
+> ou l’incertitude<note
+n="51"
+place="foot"
+xml:id="ftn107"
+><p
+>Vincent K. M. Cheung, Peter M. C. Harrison, Lars Meyer <hi
+rend="italic"
+>et al</hi
+>., art. cité.</p
+></note
+> des événements musicaux a également été découverte. Cette littérature semble montrer un lien clair entre l’environnement culturel et les préférences musicales.</p
+><figure
+xml:id="figure01"
+><head
+>Graphique 22. Selon l’effet Wundt, les événements musicaux générant un niveau intermédiaire de prédictibilité sont ceux qui engendrent le maximum de plaisir.</head
+><p
+rend="caption"
+>Source : l’auteur.</p
+></figure
+><p
+xml:id="p14"
+>D’après la littérature, il n’est pas évident que les facteurs socioculturels puissent expliquer entièrement la variance des préférences musicales, ce qui signifie qu’il existe probablement des différences individuelles causées par les expériences de vie uniques et la physiologie des individus. La personnalité étant le premier candidat pour de telles différences, Rentfrow et Gosling<note
+n="52"
+place="foot"
+xml:id="ftn108"
+><p
+>Peter J. Rentfrow et Samuel D. Gosling, « The Do Re Mi’s of Everyday Life: The Structure and Personality Correlates of Music Preferences », <hi
+rend="italic"
+>Journal of Personality and Social Psychology</hi
+>, vol. 84, n<hi
+rend="sup"
+>o</hi
+> 6, 2003, p. 1236-1256.</p
+></note
+> ont utilisé le STOMP (<hi
+rend="italic"
+>short test of musical preferences</hi
+>) et ont observé que les individus ayant une préférence pour les styles réfléchis et complexes (tels que le classique et le jazz) ont tendance à avoir des niveaux plus élevés d’ouverture à l’expérience (mesurés à l’aide du test de personnalité Big Five), à se percevoir comme plus intelligents et moins athlétiques. En revanche, ceux qui préfèrent les styles rythmiques et énergiques (comme la danse électronique et le hip-hop) sont plus susceptibles de présenter des niveaux élevés d’extraversion et d’ouverture à l’expérience, et de se percevoir comme plus athlétiques. Cependant, une méta-analyse (combinant 263 196 participants) sur la relation entre les traits de personnalité et les préférences musicales<note
+n="53"
+place="foot"
+xml:id="ftn109"
+><p
+>Thomas et Claudia Mehlhorn, « Can Personality Traits Predict Musical Schaefer Style Preferences? A Meta-Analysis », <hi
+rend="italic"
+>Personality and Individual Differences</hi
+>, vol. 116, 2017, p. 265-273.</p
+></note
+> constate que, bien qu’il y ait eu de petites corrélations pour des styles et des traits particuliers, notamment entre l’ouverture à l’expérience et le soft rock R’n’B, le classique et l’avant-garde, les traits de personnalité ont un pouvoir prédictif limité pour expliquer les différences interindividuelles en matière de préférences musicales. La physiologie pourrait également être un facteur d’aplanissement, mais les quelques études qui ont étudié la relation entre la fréquence cardiaque et la préférence pour certains <hi
+rend="italic"
+>tempi</hi
+> ont donné des résultats contradictoires. Deux études portant sur les composantes génétiques des préférences musicales (qui se sont révélées très faibles pour les préférences faciales<note
+n="54"
+place="foot"
+xml:id="ftn110"
+><p
+>Laura Germine, Richard Russell, P. Matthew Bronstad <hi
+rend="italic"
+>et al.</hi
+>, « Wilmer. Individual Aesthetic Preferences for Faces Are Shaped Mostly by Environments, Not Genes », <hi
+rend="italic"
+>Current Biology</hi
+>, vol. 25, n<hi
+rend="sup"
+>o</hi
+> 20, 2015, p. 2684–2689.</p
+></note
+>, mais non absentes) ont généré des résultats contradictoires sur les observations non directes des préférences musicales (par le biais des préférences pour différents domaines comme la mode, la cuisine et la musique<note
+n="55"
+place="foot"
+xml:id="ftn111"
+><p
+>Judith Faust, « A Twin Study of Personal Preferences », <hi
+rend="italic"
+>Journal of Biosocial Science</hi
+>, vol. 6, n<hi
+rend="sup"
+>o</hi
+> 1, 1974, p. 75-91.</p
+></note
+> et des préférences de choix pour les instruments<note
+n="56"
+place="foot"
+xml:id="ftn112"
+><p
+>Miriam A. Mosing et Frederik Ullén, « Genetic Influences on Musical Specialization: A Twin Study on Choice of Instrument and Music Genre », <hi
+rend="italic"
+>Annals of the New York Academy of Sciences</hi
+>, 2018, DOI : 10.1111/nyas.13626.</p
+></note
+>). Ces résultats semblent converger vers une explication principalement sociale et acquise des préférences musicales. Néanmoins, le substrat neurocognitif pour l’enculturation musicale au travers du traitement prédictif semble être, quant à lui, hérité et partagé entre de nombreuses espèces animales.</p
+></div
+><div
+type="section1"
+xml:id="div05"
+><head
+>Beauté musicale ?</head
+><p
+xml:id="p15"
+>Nous avons jusqu’ici résumé la littérature scientifique qui suggère que la préférence musicale est liée à la manière dont notre cerveau prédit la musique et que ces prédictions sont apprises tout au long de notre vie grâce à une exposition passive. Cela explique bien pourquoi chaque auditeur éprouve du plaisir en écoutant des musiques différentes. Cependant, ces connaissances portent sur les émotions, le plaisir et les préférences musicales. Afin de les appliquer à la notion de beauté, nous avons mené une étude auprès de 34 participants à Paris. Nous avons demandé à tous les participants (dont nous avons vérifié qu’ils n’étaient pas familiers avec la musique chinoise) de venir au laboratoire et d’écouter une heure de musique chinoise tout en étant connectés à un système électroencéphalographique. Ce système non invasif mesure l’activité électrique à la surface du cerveau (cortex) et peut être utilisé pour mesurer les prédictions musicales dans le cerveau. Pour chaque chanson, il a été demandé aux participants d’indiquer l’intensité du sentiment de beauté qu’ils ont ressenti. Nous avons ensuite divisé les participants en deux groupes : le premier groupe a été invité à écouter de la musique chinoise (des chansons différentes, mais du même genre) une heure par jour pendant une semaine et l’autre groupe a été invité à écouter des chorals de Bach joués sur le même instrument que la musique chinoise (Guzheng). Les participants ne savaient ni à quel groupe ils étaient assignés ni qu’il y avait différents groupes. Ils sont revenus après une semaine pour suivre la même procédure.</p
+><p
+xml:id="p16"
+>Le résultat le plus frappant est que nous avons pu observer un changement de direction positif dans l’évaluation de la beauté entre les deux enregistrements pour le groupe qui a écouté de la musique chinoise, mais pas pour celui qui a écouté Bach (légèrement négatif) – voir graphique 24a. Cela signifie donc que le sentiment de beauté est conditionné par la familiarité. Nous n’avons pas pu exposer les participants jusqu’à ce qu’ils soient trop familiers avec la musique chinoise, nous ne pouvons donc pas savoir si les évaluations de la beauté diminuent lorsque les chansons sont trop familières, comme c’est le cas pour les préférences dans l’effet Wundt. L’autre découverte est que cet apprentissage est réversible sur un temps long. Les participants sont revenus une nouvelle fois au laboratoire après deux mois de repos (c’est-à-dire sans avoir écouté de musique différente de celle qu’ils écoutent habituellement) pour renouveler la procédure. Nous avons trouvé l’effet inverse, les notations s’étaient ainsi rapprochées de leur point de départ (graphique 24b). Néanmoins, même après deux mois d’oubli, les résultats sont encore éloignés du point de départ. Par conséquent, la découverte d’une nouvelle musique affecte nos préférences musicales pour longtemps après cette rencontre. Nous avons également demandé aux participants de noter le niveau de plaisir qu’ils ont ressenti ; cela permet ainsi de revenir à la question de la distinction plaisir/beauté, déjà très discutée dans la littérature<note
+n="57"
+place="foot"
+xml:id="ftn113"
+><p
+>Aenne Brielmann et Denis Pelli, « Intense Beauty Requires Intense Pleasure », <hi
+rend="italic"
+>Frontiers in Psychology</hi
+>, vol. 10, 2019, DOI : <ref
+target="https://doi.org/10.3389/fpsyg.2019.02420"
+>10.3389/fpsyg.2019.02420</ref
+>.</p
+></note
+>. Nous avons comparé les mesures de beauté et de plaisir dans notre expérience et avons trouvé une très grande corrélation (r = 87, voir graphique 24c). Ceci signifie que ces deux sensations semblent liées pour les participants. Un nouvel axe de recherche devrait être ouvert afin de comprendre la relation entre beauté et plaisir. Sont-ils différents ? Quels en sont les points de divergences ? Le plaisir est-il nécessaire pour supporter la beauté ? La philosophie a déjà exploré ces questions, néanmoins, il serait intéressant d’en faire une validation empirique à l’aide de données cognitives.</p
+><p
+xml:id="p17"
+>Notre étude suggère une nouvelle perspective sur la beauté musicale : loin d’être une essence universelle, elle apparaît comme un phénomène culturel façonné par la familiarité. La musique que nous rencontrons tout au long de notre vie sculpte nos attentes et nos surprises, modelant ainsi notre expérience esthétique. Ce cadre propose une rupture avec les conceptions universalistes de la beauté et invite à repenser notre perception du monde sonore. La beauté musicale, tout en reposant sur des mécanismes cognitifs universels, se révèle profondément ancrée dans des normes culturelles. En somme, la beauté n’est pas seulement ressentie ; elle s’apprend, s’oublie, et surtout, se construit au fil de nos expériences.</p
+><figure
+xml:id="figure02"
+><head
+>Graphiques 23a, b et c. Changement dans l’évaluation de la beauté ressentie (après-avant). Une augmentation (moyenne supérieure à 0) signifie que les participants apprécient davantage les morceaux. Ces graphiques montrent le changement induit par la phase d’exposition (24a) et la phase de repos (24b) et illustrent, respectivement, l’apprentissage d’une nouvelle grammaire musicale et son déclin après deux mois d’absence d’exposition. Nous pouvons voir que l’effet de l’exposition dans le groupe test a induit une augmentation des notes de plaisir qui ont été partiellement effacées après la phase de repos, ce qui est une preuve évidente de l’apprentissage de la nouvelle grammaire musicale et de son déclin.</head
+><p
+rend="caption"
+>Source : l’auteur.</p
+></figure
+></div
+></body
+></text
+></TEI
+>

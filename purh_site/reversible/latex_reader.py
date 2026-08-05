@@ -45,6 +45,9 @@ MACRO_TO_ELEMENT = {
     "teiRef": "ref",
     "teiRow": "row",
     "teiSaid": "said",
+    "teiSpeaker": "speaker",
+    "teiStage": "stage",
+    "teiStageInline": "stage",
     "teiTerm": "term",
     "teiTitle": "title",
 }
@@ -65,6 +68,7 @@ ENVIRONMENT_TO_ELEMENT = {
     "teiLg": "lg",
     "teiList": "list",
     "teiQuote": "quote",
+    "teiSp": "sp",
     "teiTable": "table",
 }
 

@@ -1,0 +1,2491 @@
+% !TeX program = lualatex
+% Fichier LaTEI généré depuis XML-TEI Métopes / Commons-Publishing.
+% Zone technique (préambule, macros, mappings) : régénérable depuis le XML source.
+% NE PAS MODIFIER la zone technique — elle sera écrasée à la prochaine génération.
+% Zone éditoriale réversible : l'environnement lateiDocument dans ce fichier.
+% Corriger uniquement dans la zone réversible.
+
+\documentclass[12pt,twoside,openany]{book}
+
+\usepackage[
+  paperwidth=155mm,
+  paperheight=230mm,
+  top=30mm,
+  bottom=19mm,
+  inner=23mm,
+  outer=23mm,
+  headheight=14pt,
+  headsep=8mm,
+  footskip=10mm
+]{geometry}
+\raggedbottom
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+\usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{indentfirst}
+\usepackage{emptypage}
+\usepackage[normalem]{ulem}
+
+\IfFontExistsTF{Chaparral Pro}
+  {\setmainfont{Chaparral Pro}}
+  {\setmainfont{TeX Gyre Pagella}}
+
+\IfFontExistsTF{Josefin Sans}
+  {\newfontfamily\PURHTitleFont{Josefin Sans}}
+  {\newfontfamily\PURHTitleFont{TeX Gyre Heros}}
+
+\IfFontExistsTF{Latin Modern Mono}
+  {\setmonofont{Latin Modern Mono}}
+  {\setmonofont{TeX Gyre Cursor}}
+
+\newcommand{\PURHHeaderFont}{\PURHTitleFont\small\itshape}
+
+\newcommand{\PURHBookTitle}{Titre principal du document}
+\newcommand{\PURHBookSubtitle}{Sous-titre}
+\newcommand{\PURHBookAuthor}{Prénom\_1 Nom\_1 ; Prénom\_2 Nom\_2 ; Prénom\_traducteur Nom\_traducteur ; Prénom\_éditeur\_scientifique Nom\_éditeur\_scientifique ; Prénom\_directeur\_de\_fouille\_archéologique Nom\_directeur\_de\_fouille\_archéologique ; Prénom\_collaborateur Nom\_collaborateur}
+\newcommand{\PURHPublisher}{Nom de l'éditeur}
+\newcommand{\PURHYear}{2019}
+\newcommand{\PURHDOI}{10.4000/remi.7777}
+\newcommand{\PURHISBN}{}
+
+\title{\PURHBookTitle}
+\author{\PURHBookAuthor}
+\date{\PURHYear}
+
+\setlength{\parindent}{5mm}
+\setlength{\parskip}{0pt}
+\linespread{1.0}
+\pretolerance=100
+\tolerance=500
+\hyphenpenalty=500
+\exhyphenpenalty=500
+\emergencystretch=3em
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+\usepackage{enumitem}
+
+\setlist[itemize,1]{
+  label=\textendash,
+  leftmargin=1.5em,
+  itemsep=0.2\baselineskip,
+  topsep=0.4\baselineskip
+}
+
+\setlist[enumerate,1]{
+  leftmargin=1.8em,
+  itemsep=0.2\baselineskip,
+  topsep=0.4\baselineskip
+}
+
+\usepackage[nobottomtitles*]{titlesec}
+\usepackage{titletoc}
+
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{2}
+
+\titleformat{\chapter}[display]
+  {\PURHTitleFont\huge\bfseries\raggedright}
+  {\chaptertitlename~\thechapter}
+  {10pt}
+  {}
+
+\titleformat{\section}[block]
+  {\PURHTitleFont\Large\bfseries\raggedright}
+  {}
+  {0pt}
+  {}
+
+\titleformat{\subsection}[block]
+  {\PURHTitleFont\large\bfseries\raggedright}
+  {}
+  {0pt}
+  {}
+
+\titleformat{\subsubsection}[block]
+  {\PURHTitleFont\normalsize\bfseries\raggedright}
+  {}
+  {0pt}
+  {}
+
+\titlespacing*{\chapter}{0pt}{20pt}{18pt}
+\titlespacing*{\section}{0pt}{18pt}{10pt}
+\titlespacing*{\subsection}{0pt}{14pt}{8pt}
+\titlespacing*{\subsubsection}{0pt}{12pt}{6pt}
+
+\addto\captionsfrench{
+  \renewcommand{\contentsname}{Table des matières}
+}
+
+\titlecontents{chapter}
+  [0pt]
+  {\addvspace{8pt}\PURHTitleFont\bfseries}
+  {}
+  {}
+  {\hfill\contentspage}
+  [\smallskip]
+
+\titlecontents{section}
+  [1.5em]
+  {}
+  {}
+  {}
+  {\titlerule*[0.5pc]{.}\contentspage}
+
+\titlecontents{subsection}
+  [3em]
+  {\small}
+  {}
+  {}
+  {\titlerule*[0.5pc]{.}\contentspage}
+
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\PURHHeaderFont\thepage}
+\fancyhead[RE]{\PURHHeaderFont\nouppercase{\PURHBookTitle}}
+\fancyhead[LO]{\PURHHeaderFont\nouppercase{\leftmark}}
+\fancyhead[RO]{\PURHHeaderFont\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+
+\usepackage[hang,flushmargin]{footmisc}
+
+\setlength{\footnotesep}{0.6\baselineskip}
+\setlength{\skip\footins}{1.2\baselineskip}
+\renewcommand{\footnotelayout}{\fontsize{9.5pt}{10.5pt}\selectfont}
+
+\usepackage{etoolbox}
+
+\renewenvironment{quote}
+  {%
+    \par\begingroup
+    \fontsize{11pt}{14pt}\selectfont
+    \list{}{\leftmargin=1.5em\rightmargin=1.5em}%
+    \item\relax
+  }
+  {%
+    \endlist
+    \endgroup
+  }
+
+\AtBeginEnvironment{quote}{\vspace*{8pt plus 2pt minus 2pt}}
+\AtEndEnvironment{quote}{\vspace*{8pt plus 2pt minus 2pt}}
+
+\usepackage{graphicx}
+\usepackage{caption}
+
+\graphicspath{{media/}{images/}{assets/images/}}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  labelsep=period,
+  skip=11pt
+}
+
+\addto\captionsfrench{
+  \renewcommand{\figurename}{Figure}
+  \renewcommand{\tablename}{Tableau}
+}
+
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+\usepackage{verse}
+\usepackage{ragged2e}
+\usepackage{xurl}
+\urlstyle{same}
+
+\usepackage[
+  unicode=true,
+  hidelinks,
+  pdfusetitle
+]{hyperref}
+
+\usepackage{bookmark}
+
+\hypersetup{
+  pdftitle={\PURHBookTitle},
+  pdfauthor={\PURHBookAuthor},
+  pdfsubject={\PURHPublisher},
+  pdfcreator={Impressions},
+  pdfproducer={LuaLaTeX}
+}
+
+% -----------------------------------------------------------------
+% Macros utilitaires PURH
+% -----------------------------------------------------------------
+\newcommand{\PURHSeparator}{%
+  \par\addvspace{1.5\baselineskip}%
+  \noindent\rule{5cm}{0.4pt}%
+  \par\addvspace{1.5\baselineskip}%
+}
+
+\newcommand{\PurhSubtitle}[1]{%
+  \par\vspace{0.4\baselineskip}%
+  {\large\itshape #1\par}%
+  \vspace{0.6\baselineskip}%
+}
+
+\newcommand{\PurhContributors}[1]{%
+  \par\vspace{0.5\baselineskip}%
+  {\normalsize\scshape #1\par}%
+  \vspace{0.6\baselineskip}%
+}
+
+\newcommand{\PurhTitleExtra}[1]{%
+  {\small #1\par}%
+}
+
+\newenvironment{PurhBlockQuote}
+  {%
+    \begin{quote}
+  }
+  {%
+    \end{quote}
+  }
+
+\newenvironment{PurhBibliography}
+  {%
+    \par
+    \setlength{\parindent}{0pt}%
+    \setlength{\leftskip}{0pt}%
+  }
+  {%
+    \par
+  }
+
+% ============================================================
+% Macros LaTEI — régénérables, ne pas modifier
+% ============================================================
+
+% Experimental LaTEI macros for the reversible TEI/PURH convergence path.
+% These definitions are typographic only; the reversible source remains the
+% controlled LaTEI body produced by purh_site.reversible.latex_writer.
+
+\usepackage{xparse}
+\usepackage{xstring}
+\usepackage{newunicodechar}
+
+% Unicode spaces remain documentary characters in the reversible body; these
+% typographic mappings only prevent missing glyphs in direct LaTEI compilation.
+\newunicodechar{ }{~}
+\newunicodechar{ }{\nobreak\,}
+\newunicodechar{ }{\,}
+\newunicodechar{‑}{\nobreak\hbox{-}}
+\newunicodechar{″}{\ensuremath{\prime\prime}}
+\newcommand{\lateiCurrentRunningTitle}{}
+\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}
+\AtBeginDocument{\fancyhead[LO,RE]{\PURHHeaderFont\nouppercase{\lateiCurrentRunningTitle}}}
+
+\NewDocumentCommand{\lateiRenderParagraph}{O{} +m}{%
+  \iflateiinfootnote
+    #2\unskip\space
+  \else
+    \IfStrEq{\lateiHeadContext}{figure}{%
+      \IfSubStr{#1}{rend={caption}}{\par\small #2\par}{%
+        \IfSubStr{#1}{rend={credits}}{\par\footnotesize #2\par}{\par #2\par}%
+      }%
+    }{\par #2\par}%
+  \fi
+}
+\NewDocumentCommand{\teiP}{O{} +m}{\lateiRenderParagraph[#1]{#2}}
+
+% Nested footnotes are not valid LaTeX. If a teiNote appears inside another
+% note, render a visible symbolic marker and inline parenthesized content.
+\newif\iflateiinfootnote
+\lateiinfootnotefalse
+\NewDocumentCommand{\teiNote}{O{} +m}{%
+  \iflateiinfootnote
+    \textsuperscript{*}%
+  \else
+    \begingroup
+      \lateiinfootnotetrue
+      \footnote{#2}%
+    \endgroup
+  \fi
+}
+\NewDocumentCommand{\teiRef}{O{} +m}{\lateiRenderRef[#1]{#2}}
+\NewDocumentCommand{\teiTitle}{O{} +m}{%
+  \IfSubStr{#1}{level={m}}{\textit{#2}}{%
+    \IfSubStr{#1}{level={j}}{\textit{#2}}{%
+      \IfSubStr{#1}{level={a}}{\enquote{#2}}{#2}%
+    }%
+  }%
+}
+
+% <formula notation="latex"> : le contenu documentaire porte déjà ses propres
+% délimiteurs de mode mathématique (\(...\) ou \[...\]) — passthrough tel
+% quel, sans échappement, pour que LaTeX le compose réellement au lieu
+% d'afficher le code source échappé comme texte visible.
+\NewDocumentCommand{\teiFormula}{O{} +m}{#2}
+
+% Matter switches and group titles mirror the stable PURH book skeleton while
+% leaving the reversible LaTEI body unchanged.
+\newif\iflateifrontmatterstarted
+\newif\iflateimainmatterstarted
+\newif\iflateibackmatterstarted
+\newif\iflateiinbibliography
+\lateifrontmatterstartedfalse
+\lateimainmatterstartedfalse
+\lateibackmatterstartedfalse
+\lateiinbibliographyfalse
+\NewDocumentCommand{\lateiEnsureFrontMatter}{}{%
+  \iflateifrontmatterstarted\else
+    % Match the stable renderer: book-class frontmatter gives liminaries their
+    % separate numbering policy; mainmatter starts the body numbering again.
+    \frontmatter
+    \lateifrontmatterstartedtrue
+  \fi
+}
+\NewDocumentCommand{\lateiEnsureMainMatter}{}{%
+  \iflateimainmatterstarted\else
+    \mainmatter
+    \lateimainmatterstartedtrue
+  \fi
+}
+\NewDocumentCommand{\lateiEnsureBackMatter}{}{%
+  \iflateibackmatterstarted\else
+    \backmatter
+    \lateibackmatterstartedtrue
+  \fi
+}
+
+\ExplSyntaxOn
+\tl_new:N \l_latei_option_type_tl
+\tl_new:N \l_latei_option_page_title_tl
+\tl_new:N \l_latei_option_target_tl
+\tl_new:N \l_latei_option_url_tl
+\tl_new:N \l_latei_option_n_tl
+\tl_new:N \l_latei_option_rend_tl
+\tl_new:N \l_latei_option_xmlid_tl
+\tl_new:N \l_latei_option_internaltarget_tl
+\tl_new:N \l_latei_option_numcols_tl
+\tl_new:N \l_latei_graphic_path_tl
+\tl_new:N \l_latei_graphic_local_path_tl
+\tl_new:N \l_latei_running_title_tl
+\tl_new:N \g_latei_current_running_title_tl
+\prop_new:N \g_latei_graphics_map_prop
+\prop_new:N \g_latei_running_titles_map_prop
+\cs_generate_variant:Nn \prop_get:NnNTF { NVNTF }
+\RenewDocumentCommand{\lateiCurrentRunningTitle}{}
+  {
+    \tl_use:N \g_latei_current_running_title_tl
+  }
+\NewDocumentCommand{\lateiDeclareGraphic}{m m}
+  {
+    \prop_gput:Nnn \g_latei_graphics_map_prop { #1 } { #2 }
+  }
+\NewDocumentCommand{\lateiDeclareRunningTitle}{m m}
+  {
+    \prop_gput:Nnn \g_latei_running_titles_map_prop { #1 } { #2 }
+  }
+\cs_new_protected:Npn \latei_markboth:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      {
+        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
+        \markboth{\tl_use:N \l_latei_running_title_tl}{\tl_use:N \l_latei_running_title_tl}
+      }
+      {
+        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
+        \markboth{#1}{#1}
+      }
+  }
+\NewDocumentCommand{\lateiMarkBoth}{m}
+  {
+    \latei_markboth:n { #1 }
+  }
+\RenewDocumentCommand{\chaptermark}{m}{\lateiMarkBoth{#1}}
+\cs_new_protected:Npn \latei_chapter:n #1
+  {
+    \prop_get:NnNTF \g_latei_running_titles_map_prop { #1 } \l_latei_running_title_tl
+      {
+        \tl_gset_eq:NN \g_latei_current_running_title_tl \l_latei_running_title_tl
+        \chapter{#1}
+        \lateiMarkBoth{#1}
+      }
+      {
+        \tl_gset:Nn \g_latei_current_running_title_tl { #1 }
+        \chapter{#1}
+        \lateiMarkBoth{#1}
+      }
+  }
+\NewDocumentCommand{\lateiChapter}{m}
+  {
+    \latei_chapter:n { #1 }
+  }
+\keys_define:nn { latei / options }
+  {
+    type .tl_set:N = \l_latei_option_type_tl,
+    data-page-title .tl_set:N = \l_latei_option_page_title_tl,
+    target .tl_set:N = \l_latei_option_target_tl,
+    url .tl_set:N = \l_latei_option_url_tl,
+    n .tl_set:N = \l_latei_option_n_tl,
+    rend .tl_set:N = \l_latei_option_rend_tl,
+    xmlid .tl_set:N = \l_latei_option_xmlid_tl,
+    internaltarget .tl_set:N = \l_latei_option_internaltarget_tl,
+    numcols .tl_set:N = \l_latei_option_numcols_tl,
+    unknown .code:n = {},
+  }
+\cs_new_protected:Npn \latei_extract_options:n #1
+  {
+    \tl_clear:N \l_latei_option_type_tl
+    \tl_clear:N \l_latei_option_page_title_tl
+    \tl_clear:N \l_latei_option_target_tl
+    \tl_clear:N \l_latei_option_url_tl
+    \tl_clear:N \l_latei_option_n_tl
+    \tl_clear:N \l_latei_option_rend_tl
+    \tl_clear:N \l_latei_option_xmlid_tl
+    \tl_clear:N \l_latei_option_internaltarget_tl
+    \tl_clear:N \l_latei_option_numcols_tl
+    \keys_set:nn { latei / options } { #1 }
+  }
+% Pose une cible PDF nommée d'après le xmlid TEI, s'il est présent dans les
+% options déjà extraites par \latei_extract_options:n. Utilisé pour que les
+% ancres/citations restent atteignables depuis \lateiRenderRef (cf. cibles
+% "#id" internes) même quand l'élément lui-même n'a pas de macro de
+% sectionnement propre (qui créerait sinon sa propre destination).
+\cs_new_protected:Npn \latei_hypertarget_if_xmlid:
+  {
+    \tl_if_empty:NF \l_latei_option_xmlid_tl
+      { \hypertarget{\tl_use:N \l_latei_option_xmlid_tl}{} }
+  }
+% Ponts sans "_"/":" : \ExplSyntaxOff plus bas rend ces caractères inaptes
+% à composer un nom de macro hors de cette zone ; \teiHead et \teiCit, définis
+% après \ExplSyntaxOff, doivent donc passer par ces noms classiques.
+\NewDocumentCommand{\lateiExtractOptions}{m}
+  {
+    \latei_extract_options:n { #1 }
+  }
+\NewDocumentCommand{\lateiHypertargetIfXmlid}{}
+  {
+    \latei_hypertarget_if_xmlid:
+  }
+% Nombre de colonnes du tableau en cours (calculé côté Python, cf.
+% _table_column_count dans latex_writer.py — LaTeX ne peut pas le déduire
+% à la volée sans avoir déjà lu toutes les lignes).
+\NewDocumentCommand{\lateiTableNumCols}{}
+  {
+    \tl_use:N \l_latei_option_numcols_tl
+  }
+\cs_new_protected:Npn \latei_add_unnumbered_chapter_from_title:
+  {
+    \tl_if_empty:NF \l_latei_option_page_title_tl
+      {
+        \chapter*{\tl_use:N \l_latei_option_page_title_tl}
+        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
+        \addcontentsline{toc}{chapter}{\tl_use:N \l_latei_option_page_title_tl}
+      }
+  }
+\cs_new_protected:Npn \latei_add_numbered_chapter_from_title:
+  {
+    \tl_if_empty:NF \l_latei_option_page_title_tl
+      {
+        \chapter{\tl_use:N \l_latei_option_page_title_tl}
+        \exp_args:NV \latei_markboth:n \l_latei_option_page_title_tl
+      }
+  }
+\NewDocumentCommand{\lateiRenderFrontGroup}{O{} +m}
+  {
+    \lateiEnsureFrontMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_unnumbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderChapterGroup}{O{} +m}
+  {
+    \lateiEnsureMainMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_numbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderPartGroup}{O{} +m}
+  {
+    \lateiEnsureMainMatter
+    \begingroup
+      \lateiSetHeadContext{part}
+      #2
+    \endgroup
+  }
+\NewDocumentCommand{\lateiRenderBackGroup}{O{} +m}
+  {
+    \lateiEnsureBackMatter
+    \latei_extract_options:n { #1 }
+    \latei_add_unnumbered_chapter_from_title:
+    #2
+  }
+\NewDocumentCommand{\lateiRenderRef}{O{} +m}
+  {
+    \latei_extract_options:n { #1 }
+    \tl_if_empty:NTF \l_latei_option_internaltarget_tl
+      {
+        \tl_if_empty:NTF \l_latei_option_target_tl
+          { #2 }
+          { \href{\tl_use:N \l_latei_option_target_tl}{#2} }
+      }
+      { \hyperlink{\tl_use:N \l_latei_option_internaltarget_tl}{#2} }
+  }
+\cs_new_protected:Npn \latei_figure_fallback:
+  {
+    \fbox{\parbox{0.8\linewidth}{\centering\footnotesize Image absente ou non fournie}}
+  }
+\cs_new_protected:Npn \latei_include_graphic:n #1
+  {
+    \tl_if_blank:nTF { #1 }
+      { \latei_figure_fallback: }
+      {
+        \IfFileExists{\detokenize{#1}}
+          { \includegraphics[width=0.95\linewidth,keepaspectratio]{\detokenize{#1}} }
+          { \latei_figure_fallback: }
+      }
+  }
+\NewDocumentCommand{\lateiRenderGraphic}{O{}}
+  {
+    \latei_extract_options:n { #1 }
+    \tl_clear:N \l_latei_graphic_path_tl
+    \tl_if_empty:NF \l_latei_option_url_tl
+      { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_url_tl }
+    \tl_if_empty:NT \l_latei_graphic_path_tl
+      {
+        \tl_if_empty:NF \l_latei_option_target_tl
+          { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_target_tl }
+      }
+    \tl_if_empty:NT \l_latei_graphic_path_tl
+      {
+        \tl_if_empty:NF \l_latei_option_n_tl
+          { \tl_set_eq:NN \l_latei_graphic_path_tl \l_latei_option_n_tl }
+      }
+    \prop_get:NVNTF \g_latei_graphics_map_prop \l_latei_graphic_path_tl \l_latei_graphic_local_path_tl
+      { \exp_args:NV \latei_include_graphic:n \l_latei_graphic_local_path_tl }
+      { \exp_args:NV \latei_include_graphic:n \l_latei_graphic_path_tl }
+  }
+\ExplSyntaxOff
+
+\NewDocumentCommand{\lateiBibliographyEntry}{+m}{%
+  \par\noindent\hangindent=1.5em\hangafter=1 #1\par
+}
+\NewDocumentCommand{\lateiBibliographyBlock}{+m}{%
+  \par
+  \begingroup
+    \lateiinbibliographytrue
+    \begin{PurhBibliography}
+    #1%
+    \end{PurhBibliography}
+  \endgroup
+  \par
+}
+
+% Heads are contextual in TEI: the same <head> can name a chapter, section,
+% figure, table, or list. The surrounding LaTEI environment sets this context.
+\newcommand{\lateiHeadContext}{fallback}
+\newcommand{\lateiSetHeadContext}[1]{\def\lateiHeadContext{#1}}
+\NewDocumentCommand{\lateiRenderHead}{m}{%
+  \IfStrEq{\lateiHeadContext}{part}{\part*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{part}{#1}}{%
+  \IfStrEq{\lateiHeadContext}{chapter}{\lateiChapter{#1}}{%
+    \IfStrEq{\lateiHeadContext}{unnumberedchapter}{\chapter*{#1}\lateiMarkBoth{#1}\addcontentsline{toc}{chapter}{#1}}{%
+    \IfStrEq{\lateiHeadContext}{section}{\section{#1}}{%
+      \IfStrEq{\lateiHeadContext}{subsection}{\subsection{#1}}{%
+        \IfStrEq{\lateiHeadContext}{subsubsection}{\subsubsection{#1}}{%
+          \IfStrEq{\lateiHeadContext}{figure}{\par\smallskip\noindent\textbf{#1}\par\smallskip}{%
+            \IfStrEq{\lateiHeadContext}{table}{\par\smallskip\noindent\textbf{#1}\par\smallskip}{%
+              \IfStrEq{\lateiHeadContext}{list}{\item[]\textbf{#1}}{%
+                \par\smallskip\noindent\textbf{#1}\par\smallskip% fallback head
+              }%
+            }%
+          }%
+        }%
+      }%
+    }%
+  }%
+  }%
+  }%
+}
+\NewDocumentCommand{\teiHead}{O{} +m}{%
+  \lateiExtractOptions{#1}%
+  \lateiHypertargetIfXmlid
+  \lateiRenderHead{#2}%
+}
+
+% Apply rend values predictably, including combined values in any order. This
+% mirrors the stable renderer order: small caps / position / weight / italic.
+\NewDocumentCommand{\lateiIfRendSmallCaps}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{small-caps}}{#2}{%
+    \IfSubStr{\detokenize{#1}}{\detokenize{small_caps}}{#2}{%
+      \IfSubStr{\detokenize{#1}}{\detokenize{small caps}}{#2}{#3}%
+    }%
+  }%
+}
+\NewDocumentCommand{\lateiIfRendBold}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{bold}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{gras}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendSup}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{sup}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{exposant}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendSub}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{sub}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{indice}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendUnderline}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{underline}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{souligne}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendStrikethrough}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{strikethrough}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{barre}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiIfRendUppercase}{m m m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{uppercase}}{#2}{\IfSubStr{\detokenize{#1}}{\detokenize{majuscule}}{#2}{#3}}%
+}
+\NewDocumentCommand{\lateiHiSmallCaps}{m +m}{%
+  \lateiIfRendSmallCaps{#1}{\textsc{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiPosition}{m +m}{%
+  \lateiIfRendSup{#1}{\textsuperscript{#2}}{%
+    \lateiIfRendSub{#1}{$_{#2}$}{#2}%
+  }%
+}
+\NewDocumentCommand{\lateiHiBold}{m +m}{%
+  \lateiIfRendBold{#1}{\textbf{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiItalic}{m +m}{%
+  \IfSubStr{\detokenize{#1}}{\detokenize{italic}}{\textit{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiUnderline}{m +m}{%
+  \lateiIfRendUnderline{#1}{\underline{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiStrikethrough}{m +m}{%
+  \lateiIfRendStrikethrough{#1}{\sout{#2}}{#2}%
+}
+\NewDocumentCommand{\lateiHiUppercase}{m +m}{%
+  \lateiIfRendUppercase{#1}{\MakeUppercase{#2}}{#2}%
+}
+\NewDocumentCommand{\teiHi}{O{} +m}{%
+  \lateiHiItalic{#1}{\lateiHiBold{#1}{\lateiHiPosition{#1}{\lateiHiSmallCaps{#1}{\lateiHiUnderline{#1}{\lateiHiStrikethrough{#1}{\lateiHiUppercase{#1}{#2}}}}}}}%
+}
+
+\NewDocumentCommand{\teiForeign}{O{} +m}{\textit{#2}}
+\NewDocumentCommand{\teiTerm}{O{} +m}{#2}
+\NewDocumentCommand{\teiName}{O{} +m}{#2}
+\NewDocumentCommand{\teiPersName}{O{} +m}{#2}
+\NewDocumentCommand{\teiPlaceName}{O{} +m}{#2}
+\NewDocumentCommand{\teiOrgName}{O{} +m}{#2}
+\NewDocumentCommand{\teiDate}{O{} +m}{#2}
+\NewDocumentCommand{\teiNum}{O{} +m}{#2}
+\NewDocumentCommand{\teiLabel}{O{} +m}{#2}
+\NewDocumentCommand{\teiQ}{O{} +m}{\enquote{#2}}
+\NewDocumentCommand{\teiSaid}{O{} +m}{\enquote{#2}}
+\NewDocumentCommand{\teiAuthor}{O{} +m}{#2}
+\NewDocumentCommand{\teiEditor}{O{} +m}{#2}
+\NewDocumentCommand{\teiPublisher}{O{} +m}{#2}
+\NewDocumentCommand{\teiBiblScope}{O{} +m}{#2}
+\NewDocumentCommand{\teiIdno}{O{} +m}{#2}
+
+\NewDocumentCommand{\teiGraphic}{O{}}{\lateiRenderGraphic[#1]}
+\NewDocumentCommand{\teiPtr}{O{}}{}
+\NewDocumentCommand{\teiLb}{O{}}{\linebreak{}}
+\NewDocumentCommand{\teiPb}{O{}}{\ignorespaces}
+% <anchor xml:id="..."/> : marqueur de position TEI, sans contenu visible —
+% seule sa cible PDF (pour les <ref target="#..."> qui pointent dessus) compte.
+\NewDocumentCommand{\teiAnchor}{O{}}{%
+  \lateiExtractOptions{#1}%
+  \lateiHypertargetIfXmlid
+}
+
+\NewDocumentEnvironment{teiDiv}{O{} +b}{%
+  \IfSubStr{#1}{type={titlePage}}{}{%
+    \begingroup
+    \lateiSetHeadContext{fallback}%
+    \IfSubStr{#1}{type={chapter}}{\lateiSetHeadContext{chapter}}{}%
+    \IfSubStr{#1}{type={section}}{\lateiSetHeadContext{section}}{}%
+    \IfSubStr{#1}{type={section1}}{\lateiSetHeadContext{section}}{}%
+    \IfSubStr{#1}{type={section2}}{\lateiSetHeadContext{subsection}}{}%
+    \IfSubStr{#1}{type={subsection}}{\lateiSetHeadContext{subsection}}{}%
+    \IfSubStr{#1}{type={section3}}{\lateiSetHeadContext{subsubsection}}{}%
+    #2%
+    \endgroup
+  }%
+}{}
+\NewDocumentEnvironment{teiList}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{list}%
+  \IfSubStr{#1}{type={ordered}}{\begin{enumerate}}{\begin{itemize}}%
+  #2%
+  \IfSubStr{#1}{type={ordered}}{\end{enumerate}}{\end{itemize}}%
+  \endgroup
+}{}
+\NewDocumentCommand{\teiItem}{O{} +m}{\item #2}
+\NewDocumentEnvironment{teiQuote}{O{} +b}{\begin{PurhBlockQuote}#2\end{PurhBlockQuote}}{}
+\NewDocumentEnvironment{teiFigure}{O{} +b}{%
+  \begingroup
+  \lateiSetHeadContext{figure}%
+  \begin{center}#2\end{center}%
+  \endgroup
+}{}
+\NewDocumentEnvironment{teiCit}{O{} +b}{%
+  \lateiExtractOptions{#1}%
+  \lateiHypertargetIfXmlid
+  #2%
+}{}
+\NewDocumentEnvironment{teiBibl}{O{} +b}{\lateiBibliographyEntry{#2}}{}
+
+% Tableau réel (longtable/booktabs), pas une simple suite de paragraphes
+% centrés : le nombre de colonnes (numcols, calculé côté Python — cf.
+% _table_column_count) fixe le gabarit de colonnes. Les teiCell d'une ligne
+% sont déjà séparées par un "&" littéral dans la source (écrit côté Python,
+% cf. _write_row), et teiRow/teiCell sont des macros (pas des environnements) :
+% \multicolumn doit être le tout premier jeton lu par le scanner d'alignement
+% de TeX pour une cellule fusionnée (@cols>1) — même non protégée, l'envelopper
+% dans une macro (et a fortiori un environnement, qui insère un \begingroup
+% avant le corps) le rend invisible à la détection de \omit ("Misplaced
+% \omit", confirmé par reproduction isolée). \multicolumn est donc écrit tel
+% quel côté Python (cf. _write_cell) pour les cellules fusionnées ; teiCell ne
+% gère plus que la mise en forme (gras d'entête), jamais \multicolumn. Une
+% ligne d'entête (role=label/header sur la ligne, cf. TEI) reçoit
+% \toprule/\midrule ; \bottomrule ferme le tableau.
+\newif\iflateirowisheader
+\lateirowisheaderfalse
+\NewDocumentEnvironment{teiTable}{O{} +b}{%
+  \lateiExtractOptions{#1}%
+  \begingroup
+  \lateiSetHeadContext{table}%
+  \par\begin{center}%
+  \begin{longtable}{*{\lateiTableNumCols}{l}}
+  \toprule
+  #2%
+  \bottomrule
+  \end{longtable}%
+  \end{center}\par%
+  \endgroup
+}{}
+\NewDocumentCommand{\teiRow}{O{} +m}{%
+  \IfSubStr{#1}{role={label}}{\lateirowisheadertrue}{%
+    \IfSubStr{#1}{role={header}}{\lateirowisheadertrue}{\lateirowisheaderfalse}%
+  }%
+  #2%
+  \\%
+  \iflateirowisheader\midrule\lateirowisheaderfalse\fi
+}
+\NewDocumentCommand{\teiCell}{O{} +m}{%
+  \lateiExtractOptions{#1}%
+  \iflateirowisheader\bfseries\fi
+  \IfSubStr{#1}{role={label}}{\bfseries}{\IfSubStr{#1}{role={header}}{\bfseries}{}}%
+  #2%
+}
+% teiHeader is metadata, not running text. Document wrappers pass through;
+% unknown non-header elements keep their content visible rather than vanish.
+\NewDocumentEnvironment{teiElement}{O{} +b}{%
+  \IfSubStr{#1}{name={teiHeader}}{}{%
+    \IfSubStr{#1}{name={group}}{%
+      \IfSubStr{#1}{type={section1}}{\lateiRenderPartGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={article}}{\lateiRenderChapterGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={chapter}}{\lateiRenderChapterGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={acknowledgments}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={abbreviations}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={introduction}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={foreword}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={preface}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={dedication}}{\lateiRenderFrontGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={conclusion}}{\lateiRenderBackGroup[#1]{#2}}{%
+      \IfSubStr{#1}{type={bibliography}}{\lateiRenderBackGroup[#1]{#2}}{#2}%
+      }}}}}}}}}}%
+    }{%
+      \IfSubStr{#1}{name={back}}{\lateiEnsureBackMatter #2}{%
+      \IfSubStr{#1}{name={listBibl}}{\lateiBibliographyBlock{#2}}{%
+      \IfSubStr{#1}{name={biblStruct}}{\lateiBibliographyEntry{#2}}{#2}%
+      }}%
+    }%
+  }%
+}{}
+
+% ---------------------------------------------------------------------------
+% Commandes \latei... — corrections de mise en page PDF uniquement.
+% Ces commandes ne sont pas restaurées vers XML lors du retour Métopes.
+% Le parseur LaTEI parcourt leur contenu sans créer d'élément TEI.
+% ---------------------------------------------------------------------------
+
+% Macro interne — traduit les tailles normalisées en dimension PDF.
+% Valeurs acceptées : small (~0,5 ligne), medium (~1 ligne), large (~2 lignes).
+\NewDocumentCommand{\lateiApplyVSpace}{m}{%
+  \IfStrEqCase{#1}{%
+    {small}{\addvspace{0.5\baselineskip}}%
+    {medium}{\addvspace{\baselineskip}}%
+    {large}{\addvspace{2\baselineskip}}%
+  }[\PackageError{latei}{%
+    Valeur inconnue : #1. Valeurs acceptees : small, medium, large.%
+  }{}]%
+}
+
+% Indentation — alinéas
+% --------------------------------------------------------------------------
+
+% \lateiNoIndent{...} — supprime le retrait de première ligne du contenu.
+\NewDocumentCommand{\lateiNoIndent}{+m}{{\parindent=0pt #1}}
+
+% \lateiIndent{...} — force le retrait de première ligne même si LaTeX le supprime.
+\newlength{\lateiParindent}
+\AtBeginDocument{\setlength{\lateiParindent}{\parindent}}
+\NewDocumentCommand{\lateiIndent}{+m}{{\setlength{\parindent}{\lateiParindent}#1}}
+
+% Espacement vertical autonome
+% --------------------------------------------------------------------------
+
+% \lateiVSpace{small|medium|large} — insère un blanc vertical entre deux éléments.
+\NewDocumentCommand{\lateiVSpace}{m}{\par\lateiApplyVSpace{#1}}
+
+% Espacement vertical enveloppant
+% --------------------------------------------------------------------------
+
+% \lateiSpaceBefore{small|medium|large}{...} — ajoute un blanc avant le contenu.
+\NewDocumentCommand{\lateiSpaceBefore}{m +m}{\par\lateiApplyVSpace{#1}#2}
+
+% \lateiSpaceAfter{small|medium|large}{...} — ajoute un blanc après le contenu.
+\NewDocumentCommand{\lateiSpaceAfter}{m +m}{#2\par\lateiApplyVSpace{#1}}
+
+% Sauts de page autonomes
+% --------------------------------------------------------------------------
+
+% \lateiPageBreak — force un saut de page.
+\NewDocumentCommand{\lateiPageBreak}{}{\newpage}
+
+% \lateiClearPage — force une nouvelle page en vidant les flottants.
+\NewDocumentCommand{\lateiClearPage}{}{\clearpage}
+
+% Sauts de page enveloppants
+% --------------------------------------------------------------------------
+
+% \lateiPageBreakBefore{...} — force un saut de page avant le contenu.
+\NewDocumentCommand{\lateiPageBreakBefore}{+m}{\newpage#1}
+
+% \lateiPageBreakAfter{...} — force un saut de page après le contenu.
+\NewDocumentCommand{\lateiPageBreakAfter}{+m}{#1\newpage}
+
+% \lateiClearPageBefore{...} — vide les flottants et force une nouvelle page avant.
+\NewDocumentCommand{\lateiClearPageBefore}{+m}{\clearpage#1}
+
+% \lateiClearPageAfter{...} — force une nouvelle page avec vidage des flottants après.
+\NewDocumentCommand{\lateiClearPageAfter}{+m}{#1\clearpage}
+
+% Contrôle des coupures de page
+% --------------------------------------------------------------------------
+
+% \lateiKeepWithNext{...} — interdit une coupure de page immédiatement après.
+\NewDocumentCommand{\lateiKeepWithNext}{+m}{#1\nopagebreak[4]}
+
+% \lateiKeepTogether{...} — maintient le contenu entier sur une même page.
+\NewDocumentCommand{\lateiKeepTogether}{+m}{\begin{samepage}#1\end{samepage}}
+
+% \lateiNoPageBreakBefore{...} — interdit une coupure de page immédiatement avant.
+\NewDocumentCommand{\lateiNoPageBreakBefore}{+m}{\nopagebreak[4]#1}
+
+% \lateiNoPageBreakAfter{...} — interdit une coupure de page immédiatement après.
+\NewDocumentCommand{\lateiNoPageBreakAfter}{+m}{#1\nopagebreak[4]}
+
+% lateiDocument marks the reversible editorial zone in a monofile.
+% Completely transparent at compilation — only serves as a delimiter for the parser.
+\newenvironment{lateiDocument}{}{}
+
+% ============================================================
+% Mappings graphiques — régénérables, ne pas modifier
+% ============================================================
+
+% Experimental LaTEI graphic mapping.
+% This file is a compilation artifact, not a reversible source.
+% WARNING: Image not found for LaTEI package: images/image3.jpg
+% WARNING: Image not found for LaTEI package: images/image5.jpg
+% WARNING: Image not found for LaTEI package: images/image4-1.jpg
+% WARNING: Image not found for LaTEI package: images/image4-2.jpg
+% WARNING: Image not found for LaTEI package: images/image4-3.jpg
+% WARNING: Image not found for LaTEI package: images/image4-4.jpg
+% WARNING: Image not found for LaTEI package: images/image7.png
+% WARNING: Image not found for LaTEI package: images/image2.png
+% WARNING: Image not found for LaTEI package: images/Image3.png
+% WARNING: Image not found for LaTEI package: relative/path/to/image/img-1.jpg
+
+% ============================================================
+% Mappings titres courants — régénérables, ne pas modifier
+% ============================================================
+
+% Experimental LaTEI running-title mapping.
+% This file is a compilation artifact, not a reversible source.
+\lateiDeclareRunningTitle{Formule avec caractères html-encodés ou avec utilisation de CDATA}{Formule avec caractères html-encodés ou avec utilisation…}
+\lateiDeclareRunningTitle{Exemple complet avec label, glose, traduction, numérotations et références bibliographiques}{Exemple complet avec label, glose, traduction…}
+
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\vspace*{0.15\textheight}
+{\Huge\bfseries \PURHBookTitle\par}
+\PurhSubtitle{\PURHBookSubtitle}
+\PurhContributors{\PURHBookAuthor}
+\vfill
+\PurhTitleExtra{Nom de l'éditeur}
+\end{titlepage}
+\clearpage
+
+% ============================================================
+% Zone éditoriale réversible — corrections autorisées ici
+% ============================================================
+
+\begin{lateiDocument}
+\begin{teiElement}[name={TEI}]
+
+	\begin{teiElement}[name={teiHeader}]
+
+		\begin{teiElement}[name={fileDesc}]
+
+			\begin{teiElement}[name={titleStmt}]
+
+				\teiTitle[type={main}]{Titre principal du document}
+				\teiTitle[type={sup}]{Surtitre}
+				\teiTitle[type={sub}]{Sous-titre}
+				\teiTitle[type={trl},xmllang={en}]{English Translated Title}
+				\teiAuthor[role={aut}]{ 
+					\teiPersName{
+						\begin{teiElement}[name={forename}]
+Prénom\_1
+\end{teiElement}
+						\begin{teiElement}[name={surname}]
+Nom\_1
+\end{teiElement}
+					}
+					\teiIdno[type={ORCID}]{0000-0000-0000-0000}
+					\teiIdno[type={IDREF}]{111222333}
+					\begin{teiElement}[name={affiliation}]
+
+						\teiOrgName{CNRS}
+					
+					
+\end{teiElement}
+					\teiNote[type={biography},xmlid={note-001}]{
+						\teiP[xmlid={p-001}]{Premier paragraphe de biographie de l'auteur \teiHi[rend={italic}]{(peut contenir des mise en forme)}}
+						\teiP[xmlid={p-002}]{Deuxième paragraphe}
+					}
+					\begin{teiElement}[name={email}]
+prenom\_1.nom\_1@cnrs.fr
+\end{teiElement}
+				}
+				\teiAuthor[role={aut}]{
+					\teiName{Prénom\_2 Nom\_2}
+				}
+				\teiEditor[role={trl}]{
+					\teiPersName{
+						\begin{teiElement}[name={forename}]
+Prénom\_traducteur
+\end{teiElement}
+						\begin{teiElement}[name={surname}]
+Nom\_traducteur
+\end{teiElement}
+					}
+					\teiIdno[type={IDREF}]{000000000}
+					\begin{teiElement}[name={affiliation}]
+\teiOrgName{Université Aix-Marseille}
+\end{teiElement}
+				}
+				\teiEditor[role={edt}]{
+					\teiPersName{
+						\begin{teiElement}[name={forename}]
+Prénom\_éditeur\_scientifique
+\end{teiElement}
+						\begin{teiElement}[name={surname}]
+Nom\_éditeur\_scientifique
+\end{teiElement}
+					}
+				}
+				\teiEditor[role={fld}]{
+					\teiPersName{
+						\begin{teiElement}[name={forename}]
+Prénom\_directeur\_de\_fouille\_archéologique
+\end{teiElement}
+						\begin{teiElement}[name={surname}]
+Nom\_directeur\_de\_fouille\_archéologique
+\end{teiElement}
+					}
+				}
+				\teiEditor[role={ctb}]{
+					\teiPersName{
+						\begin{teiElement}[name={forename}]
+Prénom\_collaborateur
+\end{teiElement}
+						\begin{teiElement}[name={surname}]
+Nom\_collaborateur
+\end{teiElement}
+					}
+				}
+				\begin{teiElement}[name={funder}]
+ 
+					\teiIdno[type={funder\_registry}]{10.13039/501100001871}
+					\teiOrgName[type={funder\_registry}]{Fundação para a Ciência e a Tecnologia}
+					\teiIdno[type={funder\_registry},subtype={grant\_number}]{PTDC/2006}
+				
+\end{teiElement}
+			
+\end{teiElement}            
+			\begin{teiElement}[name={publicationStmt}]
+
+				\teiPublisher{Nom de l'éditeur}
+				\begin{teiElement}[name={distributor}]
+OpenEdition
+\end{teiElement}
+				
+				\teiDate[type={received}]{2019-06-01}
+				\teiDate[type={accepted}]{2020-01-01}
+				\teiDate[type={published}]{2021-02-01}
+				\teiIdno[type={documentnumber}]{108}
+				\teiIdno[type={DOI}]{10.4000/remi.7777}
+				\teiIdno[type={URL}]{https://journals.openedition.org/remi/7777}
+				\begin{teiElement}[name={availability}]
+
+					\begin{teiElement}[name={licence},target={https://creativecommons.org/licenses/by-nc-nd/4.0/}]
+CC-BY-NC-ND-4.0
+\end{teiElement}
+				
+\end{teiElement}
+			
+\end{teiElement}
+			\begin{teiElement}[name={sourceDesc}]
+
+				\begin{teiElement}[name={biblStruct},type={chapter}]
+
+					\begin{teiElement}[name={analytic}]
+
+						\teiTitle[level={a},type={main}]{Titre principal du document}
+						\teiTitle[level={a},type={sup}]{Surtitre}
+						\teiTitle[level={a},type={sub}]{Sous-titre}
+						\teiTitle[level={a},type={trl},xmllang={en}]{English Translated Title}
+						\teiAuthor[role={aut}]{ 
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Prénom\_1
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Nom\_1
+\end{teiElement}
+							}
+							\teiIdno[type={ORCID}]{0000-0000-0000-0000}
+							\teiIdno[type={IDREF}]{111222333}
+							\begin{teiElement}[name={affiliation}]
+
+								\teiOrgName{CNRS}
+							
+\end{teiElement}
+							\teiNote[type={biography},xmlid={note-002}]{
+								\teiP[xmlid={p-003}]{Premier paragraphe de biographie de l'auteur \teiHi[rend={italic}]{(peut contenir des mise en forme)}}
+								\teiP[xmlid={p-004}]{Deuxième paragraphe}
+							}
+							\begin{teiElement}[name={email}]
+prenom\_1.nom\_1@cnrs.fr
+\end{teiElement}
+						}
+						\teiAuthor[role={aut}]{
+							\teiName{Prénom\_2 Nom\_2}
+						}
+						\teiEditor[role={trl}]{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Prénom\_traducteur
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Nom\_traducteur
+\end{teiElement}
+							}
+							\teiIdno[type={IDREF}]{000000000}
+							\begin{teiElement}[name={affiliation}]
+\teiOrgName{Université Aix-Marseille}
+\end{teiElement}
+						}
+						\teiEditor[role={edt}]{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Prénom\_éditeur\_scientifique
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Nom\_éditeur\_scientifique
+\end{teiElement}
+							}
+						}
+						\teiEditor[role={fld}]{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Prénom\_directeur\_de\_fouille\_archéologique
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Nom\_directeur\_de\_fouille\_archéologique
+\end{teiElement}
+							}
+						}
+						\teiEditor[role={ctb}]{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Prénom\_collaborateur
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Nom\_collaborateur
+\end{teiElement}
+							}
+						}
+					
+\end{teiElement}
+					\begin{teiElement}[name={monogr}]
+
+						\teiTitle[level={m}]{Titre du livre dans lequel le chapitre est paru}
+						\teiIdno[type={pISBN}]{ISBN de l'édition papier du livre}
+						\teiIdno[type={eISBN}]{ISBN de l'édition électronique du livre}
+						\teiIdno[type={DOI},subtype={book}]{DOI du livre}
+						\teiIdno[type={URL},subtype={book}]{URL du livre}
+						\begin{teiElement}[name={imprint}]
+
+							\teiPublisher{Nom de l'éditeur}
+							\teiBiblScope[unit={page}]{13-22}
+							\teiDate[type={published}]{2021}
+						
+\end{teiElement}
+					
+\end{teiElement}
+					\begin{teiElement}[name={series}]
+
+						\teiTitle[level={s}]{Titre de la collection dans laquelle est paru le livre}
+						\teiIdno[type={pISSN}]{ISSN de la collection}
+						\teiIdno[type={URL}]{URL de la collection}
+					
+\end{teiElement}
+				
+\end{teiElement}
+			
+\end{teiElement}
+		
+\end{teiElement}
+		\begin{teiElement}[name={encodingDesc}]
+
+			\begin{teiElement}[name={appInfo}]
+
+				\begin{teiElement}[name={application},version={0.0.0},ident={circe}]
+
+					\teiLabel{Nom de l'application qui a servi à produire ce fichier}
+					\begin{teiElement}[name={desc}]
+Description de l'application
+\end{teiElement}
+					\teiRef[target={https://url\_source\_app}]{}
+				
+\end{teiElement}
+			
+\end{teiElement}
+			\begin{teiElement}[name={tagsDecl}]
+
+				\begin{teiElement}[name={rendition},xmlid={rendition_list1},scheme={css}]
+list-style-type:upper-roman
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list2},scheme={css}]
+list-style-type:decimal
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list3},scheme={css}]
+list-style-type:lower-alpha
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list4},scheme={css}]
+list-style-type:upper-alpha
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list5},scheme={css}]
+list-style-type:lower-roman
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list6},scheme={css}]
+list-style-type:disc
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list7},scheme={css}]
+list-style-type:circle
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rendition_list8},scheme={css}]
+list-style-type:square
+\end{teiElement}
+				\begin{teiElement}[name={rendition},scheme={css},xmlid={Cell}]
+border-top:2.25pt solid \#000000; border-right:0.5pt
+					solid \#ffffff; border-bottom:1pt solid \#93c571; border-left:1pt solid \#93c571; 
+\end{teiElement}
+				\begin{teiElement}[name={rendition},xmlid={rtl},scheme={css}]
+direction:rtl;
+\end{teiElement}
+			
+\end{teiElement}
+		
+\end{teiElement}
+		\begin{teiElement}[name={profileDesc}]
+
+			\begin{teiElement}[name={langUsage}]
+
+				\begin{teiElement}[name={language},ident={fr-FR}]
+
+\end{teiElement}
+			
+\end{teiElement}
+			\begin{teiElement}[name={textClass}]
+
+				\begin{teiElement}[name={keywords},scheme={keyword},xmllang={fr}]
+
+					\begin{teiList}
+
+						\teiItem{humanités numériques}
+						\teiItem{politique}
+						\teiItem{science}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={keyword},xmllang={en}]
+
+					\begin{teiList}
+
+						\teiItem{digital humanities}
+						\teiItem{political}
+						\teiItem{science}
+					
+\end{teiList}
+				
+\end{teiElement}
+					
+				\begin{teiElement}[name={keywords},scheme={geography}]
+
+					\begin{teiList}
+
+						\teiItem{Paris}
+						\teiItem{Texas}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={chronology}]
+
+					\begin{teiList}
+
+						\teiItem{XIXe siècle}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={subject}]
+
+					\begin{teiList}
+
+						\teiItem{famille}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={excavationyear}]
+
+					\begin{teiList}
+
+						\teiItem{2012}
+					
+\end{teiList}
+				
+\end{teiElement}
+				
+				\begin{teiElement}[name={keywords},scheme={work}]
+
+					\begin{teiList}
+
+						\teiItem{Titre d'une oeuvre}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={propernoun}]
+
+					\begin{teiList}
+
+						\teiItem{Nom propre}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={disciplines}]
+
+					\begin{teiList}
+
+						\teiItem{Anthropologie}
+					
+\end{teiList}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={personcited}]
+
+					\begin{teiList}
+
+						\teiItem{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Prénom\_Personne\_citée
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Nom\_Personne\_citée
+\end{teiElement}
+							}
+						}
+					
+\end{teiList}
+				
+\end{teiElement}
+				
+				\begin{teiElement}[name={keywords},scheme={pactolssubjects}]
+
+					\teiTerm[ref={https://ark.frantiq.fr/ark:/26678/pcrtNb90Egda4H}]{
+						\teiTerm[xmllang={en}]{death}
+						\teiTerm[xmllang={nl}]{dood}
+						\teiTerm[xmllang={fr}]{mort}
+						\teiTerm[xmllang={it}]{morte}
+						\teiTerm[xmllang={es}]{muerte}
+						\teiTerm[xmllang={de}]{Tod}
+						\teiTerm[xmllang={ar}]{موت}
+					}
+					\teiTerm[ref={https://ark.frantiq.fr/ark:/26678/pcrtsIm3RuNMGu}]{
+						\teiTerm[xmllang={fr}]{nécropole}
+						\teiTerm[xmllang={it}]{necropoli}
+						\teiTerm[xmllang={en}]{necropolis}
+						\teiTerm[xmllang={es}]{necrópolis}
+						\teiTerm[xmllang={nl}]{necropool}
+						\teiTerm[xmllang={de}]{Nekropole}
+						\teiTerm[xmllang={ar}]{مدينة الموتى}
+					}
+				
+\end{teiElement}
+				\begin{teiElement}[name={keywords},scheme={pactolschronology}]
+
+					\teiTerm[ref={https://ark.frantiq.fr/ark:/26678/crtxhXbaDgYSc}]{
+						\teiTerm[xmllang={fr}]{périodisation}
+						\teiTerm[xmllang={nl}]{periodisering}
+						\teiTerm[xmllang={de}]{Periodisierung}
+						\teiTerm[xmllang={es}]{periodización}
+						\teiTerm[xmllang={en}]{periodization}
+						\teiTerm[xmllang={it}]{periodizzazione}
+					}
+				
+\end{teiElement}
+				
+			
+\end{teiElement}
+		
+\end{teiElement}
+	
+\end{teiElement}
+
+	\begin{teiElement}[name={text},xmlid={text-001}]
+
+		
+		\begin{teiElement}[name={front}]
+
+			\begin{teiDiv}[type={abstract},xmllang={fr},xmlid={abstract-001}]
+
+				\teiP[xmlid={p-005}]{Résumé en français, avec \teiHi[rend={italic}]{des mises en forme}.}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={abstract},xmllang={en},xmlid={abstract-002}]
+
+				\teiP[xmlid={p-006}]{English abstract, several paragraphs}
+				\teiP[xmlid={p-007}]{Second paragraph}
+			
+\end{teiDiv}
+			\teiNote[type={aut},xmlid={note-003}]{
+				\teiP[xmlid={p-008}]{Note de l’auteur, premier paragraphe.}
+				\teiP[xmlid={p-009}]{Note de l’auteur, second paragraphe.}
+			}
+			\teiNote[type={trl},xmlid={note-004}]{
+				\teiP[xmlid={p-010}]{Note du traducteur}
+			}
+			\teiNote[type={pbl},xmlid={note-005}]{
+				\teiP[xmlid={p-011}]{Note de l’éditeur, de la rédaction.}
+			}
+			\begin{teiDiv}[type={correction},xmlid={correction-001}]
+
+				\teiP[xmlid={p-012}]{Erratum, premier paragraphe.}
+				\teiP[xmlid={p-013}]{Erratum, second paragraphe.}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={ack},xmlid={ack-001}]
+
+				\teiP[xmlid={p-014}]{Remerciements.}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={dedication},xmlid={dedication-001}]
+
+				\teiP[xmlid={p-015}]{Dédicace, premier paragraphe.}
+				\teiP[xmlid={p-016}]{Dédicace, second paragraphe.}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={reviewed},xmlid={reviewed-001}]
+
+				\begin{teiElement}[name={listBibl},xmlid={listBibl-001}]
+
+					\begin{teiBibl}[type={display},xmlid={bibl-001}]
+Darío G. \teiHi[rend={small-caps}]{Barriera}, Ouvrir des portes sur la terre. \teiHi[rend={italic}]{Microanalyse de la construction d’un espace politique. Santa Fe (1573-1640)}, trad. de François \teiHi[rend={small-caps}]{Godicheau}, Toulouse, Presses Universitaires du Midi, 2016, 527 p.
+					
+\end{teiBibl}
+					\begin{teiBibl}[type={semantic},xmlid={bibl-002}]
+
+						\teiAuthor{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Darío G.
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Barriera
+\end{teiElement}
+							}
+						}
+						\teiTitle{Microanalyse de la construction d’un espace politique. Santa Fe (1573-1640)}
+						\teiDate{2016}
+					
+\end{teiBibl}	
+				
+\end{teiElement}
+				\begin{teiElement}[name={listBibl},xmlid={listBibl-002}]
+
+					\begin{teiBibl}[type={display},xmlid={bibl-003}]
+Franz Kafka, \teiHi[rend={italic}]{La métaporphose} [1938], trad. de l'allemand par Alexandre Vialatte, 224 pages, 140 x 205 mm. Collection Du monde entier, Gallimard-nouv. ISBN 2070235157.
+					
+\end{teiBibl}
+					\begin{teiBibl}[type={semantic},xmlid={bibl-004}]
+
+						\teiAuthor{
+							\teiPersName{
+								\begin{teiElement}[name={forename}]
+Franz
+\end{teiElement}
+								\begin{teiElement}[name={surname}]
+Kafka
+\end{teiElement}
+							}
+						}
+						\teiTitle{La métaporphose}
+						\teiDate{1938}
+					
+\end{teiBibl}
+				
+\end{teiElement}
+			
+\end{teiDiv}
+			\begin{teiElement}[name={argument}]
+
+				\teiP[xmlid={p-017}]{Chapô 1.}
+				\teiP[xmlid={p-018}]{Chapô 2.}
+			
+\end{teiElement}
+			\begin{teiElement}[name={epigraph}]
+
+				\begin{teiCit}
+
+					\begin{teiQuote}
+Epigraphe placé dans le front. Porte sur l’ensemble du document.\teiLb
+						Second paragraphe d’épigraphe.
+\end{teiQuote}
+					\begin{teiBibl}[xmlid={bibl-005}]
+\teiHi[rend={italic}]{Réf bibliographique}, source de l’épigraphe.
+\end{teiBibl}
+				
+\end{teiCit}
+			
+\end{teiElement}
+		
+\end{teiElement}
+		\begin{teiElement}[name={body},xmlid={body-001}]
+
+			\begin{teiDiv}[type={section1},xmlid={section1-001}]
+
+				\teiHead[xmlid={id-1-titre-1-001}]{1. Titre 1}
+				\begin{teiDiv}[type={section2},xmlid={section2-001}]
+
+					\teiHead[xmlid={id-1-1-titre-2-001}]{1.1. Titre 2}
+					\teiP[xmlid={p-019}]{Mises en forme de texte simples : 
+						\teiHi[rend={italic}]{italique}, 
+						\teiHi[rend={bold}]{gras}, 
+						\teiHi[rend={sup}]{exposant}, 
+						\teiHi[rend={sub}]{indice}, 
+						\teiHi[rend={small-caps}]{petites capitales},
+						\teiHi[rend={uppercase}]{majuscule}, 
+						\teiHi[rend={strikethrough}]{barré}, 
+						\teiHi[rend={underline}]{souligné}.
+					}
+					\teiP[xmlid={p-020}]{Mises en forme de texte imbriquées : 
+						\teiHi[rend={italic}]{\teiHi[rend={bold}]{italique et gras}}, 
+						\teiHi[rend={bold}]{\teiHi[rend={small-caps}]{XX}\teiHi[rend={sup}]{e} siècle}.
+					}
+					\teiP[xmlid={p-021}]{Mises en forme combinées : 
+						\teiHi[rend={bold italic}]{gras et italique}, 
+						\teiHi[rend={sup small-caps underline}]{exposant, petites capitales et souligné}.
+					}
+					\teiP[xmlid={p-022}]{Direction du texte RTL}
+					\teiP[rendition={\#rtl},xmlid={p-023}]{هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل}
+					\begin{teiDiv}[type={section3},xmlid={section3-001}]
+
+						\teiHead[xmlid={id-1-1-1-titre-3-001}]{1.1.1. Titre 3}
+						\teiP[xmlid={p-024}]{...}
+					
+\end{teiDiv}
+					\begin{teiDiv}[type={section3},xmlid={section3-002}]
+
+						\teiHead[xmlid={id-1-1-2-titre-3-001}]{1.1.2. Titre 3}
+						\teiP[xmlid={p-025}]{...}
+					
+\end{teiDiv}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-002}]
+
+					\teiHead[xmlid={id-1-2-titre-2-001}]{1.2. Titre 2}
+					\teiP[xmlid={p-026}]{...}
+				
+\end{teiDiv}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-002}]
+
+				\teiHead[xmlid={id-2-titre-1-notes-001}]{2. Titre 1 : notes}
+				\teiP[xmlid={p-027}]{Texte \teiNote[place={foot},n={1},xmlid={mon_id_num_4}]{
+						\teiP[xmlid={p-028}]{Paragraphe}
+						\begin{teiList}[type={unordered}]
+
+							\teiItem{Elément de liste 1}
+							\teiItem{Elément de liste 2}
+						
+\end{teiList}
+					}. }
+				\teiP[xmlid={p-029}]{Texte\teiNote[place={end},n={a},xmlid={note-006}]{
+					\teiP[xmlid={p-030}]{Nulla consequat massa quis enim.}
+					\begin{teiList}[type={unordered}]
+
+						\teiItem{Aenean auctor sapien quis nibh tincidunt}
+						\teiItem{eget varius elit maximus}
+					
+\end{teiList}
+					\teiP[xmlid={p-031}]{Phasellus at eros imperdiet, efficitur nisi vitae.}
+				}.}
+					
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-003}]
+
+				\teiHead[xmlid={listes-001}]{Listes}
+				\teiP[xmlid={p-032}]{Une liste avec une numérotation décimale}
+				\begin{teiList}[type={ordered},xmlid={list01},rendition={\#rendition\_list2}]
+
+					\teiItem{premièrement}
+					\teiItem{deuxièmement}
+					\teiItem{troisièmement}
+				
+\end{teiList}
+				\teiP[xmlid={p-033}]{suivi d'une autre liste avec numérotation continue}
+				\begin{teiList}[type={ordered},xmlid={list02},prev={\#list01},rendition={\#rendition\_list2}]
+
+					\teiItem{quatrièmement}
+					\teiItem{cinquièmement}
+				
+\end{teiList}
+				\teiP[xmlid={p-034}]{Puis une autre liste avec le style de numérotation upper-roman}
+				\begin{teiList}[type={ordered},xmlid={list03},rendition={\#rendition\_list1}]
+
+					\teiItem{en 1}
+					\teiItem{en 2}
+				
+\end{teiList}
+				\teiP[xmlid={p-035}]{Exemple d'imbrication de liste ordonnées}
+				\begin{teiList}[type={ordered},xmlid={list04},rendition={\#rendition\_list4}]
+
+					\teiItem{Item A}
+					\teiItem{Item B}
+					\teiItem{Item C
+						\begin{teiList}[type={ordered},xmlid={list05},rendition={\#rendition\_list3}]
+
+							\teiItem{sous item a}
+							\teiItem{sous item b}
+						
+\end{teiList}
+					}
+				
+\end{teiList}
+				\teiP[xmlid={p-036}]{Pour les listes non ordonnées on a le choix entre 3 styles de puces : disc, square, circle}
+				\begin{teiList}[type={unordered},xmlid={list06},rendition={\#rendition\_list6}]
+
+					\teiItem{petit 1}
+					\teiItem{petit 2}
+					\teiItem{petit 3}
+				
+\end{teiList}
+				\begin{teiList}[type={unordered},xmlid={list07},rendition={\#rendition\_list7}]
+
+					\teiItem{Thé sans sucre et sans lait }
+					\teiItem{Un jus d'ananas}
+					\teiItem{Un yaourt}
+					\teiItem{Trois biscuits de seigle avec
+						\begin{teiList}[type={unordered},xmlid={list08},rendition={\#rendition\_list8}]
+
+							\teiItem{Carottes râpées}
+							\teiItem{Côtelettes d'agneau}
+							\teiItem{Courgettes}
+							\teiItem{Chèvre frais }
+							\teiItem{Coings}
+						
+\end{teiList}
+					}
+				
+\end{teiList}
+				
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-004}]
+
+				\teiHead[xmlid={les-citations-001}]{Les citations}
+				\begin{teiDiv}[type={section2},xmlid={section2-003}]
+
+					\teiHead[xmlid={citations-simples-avec-plusieurs-paragraphes-001}]{Citations simples avec plusieurs paragraphes}
+					\teiP[xmlid={p-037}]{Un paragraphe de texte Normal avant la citation.}
+					\begin{teiCit}[xmlid={cit1}]
+
+						\begin{teiQuote}
+Une citation en plusieurs paragraphe.
+\end{teiQuote}
+						\begin{teiQuote}
+Second paragraphe.
+\end{teiQuote}
+						\begin{teiBibl}[xmlid={bibl-006}]
+Référence biblio de ma citation
+\end{teiBibl}
+					
+\end{teiCit}
+					\teiP[xmlid={p-038}]{Un autre paragraphe Normal, suivi d’une autre citation avec un style différent (pas de distinction sémantique mais une mise en forme différente des citations classiques) :}
+					\begin{teiCit}[xmlid={cit2}]
+
+						\begin{teiQuote}[type={quotation2}]
+Une citation avec mise en forme différente.
+\end{teiQuote}
+						\begin{teiBibl}[xmlid={bibl-007}]
+Référence biblio de ma deuxième citation
+\end{teiBibl}
+					
+\end{teiCit}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-004}]
+
+					\teiHead[xmlid={traductions-001}]{Traductions}
+					\teiP[xmlid={p-039}]{Une citation suivie de sa traduction :}
+					\begin{teiCit}[xmlid={cit3}]
+
+						\begin{teiQuote}
+Une citation avec le style citation (TEI\_quote) ou citation 2 (TEI\_quote2)
+\end{teiQuote}
+						\begin{teiQuote}
+La citation peut avoir plusieurs paragraphes.
+\end{teiQuote}
+						\begin{teiQuote}[xmllang={en},type={trl}]
+La même citation traduite dans une autre langue.
+\end{teiQuote}
+						\begin{teiQuote}[xmllang={en},type={trl}]
+La citation traduite peut avoir plusieurs paragraphe elle aussi.
+\end{teiQuote}
+						\begin{teiBibl}[xmlid={bibl-008}]
+Référence biblio de la citation
+\end{teiBibl}
+					
+\end{teiCit}
+					\teiP[xmlid={p-040}]{Une citation dans une langue différente de l'article, ici en espagnol.}
+					\begin{teiCit}[xmlid={cit4}]
+
+						\begin{teiQuote}[xmllang={es}]
+De gustibus et coloribus non disputandum
+\end{teiQuote}
+					
+\end{teiCit}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-005}]
+
+					\teiHead[xmlid={citations-consecutives-sourcees-ou-non-001}]{Citations consécutives (sourcées ou non)}
+					\teiP[xmlid={p-041}]{Ici il s’agit de deux citation consécutives, mais distinctes. Dans ce cas, on utilise 2 éléments <cit>}
+					\begin{teiCit}[xmlid={cit5}]
+
+						\begin{teiQuote}
+Txt 1ère citation
+\end{teiQuote}
+					
+\end{teiCit}
+					\begin{teiCit}[xmlid={cit6}]
+
+						\begin{teiQuote}
+Txt 2e citation
+\end{teiQuote}
+						\begin{teiBibl}[xmlid={bibl-009}]
+Ref biblio 2e citation
+\end{teiBibl}
+					
+\end{teiCit}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-006}]
+
+					\teiHead[xmlid={citation-inline-001}]{Citation inline}
+					\teiP[xmlid={p-042}]{Un paragraĥe peut contenir du texte avec une citation inline.}
+					\teiP[xmlid={p-043}]{Comme le disait Jean, \begin{teiCit}[xmlid={cit7}]
+
+						\begin{teiQuote}
+"le renard... (La Fontaine)"
+\end{teiQuote}
+					
+\end{teiCit}, blah.}
+					\teiP[xmlid={p-044}]{Même chose dans un liste.}
+					\begin{teiList}[rendition={rendition\_list7},type={unordered}]
+
+						\teiItem{Comme le disait Jean, \begin{teiCit}[xmlid={cit8}]
+
+							\begin{teiQuote}
+"le renard... (La Fontaine)"
+\end{teiQuote}
+						
+\end{teiCit}, blah.}
+					
+\end{teiList}
+					\teiP[xmlid={p-045}]{On ne peut pas ajouter de référence biblio aux citations inline.}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-007}]
+
+					\teiHead[xmlid={citations-imbriquees-001}]{Citations imbriquées}
+					\begin{teiCit}[xmlid={cit9}]
+
+						\begin{teiQuote}
+Ma citation principale qui cite une citation
+\end{teiQuote}
+						\begin{teiCit}
+
+							\begin{teiQuote}
+Ici la citation dans la citation
+\end{teiQuote}
+							\begin{teiQuote}
+qui peut être composée de plusieurs paragraphes
+\end{teiQuote}
+						
+\end{teiCit}
+						\begin{teiQuote}
+On reprend la suite du texte de la citation principale.
+\end{teiQuote}
+						\begin{teiBibl}[xmlid={bibl-010}]
+Ref biblio de la citation principale
+\end{teiBibl}
+					
+\end{teiCit}
+				
+\end{teiDiv}
+
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-005}]
+
+				\teiHead[xmlid={paragraphe-de-suite-separateur-liens-ancres-001}]{Paragraphe de suite, séparateur, liens, ancres}
+				\teiP[xmlid={p-046}]{Début du paragraphe}
+				\begin{teiCit}[xmlid={ref_cit1}]
+
+					\begin{teiQuote}
+Citation
+\end{teiQuote}
+				
+\end{teiCit}
+				\teiP[rend={consecutive},xmlid={p-047}]{suite du paragraphe précédant la citation.}
+				\begin{teiCit}
+
+					\begin{teiQuote}
+Citation \teiAnchor[xmlid={anchor_ref2}]lorem ispum
+\end{teiQuote}
+				
+\end{teiCit}
+				\teiP[rend={break},xmlid={p-048}]{* * *}
+				\teiP[xmlid={p-049}]{Paragraphe suivant.}
+				\teiP[xmlid={p-050}]{Ici \teiRef[internaltarget={ref_cit1}]{un lien vers la citation} ; là \teiRef[target={http://www.openedition.org}]{un lien vers un site web} et un \teiRef[internaltarget={anchor_ref2}]{lien vers une ancre}.}
+			
+\end{teiDiv}
+			
+			\begin{teiDiv}[type={section1},xmlid={section1-006}]
+
+				\teiHead[xmlid={code-001}]{Code}
+				
+				\teiP[xmlid={p-051}]{
+					\begin{teiElement}[name={code},lang={xml}]
+
+						<ref target="http://www.openedition.org/​">OpenEdition : portail de ressources électroniques en sciences humaines \& sociales</ref>
+					
+\end{teiElement}
+				}
+				
+				\teiP[xmlid={p-052}]{\begin{teiElement}[name={code},lang={xml}]
+<ref target="http://www.openedition.org/​"> OpenEdition : portail de ressources électroniques en sciences humaines \& sociales</ref> 
+\end{teiElement}}
+				
+				\teiP[xmlid={p-053}]{En TEI, \begin{teiElement}[name={code},rend={inline},lang={xml}]
+<ref>
+\end{teiElement}(référence) définit une référence vers un autre emplacement, elle s'utilise de la façon suivante :
+					\begin{teiElement}[name={code},rend={inline},lang={xml}]
+<ref target="http://www.openedition.org/​">OpenEdition : portail de ressources électroniques en sciences humaines \& sociales</ref>
+\end{teiElement} et elle peut être contenu dans la plupart des éléments}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-007}]
+
+				\teiHead[xmlid={poesie-001}]{Poésie}
+				\begin{teiDiv}[type={section2},xmlid={section2-008}]
+
+					\teiHead[xmlid={exemple-simple-001}]{Exemple simple}
+					\begin{teiElement}[name={lg}]
+
+						\begin{teiElement}[name={l}]
+Les amoureux fervents et les savants austères
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Aiment également, dans leur mûre saison,
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Les chats puissants et doux, orgueil de la maison,
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Qui comme eux sont frileux et comme eux sédentaires.
+\end{teiElement}
+					
+\end{teiElement}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-009}]
+
+					\teiHead[xmlid={exemple-avec-numerotation-des-vers-001}]{Exemple avec numérotation des vers}
+					\begin{teiElement}[name={lg}]
+
+						\begin{teiElement}[name={l},n={1}]
+\teiNum{(1)} Ils prennent en songeant les nobles attitudes
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Des grands sphinx allongés au fond des solitudes
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Qui semblent s'endormir dans un rêve sans fin ;
+\end{teiElement}
+					
+\end{teiElement}
+					\begin{teiElement}[name={lg}]
+
+						\begin{teiElement}[name={l},n={4}]
+\teiNum{(4)} Leurs reins féconds sont pleins d'étincelles magiques,
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Et des parcelles d'or, ainsi qu'un sable fin,
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Etoilent vaguement leurs prunelles mystiques.
+\end{teiElement}
+					
+\end{teiElement}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-010}]
+
+					\teiHead[xmlid={exemple-avec-des-repliques-versifiees-et-source-001}]{Exemple avec des répliques versifiées et source}
+					\begin{teiElement}[name={sp}]
+
+						\begin{teiElement}[name={l}]
+Dis-moi donc, je te prie, une seconde fois 
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Ce qui te fait juger qu'il approuve mon choix. 
+\end{teiElement}
+					
+\end{teiElement}
+					\begin{teiBibl}[xmlid={bibl-011}]
+(\teiHi[rend={italic}]{Le Cid, }Chimène vv.7-8)
+\end{teiBibl}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-011}]
+
+					\teiHead[xmlid={avec-cesure-et-source-001}]{Avec césure et source}
+					\begin{teiElement}[name={lg}]
+
+						\begin{teiElement}[name={l}]
+Souvent sur la montagne, \begin{teiElement}[name={caesura}]
+
+\end{teiElement}à l'ombre du vieux chêne,
+\end{teiElement}
+						\begin{teiElement}[name={l}]
+Au coucher du soleil, \begin{teiElement}[name={caesura}]
+
+\end{teiElement}tristement je m'assieds ;
+\end{teiElement}
+					
+\end{teiElement}
+					\begin{teiBibl}[xmlid={bibl-012}]
+Alphonse de LaMartine, \teiHi[rend={italic}]{L'isolement}
+\end{teiBibl}
+				
+\end{teiDiv}
+			
+\end{teiDiv}
+			
+			\begin{teiDiv}[type={section1},xmlid={section1-008}]
+
+				\teiHead[xmlid={figures-001}]{Figures}
+				\begin{teiDiv}[type={section2},xmlid={section2-012}]
+
+					\teiHead[xmlid={un-bloc-figure-avec-metadonnees-001}]{Un bloc figure avec métadonnées}
+					\teiP[xmlid={p-054}]{Un paragraphe}
+					\begin{teiFigure}[xmlid={figure-001}]
+
+						\teiHead[xmlid={le-titre-illustration-001}]{Le titre illustration }
+						\teiGraphic[url={images/image3.jpg}]
+						\begin{teiElement}[name={figDesc}]
+La description d'une image dans un bloc Figure
+\end{teiElement}
+						\teiP[rend={caption},xmlid={p-055}]{La légende.}
+						\teiP[rend={caption},xmlid={p-056}]{La suite de la légende.}
+						\teiP[rend={credits},xmlid={p-057}]{Les crédits}
+					
+\end{teiFigure}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-013}]
+
+					\teiHead[xmlid={images-inline-001}]{Images inline}
+					\teiP[xmlid={p-058}]{Un paragraphe Normal avec une image \begin{teiFigure}[rend={inline},xmlid={figure-002}]
+\teiGraphic[url={images/image5.jpg}]
+\end{teiFigure}dans le paragraphe.}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-014}]
+
+					\teiHead[xmlid={une-planche-serie-d-images-001}]{Une planche (série d'images)}
+		
+					\begin{teiFigure}[xmlid={figure-003}]
+
+						\teiHead[xmlid={le-titre-de-la-planche-001}]{Le titre de la planche }
+						\teiGraphic[url={images/image4-1.jpg}]
+						\begin{teiElement}[name={figDesc}]
+La description de l'image qui précède
+\end{teiElement}
+						\teiGraphic[url={images/image4-2.jpg}]
+						\begin{teiElement}[name={figDesc}]
+La description de l'image qui précède
+\end{teiElement}
+						\teiGraphic[url={images/image4-3.jpg}]
+						\begin{teiElement}[name={figDesc}]
+La description de l'image qui précède
+\end{teiElement}
+						\teiGraphic[url={images/image4-4.jpg}]
+						\begin{teiElement}[name={figDesc}]
+La description de l'image qui précède
+\end{teiElement}
+						\teiP[rend={caption},xmlid={p-059}]{La légende de la planche}
+						\teiP[rend={credits},xmlid={p-060}]{Les crédits}
+					
+\end{teiFigure}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-015}]
+
+					\teiHead[xmlid={tableau-001}]{Tableau}
+					\begin{teiFigure}[xmlid={figure9}]
+
+						\teiHead[xmlid={titre-du-tableau-001}]{Titre du tableau}
+						\begin{teiTable}[numcols={3}]
+
+							\teiRow[role={label}]{\teiCell[rendition={\#Cell}]{Entête A} & \teiCell[rendition={\#Cell}]{Entête B} & \teiCell[rendition={\#Cell}]{Entête C}}
+							\teiRow{\teiCell[rendition={\#Cell},role={label}]{A1 : titre ligne} & \teiCell[rendition={\#Cell}]{B1} & \teiCell[rendition={\#Cell \#rtl}]{للنص أو شكل}}
+							\teiRow{\teiCell[rendition={\#Cell},role={label}]{A2 : titre ligne} & \multicolumn{2}{l}{\teiCell[rendition={\#Cell}]{B2, C2}}}
+						
+\end{teiTable}
+						\teiGraphic[url={images/image7.png}]
+						\teiP[rend={caption},xmlid={p-061}]{Légende du tableau}
+						\teiP[rend={credits},xmlid={p-062}]{Crédits du tableau}
+					
+\end{teiFigure}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-016}]
+
+					\teiHead[xmlid={formule-001}]{Formule}
+					\begin{teiDiv}[type={section3},xmlid={div7}]
+
+						\teiHead[xmlid={formule-inline-001}]{Formule inline}
+						\teiP[xmlid={p-063}]{Une formule mathématique inline \begin{teiFigure}[rend={inline},xmlid={figure-004}]
+
+							\teiFormula[notation={latex}]{\(\frac{{{\partial ^2}v}}{{\partial {z^2}}} = 0\)}
+						
+\end{teiFigure} suivi de mon texte.}
+					
+\end{teiDiv}
+					\begin{teiDiv}[type={section3},xmlid={section3-003}]
+
+						\teiHead[xmlid={formule-block-avec-metadonnees-et-image-alternative-001}]{Formule block avec métadonnées et image alternative}
+						\begin{teiFigure}[xmlid={figure-005}]
+
+							\teiHead[xmlid={titre-formule-001}]{Titre formule }
+							\teiFormula[notation={latex}]{\[\displaystyle \frac {d^2x^a}{ds^2}+\Gamma_{bc}^{a} \frac {dx^b}{ds}\frac {dx^c}{ds}=0\]}
+							\teiGraphic[url={images/image2.png}]
+							\teiP[rend={caption},xmlid={p-064}]{Légende Formule}
+						
+\end{teiFigure}
+					
+\end{teiDiv}
+					\begin{teiDiv}[type={section3},xmlid={section3-004}]
+
+						\teiHead[xmlid={formule-avec-caracteres-html-encodes-ou-avec-utilisation-de-cdata-001}]{Formule avec caractères html-encodés ou avec utilisation de CDATA}
+						\begin{teiFigure}[xmlid={figure-006}]
+
+							\teiHead[xmlid={caracteres-html-encodes-001}]{Caractères html-encodés}
+							\teiFormula[notation={latex}]{\[\tag{2}n>{{n}_{i}}\;\text{ et }\;{{\alpha }_{n}}\text{ est entre }{{\alpha }_{{{n}_{i-1}}}}\text{ et }{{\alpha }_{{{n}_{i}}}}\text{ (strictement)}\text{,}\]}
+						
+\end{teiFigure}
+						\begin{teiFigure}[xmlid={figure-007}]
+
+							\teiHead[xmlid={utilisation-de-cdata-001}]{Utilisation de CDATA}
+							\teiFormula[notation={latex}]{\[\tag{2}n>{{n}_{i}}\;\text{ et }\;{{\alpha }_{n}}\text{ est entre }{{\alpha }_{{{n}_{i-1}}}}\text{ et }{{\alpha }_{{{n}_{i}}}}\text{ (strictement)}\text{,}\]}
+						
+\end{teiFigure}
+					
+\end{teiDiv}  
+				
+\end{teiDiv}
+			
+\end{teiDiv}			
+			\begin{teiDiv}[type={section1},xmlid={section1-009}]
+
+				\teiHead[xmlid={theatre-001}]{Théätre}
+				
+				\teiP[xmlid={p-065}]{Exemple simple}
+				\begin{teiElement}[name={sp}]
+
+					\begin{teiElement}[name={speaker}]
+Locuteur 1
+\end{teiElement}
+					\teiP[xmlid={p-066}]{Replique. Ut nisi libero, fermentum nec suscipit a, ultricies sit
+						amet odio. Nulla non sem sed dui semper maximus. Aliquam hendrerit odio arcu.
+						Quisque vitae egestas justo. Nulla non iaculis massa. }
+				
+\end{teiElement}
+				\begin{teiElement}[name={stage}]
+Didascalie
+\end{teiElement}
+				\begin{teiElement}[name={sp}]
+
+					\teiP[xmlid={p-067}]{\teiName[type={speaker}]{Locuteur 2} : réplique.}
+				
+\end{teiElement}
+				\begin{teiElement}[name={sp}]
+
+					\teiP[xmlid={p-068}]{Nulla non iaculis massa. Nulla posuere libero mauris, non dignissim
+						sem porttitor lacinia. In tempus arcu sed mollis varius. Etiam a felis risus.
+						Vestibulum vestibulum metus vitae lacus imperdiet vehicula.}
+				
+\end{teiElement}
+				\begin{teiElement}[name={sp}]
+
+					\teiP[xmlid={p-069}]{\teiName[type={speaker}]{Locuteur 1}— \begin{teiElement}[name={stage}]
+(didascalie
+						inline)
+\end{teiElement} Vestibulum vulputate, diam tincidunt laoreet aliquet, mi
+						odio egestas ex, sit amet scelerisque metus nulla vitae massa.}
+				
+\end{teiElement}
+				\teiP[xmlid={p-070}]{Exemple avec ligne versifiée avec une source}
+				\begin{teiElement}[name={sp}]
+
+					\begin{teiElement}[name={speaker}]
+Locuteur 3
+\end{teiElement}
+					\begin{teiElement}[name={l},n={1}]
+\teiNum{1} Nunc eget ligula vestibulum, ultrices felis eu, tincidunt
+						ante.
+\end{teiElement}
+				
+\end{teiElement}
+				\begin{teiElement}[name={sp}]
+
+					\begin{teiElement}[name={speaker}]
+Locuteur 4
+\end{teiElement}
+					\begin{teiElement}[name={l},n={2}]
+\teiNum{2} In nunc justo, malesuada quis auctor rutrum,
+\end{teiElement}
+				
+\end{teiElement}
+				\begin{teiBibl}[xmlid={bibl-013}]
+Référence de l'oeuvre
+\end{teiBibl}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-010}]
+
+				\teiHead[xmlid={floating-text-001}]{Floating Text}
+				\teiP[xmlid={p-071}]{Un encadré ici :}
+				\begin{teiElement}[name={floatingText}]
+
+					\begin{teiElement}[name={body},xmlid={body-002}]
+
+						\begin{teiDiv}[type={section1},xmlid={floatingText1div1}]
+
+							\teiHead[xmlid={les-blocs-dans-les-encadres-001}]{Les blocs dans les encadrés}
+							\begin{teiDiv}[type={section2},xmlid={floatingText1div2}]
+
+								\teiHead[xmlid={un-bloc-citation-dans-lencadre-001}]{Un bloc citation dans l’encadré}
+								\begin{teiCit}[xmlid={floatingText1cit1}]
+
+									\begin{teiQuote}
+« En tant que randonneur, l’expérience de la marche, ça a beaucoup marqué les
+										choses, notre façon de percevoir le paysage. Il y a eu la question du sol qui change. Au
+										départ, il est très mou, très feutré. Puis on change de côte, et là il se fait bien plus
+										dur avec les racines des arbres ».
+\end{teiQuote}
+									\begin{teiQuote}
+« En termes de sons, ça semblait bien plus dilué ».
+\end{teiQuote}
+									\begin{teiQuote}
+« On voit différentes hostilités selon les côtes, la chaleur, le
+										glissement ».
+\end{teiQuote}
+									\begin{teiBibl}[xmlid={bibl-014}]
+Relevés de verbatims extraits du carnet de terrain, Fonticelli, 2020.
+\end{teiBibl}
+								
+\end{teiCit}
+							
+\end{teiDiv}
+							\begin{teiDiv}[type={section2},xmlid={floatingText1div3}]
+
+								\teiHead[xmlid={un-bloc-figure-dans-lencadre-001}]{Un bloc figure dans l’encadré}
+								\begin{teiFigure}[xmlid={floatingText1figure1}]
+
+									\teiHead[xmlid={figure-3-les-attentes-des-etudiant-e-s-au-debut-du-module-atlas-001}]{Figure 3 : Les attentes des étudiant(e)s au début du module « Atlas ».}
+									\teiGraphic[url={images/Image3.png}]
+								
+\end{teiFigure}
+							
+\end{teiDiv}
+						
+\end{teiDiv}
+						\begin{teiDiv}[type={section1},xmlid={floatingText1div4}]
+
+							\teiHead[xmlid={dautres-styles-dans-lencadre-001}]{D’autres styles dans l’encadré}
+							\begin{teiDiv}[type={section2},xmlid={floatingText1div5}]
+
+								\teiHead[xmlid={du-code-001}]{Du code}
+								\teiP[xmlid={floatingText1p1}]{\begin{teiElement}[name={code},lang={xml},space={preserve}]
+<html>
+<head>
+<title>Idée d'occupation</title>
+<script language="javascript">
+function afficheMessage() \{
+								
+\end{teiElement}}
+							
+\end{teiDiv}
+							\begin{teiDiv}[type={section2},xmlid={floatingText1div6}]
+
+								\teiHead[xmlid={des-questions-et-des-reponses-001}]{Des questions et des réponses }
+								\begin{teiElement}[name={sp},rend={question}]
+
+									\teiP[xmlid={floatingText1p2}]{Bonjour, vous allez bien ?}
+								
+\end{teiElement}
+								\begin{teiElement}[name={sp},rend={answer}]
+
+									\teiP[xmlid={floatingText1p3}]{Bien, merci.}
+								
+\end{teiElement}
+							
+\end{teiDiv}
+						
+\end{teiDiv}
+					
+\end{teiElement}
+				
+\end{teiElement}
+				
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={section1},xmlid={section1-011}]
+
+				\teiHead[xmlid={exemples-de-linguistique-001}]{Exemples de linguistique}
+				\begin{teiDiv}[type={section2},xmlid={section2-017}]
+
+					\teiHead[xmlid={exemple-simple-avec-label-001}]{Exemple simple avec label}
+					\teiP[xmlid={p-072}]{Lorem ipsum}
+					\begin{teiCit}[type={linguistic},xmlid={cit12}]
+
+						\begin{teiQuote}[n={1}]
+
+							\teiLabel{
+								\teiNum{(1)}
+								\teiHi[rend={italic}]{The ship sank}.}
+							\begin{teiQuote}[type={example}]
+
+								\begin{teiElement}[name={seg}]
+a. role frame:
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+Y
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+s\teiHi[rend={italic}]{ank}
+								
+\end{teiElement}
+							
+\end{teiQuote}
+							\begin{teiQuote}[type={example}]
+
+								\begin{teiElement}[name={seg}]
+
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+|
+\end{teiElement}
+							
+\end{teiQuote}
+							\begin{teiQuote}[type={example}]
+
+								\begin{teiElement}[name={seg}]
+b. coding frame: 
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+Arg1-\teiHi[rend={small-caps}]{nom}
+								
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+V.\teiHi[rend={small-caps}]{sbj}[1]
+\end{teiElement}
+							
+\end{teiQuote}
+						
+\end{teiQuote}
+					
+\end{teiCit}
+					\teiP[xmlid={p-073}]{Lorem ipsum}
+				
+\end{teiDiv}
+				\begin{teiDiv}[type={section2},xmlid={section2-018}]
+
+					\teiHead[xmlid={exemple-complet-avec-label-glose-traduction-numerotations-et-references-bibliographiques-001}]{Exemple complet avec label, glose, traduction, numérotations et références bibliographiques}
+					\teiP[xmlid={p-074}]{Lorem ipsum}
+					\begin{teiCit}[type={linguistic},xmlid={cit04}]
+
+						\begin{teiQuote}
+
+							\teiLabel{\teiNum{(7)} \begin{teiElement}[name={lang}]
+French
+\end{teiElement} [Contexte : Lorem Ipsum]}
+							\teiNum{a.}
+							\begin{teiQuote}[type={example}]
+
+								\begin{teiElement}[name={seg}]
+M
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+d
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+a
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+w
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+							
+\end{teiQuote}
+							\begin{teiElement}[name={gloss}]
+
+								\begin{teiElement}[name={seg}]
+1
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+d
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+A
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+v
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+							
+\end{teiElement}
+							\begin{teiQuote}[type={trl}]
+‘Lorem ipsum dolor sit amet’\begin{teiBibl}[rend={inline},xmlid={bibl-015}]
+reference
+\end{teiBibl}
+\end{teiQuote}
+							\teiNum{b.}
+							\begin{teiQuote}[type={example}]
+
+								\begin{teiElement}[name={seg}]
+E
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+a
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+w
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+							
+\end{teiQuote}
+							\begin{teiElement}[name={gloss}]
+
+								\begin{teiElement}[name={seg}]
+E
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+q
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+A
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+v
+\end{teiElement}
+								\begin{teiElement}[name={seg}]
+J
+\end{teiElement}
+							
+\end{teiElement}
+							\begin{teiQuote}[type={trl}]
+‘consectetur adipiscing elit’
+\end{teiQuote}
+							\begin{teiBibl}[xmlid={bibl-016}]
+My bibliographic reference
+\end{teiBibl}
+						
+\end{teiQuote}
+					
+\end{teiCit}
+					\teiP[xmlid={p-075}]{Lorem ipsum}
+				
+\end{teiDiv}
+			
+\end{teiDiv}
+		
+\end{teiElement}
+		\begin{teiElement}[name={back}]
+
+			\begin{teiDiv}[type={bibliography},xmlid={bibliography-001}]
+
+				\begin{teiElement}[name={listBibl},type={section1},xmlid={listBibl-003}]
+
+					\teiHead[xmlid={partie-1-001}]{Partie 1}
+					\begin{teiElement}[name={listBibl},type={section2},xmlid={listBibl-004}]
+
+						\teiHead[xmlid={partie-1-1-001}]{Partie 1.1}
+						\begin{teiBibl}[xmlid={bibl-017}]
+Bennett, Francis et Michael Holdsworth.\teiHi[rend={italic}]{Embracing the Digital Age. An Opportunity for Booksellers and the Book Trade}. Londres : The Booksellers Association of the United Kingdom \& Ireland, 2007
+\end{teiBibl}
+						\begin{teiBibl}[xmlid={bibl-018}]
+Carrérot, Olivier, éd. \teiHi[rend={italic}]{Qu’est-ce qu’un livre aujourd’hui ? Pages, marges, écrans}. Les Cahiers de la Librairie. Paris : La Découverte, 2009
+\end{teiBibl}
+					
+\end{teiElement}
+					\begin{teiElement}[name={listBibl},type={section2},xmlid={listBibl-005}]
+
+						\teiHead[xmlid={partie-1-2-001}]{Partie 1.2}
+						\begin{teiBibl}[xmlid={bibl-019}]
+Chartier, Roger. « La mort du livre ? », \teiHi[rend={italic}]{Communication \& Langages,} 159 (mars 2009) : 57-66
+\end{teiBibl}
+						\begin{teiBibl}[xmlid={bibl-020}]
+Clémente, Hélène, et Caroline C. Tachon. \teiHi[rend={italic}]{Accueillir le numérique ? Une mutation pour la 
+							librairie et le commerce du livre.} \teiRef[target={http://www.accueillirlenumerique.com/}]{http://www.accueillirlenumerique.com/}
+\end{teiBibl}
+					
+\end{teiElement}
+				
+\end{teiElement}
+				\begin{teiElement}[name={listBibl},type={section1},xmlid={listBibl-006}]
+
+					\teiHead[xmlid={partie-2-001}]{Partie 2}
+					\begin{teiBibl}[xmlid={bibl-021}]
+Darnton, Robert. « The New Age of the Book », \teiHi[rend={italic},xmllang={en}]{The New York Review of Books,} 46, no. 5 (mars 18, 1999)
+\end{teiBibl}
+					\begin{teiBibl}[xmlid={bibl-022}]
+Fogel, Jean-François \teiHi[rend={italic}]{Une presse sans Gutenberg. Pourquoi Internet a bouleversé le journalisme} Paris : Points, 2007
+\end{teiBibl}
+				
+\end{teiElement}
+			
+\end{teiDiv}
+			\begin{teiDiv}[type={appendix},xmlid={appendix-001}]
+
+				\begin{teiDiv}[type={section1},xmlid={section1-012}]
+
+					\teiHead[xmlid={vivamus-laoreet-001}]{Vivamus laoreet}
+					\teiP[xmlid={p-076}]{
+						Nullam tincidunt adipiscing enim. Phasellus tempus. Proin viverra, ligula sit amet ultrices semper, ligula arcu tristique sapien, a accumsan nisi mauris ac eros. Fusce neque. Suspendisse faucibus, nunc et pellentesque egestas, lacus ante convallis tellus, vitae iaculis lacus elit id tortor. Vivamus aliquet elit ac nisl. Fusce fermentum odio nec arcu. Vivamus euismod mauris. In ut quam vitae odio lacinia tincidunt. Praesent ut ligula non mi varius sagittis. Cras sagittis. Praesent ac sem eget est egestas volutpat. Vivamus consectetuer hendrerit lacus. Cras non dolor. Vivamus in erat ut urna cursus vestibulum.
+						\teiHi[rend={italic}]{Fusce commodo aliquam arcu. Nam commodo suscipit quam. Quisque id odio.}
+					}
+					\begin{teiDiv}[type={section2},xmlid={section2-019}]
+
+						\teiHead[xmlid={lorem-ipsum-dolor-sit-amet-consectetuer-adipiscing-elit-001}]{Lorem ipsum dolor sit amet, consectetuer adipiscing elit}
+						\teiP[xmlid={p-077}]{ Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.
+						}
+						\begin{teiFigure}[xmlid={figure-008}]
+
+							\teiHead[xmlid={titre-de-la-figure-001}]{Titre de la figure}
+							\teiGraphic[url={relative/path/to/image/img-1.jpg}]
+							\teiP[rend={caption},xmlid={p-078}]{Schéma réalisé en septembre 2009}
+							\teiP[rend={credits},xmlid={p-079}]{Surletoit}
+						
+\end{teiFigure}
+						\teiP[xmlid={p-080}]{Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Fusce vulputate eleifend sapien.}
+						\begin{teiCit}
+
+							\begin{teiQuote}
+Vestibulum purus quam, scelerisque ut, mollis sed, nonummy id, metus. N
+\end{teiQuote}
+						
+\end{teiCit}
+						\teiP[xmlid={p-081}]{Nunc nonummy metus.}
+					
+\end{teiDiv}
+				
+\end{teiDiv}
+			
+\end{teiDiv}
+		
+\end{teiElement}
+	
+\end{teiElement}
+
+\end{teiElement}
+\end{lateiDocument}
+
+\cleardoublepage
+\tableofcontents
+
+\end{document}

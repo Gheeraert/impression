@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI
+change="commons_edition"
+xmlns="http://www.tei-c.org/ns/1.0"
+xmlns:ns42="http://www.w3.org/2001/XInclude"
+xmlns:ns4="http://www.w3.org/1999/xlink"
+xmlns:ns3="http://www.w3.org/1998/Math/MathML"
+xmlns:ns="http://www.tei-c.org/ns/1.0"
+><teiHeader
+><fileDesc
+><titleStmt
+><title
+type="main"
+>Notes pour une philosophie de la tension de surface ou La beauté comme relation</title
+><author
+role="aut"
+><persName
+><forename
+>Chiara</forename
+><surname
+>Vecchiarelli</surname
+></persName
+><affiliation
+><orgName
+>ENS-PSL, Centre international d’étude de la philosophie française contemporaine, France</orgName
+></affiliation
+></author
+></titleStmt
+><publicationStmt
+><ab
+type="expression"
+><bibl
+><publisher
+></publisher
+><availability
+><licence
+target="#"
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+type="book"
+><bibl
+><date
+type="publishing"
+></date
+><biblScope
+from=""
+unit="page"
+></biblScope
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+subtype="PDF"
+type="digital_download"
+><bibl
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><distributor
+></distributor
+><date
+type="publishing"
+></date
+><dim
+extent=""
+type="weight"
+unit="Mo"
+></dim
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+subtype="EPUB"
+type="digital_download"
+><bibl
+><idno
+type="ISBN-13"
+></idno
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><distributor
+></distributor
+><date
+type="publishing"
+></date
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+><dim
+extent=""
+type="weight"
+unit="Ko"
+></dim
+></bibl
+><desc
+type="accessMode"
+>textual</desc
+><desc
+type="accessibilityFeature"
+>ARIA</desc
+><desc
+type="accessibilityFeature"
+>highContrastDisplay</desc
+><desc
+type="accessibilityFeature"
+>readingOrder</desc
+><desc
+type="accessibilityFeature"
+>structuralNavigation</desc
+><desc
+type="accessibilityFeature"
+>tableOfContents</desc
+><desc
+type="accessibilityFeature"
+>unlocked</desc
+><desc
+type="accessibilityFeature"
+>alternativeText</desc
+><desc
+subtype="soundHazard"
+type="accessibilityHazard"
+>noSoundHazard</desc
+><desc
+subtype="flashingHazard"
+type="accessibilityHazard"
+>noFlashingHazard</desc
+><desc
+subtype="motionSimulationHazard"
+type="accessibilityHazard"
+>noMotionSimulationHazard</desc
+><desc
+type="accessModeSufficient"
+>textual</desc
+><desc
+type="accessibilitySummary"
+>Cette publication est conforme aux normes d’accessibilité WCAG 2.0, au moins au niveau A.</desc
+></ab
+><ab
+subtype="HTML"
+type="digital_online"
+><bibl
+><distributor
+></distributor
+><name
+type="CMS"
+></name
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><date
+type="publishing"
+></date
+><date
+type="embargoend"
+></date
+><idno
+type="documentnumber"
+></idno
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+></publicationStmt
+><sourceDesc
+><p
+>COMMONS/Métopes : 1.0</p
+></sourceDesc
+></fileDesc
+><encodingDesc
+><appInfo
+><application
+ident="Word-tpl"
+version="1.0"
+><label
+>Word template</label
+><desc
+>Version of MS Word template used</desc
+><ref
+target="#"
+></ref
+></application
+><application
+ident="circe-Metopes"
+version="0.0.103"
+><label
+>Circé</label
+><desc
+>Document converted into TEI using Circé application (doc2tei pipeline)</desc
+><ref
+target="#"
+></ref
+></application
+></appInfo
+><editorialDecl
+><normalization
+rendition="notes"
+><p
+rendition="note"
+select="restart"
+></p
+><p
+rendition="table"
+select="restart"
+></p
+><p
+rendition="annexe"
+select="restart"
+></p
+><p
+rendition="floatingText"
+select="restart"
+></p
+></normalization
+></editorialDecl
+></encodingDesc
+><profileDesc
+><langUsage
+><language
+ident="fr-FR"
+></language
+></langUsage
+></profileDesc
+><revisionDesc
+><listChange
+><change
+type="creation"
+when="2025-09-17"
+>XML-TEI file creation</change
+></listChange
+></revisionDesc
+></teiHeader
+><text
+type="chapter"
+xml:id="text"
+><front
+><div
+type="titlePage"
+><p
+rend="title-main"
+>Notes pour une philosophie de la tension de surface ou La beauté comme relation</p
+><p
+rend="author-aut"
+>Chiara <hi
+rend="small-caps"
+>Vecchiarelli</hi
+></p
+><p
+rend="authority_affiliation"
+>ENS-PSL, Centre international d’étude de la philosophie française contemporaine, France</p
+></div
+></front
+><body
+><p
+xml:id="p1"
+>Qu’auraient en commun une pierre et une bulle de savon ?</p
+><p
+xml:id="p2"
+>L’une demeure impassible au toucher, l’autre éclate. L’une semble tendre vers l’intemporel par sa promesse de durabilité ; l’autre participe de la plus brève des durées, celle des choses qui apparaissent et disparaissent aussitôt. Le ferme et l’éphémère, l’aérien et le pesant semblent s’opposer, dans ces êtres qui paraissent si différents lorsqu’on les considère dans leur en-soi.</p
+><p
+xml:id="p3"
+>Si de nombreux témoignages existent quant à la beauté de telles réalités prises individuellement – qu’il suffise de songer à l’art japonais du <hi
+rend="italic"
+>suiseki</hi
+>, ou à l’iconographie occidentale des bulles de savon dans la tradition picturale – c’est pourtant vers une tout autre conception de la beauté que peuvent nous conduire la pierre et la bulle : une dimension qui se situe au-delà de l’individu, qui excède toute compréhension de ces entités comme des substances closes sur elles-mêmes.</p
+><p
+xml:id="p4"
+>Nous proposerons de penser une telle dimension comme étant relationnelle et, précisément en tant que relationnelle, vitale.</p
+><p
+xml:id="p5"
+>Assigner à la relation une teneur esthétique, lui reconnaître une fonction vitale, est un geste qui ne va pas de soi. Cela suppose de repenser nos catégories esthétiques et de faire émerger un champ de pensée qui ne se confond ni avec celui de l’objet perçu, ni avec celui du sujet qui imagine ou perçoit ; un lieu qui ne se situe ni dans l’œil du regardeur ni dans la chose en soi.</p
+><p
+xml:id="p6"
+>Nous allons suggérer qu’une pierre et une bulle peuvent avoir suffisamment de force pour nous conduire vers cette dimension au-delà de l’objet et du sujet, un au-delà qui est, en dernière instance, un en deçà, car logiquement antérieur à l’un comme à l’autre.</p
+><p
+xml:id="p7"
+>Cette force porte un nom dissimulé dans le fil de l’eau, dans la peau d’une bulle.</p
+><p
+xml:id="p8"
+>Tôt ou tard dans la vie, nous avons tous pu être fascinés par la beauté éphémère des bulles de savon – par leur flottement à mi-chemin entre le ciel et la terre, toujours sur le point de disparaître. Les bulles de savon sont des entités singulières en ceci que leur existence coïncide avec leur surface : elles sont, tout entières, surface. Cette face extérieure – qui représente, pour chaque être, sa limite immédiate et définit en même temps le seuil à partir duquel un échange, une rencontre, peut advenir – les constitue sans reste. Une bulle est alors à la fois la possibilité d’un échange et sa visibilité ; la possibilité tendue de la rencontre, et sa fragilité, toujours menacée par un autre toucher.</p
+><p
+xml:id="p9"
+>Ce qui rend une telle existence possible, c’est une force physique : la tension de surface<hi
+rend="italic"
+>.</hi
+></p
+><p
+xml:id="p10"
+>Notion physique et chimique à la fois, la tension de surface se définit comme la grandeur positive caractérisant la relation entre deux surfaces. Lorsqu’un contact se produit entre des corps fluides, leur géométrie se modifie, l’aire de l’interface diminue et une augmentation d’énergie accompagne cette modification : la rencontre devient alors un événement énergétique.</p
+><p
+xml:id="p11"
+>Ces êtres qui se touchent connaissent alors une intensification.</p
+><p
+xml:id="p12"
+>La tension de surface désigne précisément cette force qui maintient l’équilibre d’une énergie accrue à l’interface entre deux fluides. Elle agit à l’endroit – et dans l’événement – de leur rencontre<note
+n="1"
+place="foot"
+xml:id="ftn1"
+><p
+>Voir Étienne Guyon, Jean-Pierre Hulin et Luc Petit, Hydrodynamique physique, Les Ulis, EDP Sciences, 1996 ; Charles Vernon Boys, Soap-Bubbles and the Forces Which Mould Them [The Society for Promoting Christian Knowledge, 1902], New York, Doubleday Anchor Books, 1959 ; John H. Lienhard IV, John H. Lienhard V, A Heat Transfer Textbook [5e éd.], Cambridge, Phlogiston Press, 2019.</p
+></note
+>. C’est une tension qui donne réalité à la relation, qui en soutient l’existence sans pour autant la substantialiser, sans la faire précipiter dans une forme figée.</p
+><p
+xml:id="p13"
+>Toute bulle visqueuse existe par l’équilibre entre deux forces : la tension de surface, qui tend à minimiser l’air de la bulle – car l’énergie de surface diminue avec l’augmentation de cette dernière – et la pression exercée par l’air intérieur, qui s’oppose à la diminution du volume. On dira donc de la bulle visqueuse qu’elle existe entièrement sur la limite, transparente et tendue, de la relation. Et que cette limite possède tout le potentiel nécessaire pour devenir une notion philosophique : elle est, pour nous, à la fois l’expérience même d’une rencontre et un événement philosophique.</p
+><p
+xml:id="p14"
+>La vision d’une bulle qui flotte se dédouble en intensité – et en potentiel – dans l’événement plus rare encore de la rencontre entre deux bulles. Le contact engendre, chez ces êtres flottants, un être nouveau. Lorsque deux bulles visqueuses se joignent, l’entre-deux se réinvente à l’interface, et un réel inédit voit le jour. Là où deux tensions de surface se rencontrent, un événement topologique a lieu : une nouvelle forme d’existence apparaît. On pourrait dire que l’interface tendue entre les deux bulles devient partie intégrante de l’être de l’une et de l’autre. La surface tendue de la rencontre réunit alors deux forces : la force physique qu’est la tension de surface, et la force relationnelle, qui se manifeste dans l’invention d’une topologie partagée, par laquelle deux êtres entrent en coïncidence.</p
+><p
+xml:id="p15"
+>Cette force permet également, dans certaines conditions, à certains organismes de se mouvoir à la surface de l’eau. Un exemple du rôle de la tension de surface est observable sur les étendues d’eau calmes, telles que les étangs, sur lesquels des insectes appelés « patineurs d’eau » (<hi
+rend="italic"
+>gerris lacustris</hi
+>) se déplacent comme sur une surface élastique. Ce phénomène est rendu possible par la combinaison de la tension superficielle de l’eau – qui agit comme une membrane élastique en repoussant les substances hydrophobes – et de la légère déformation de la surface, induite par le poids de l’insecte, laquelle génère une force de sustentation suffisante pour le maintenir à flot et lui permettre de se mouvoir à la surface de l’eau comme sur une toile tendue.</p
+><p
+xml:id="p16"
+>Dans son ouvrage <hi
+rend="italic"
+>Imagination et invention</hi
+><note
+n="2"
+place="foot"
+xml:id="ftn14"
+><p
+>Gilbert Simondon, Imagination et invention. 1965-1966 [2008], Paris, PUF, 2014. </p
+></note
+>, le philosophe Gilbert Simondon propose une analogie entre un autre phénomène aquatique lié à la tension de surface et les alvéoles des nids d’abeille. Ces dernières s’apparentent, dans son analyse, à la surface sphérique d’une goutte d’eau. Ce que ces formes ont en commun, c’est l’optimisation d’une relation : obtenir un maximum de surface avec un minimum de cire, ou – en tant que liquide – se contenir dans une sphère à la plus petite surface possible. Dans les deux cas, il s’agit de solutions que le réel a trouvées pour articuler un seuil – une relation – entre l’élément et le tout, entre le volume et le poids. Dans les mots de Simondon :</p
+><cit
+xml:id="cit01"
+><quote
+>[C]es minima deviennent des <hi
+rend="italic"
+>optima</hi
+>, non en tant que systèmes dont l’Énergie est dégradée, mais quand ils sont pris comme solutions d’un problème, donc quand, au lieu d’être la formule du système d’ensemble, ils sont des moyens, des sous-ensembles apparaissant comme jouant un rôle de médiateurs et d’intermédiaires, entre une configuration plus vaste et une matière élémentaire<note
+n="3"
+place="foot"
+xml:id="ftn15"
+><p
+>Gilbert Simondon, L’individuation à la lumière des notions de forme et d’information [1958], Grenoble, Éditions Jérôme Millon, 2013, p. 86. Nous soulignons.</p
+></note
+>.</quote
+></cit
+><p
+xml:id="p17"
+>Par sa structure hexagonale, l’alvéole devient compatible avec toutes les autres ; par sa tension de surface, la goutte optimise la relation à son milieu<note
+n="4"
+place="foot"
+xml:id="ftn16"
+><p
+>La structure hexagonale des alvéoles ne se limite pas à rendre compatibles les alvéoles entre eux, elle permet aussi de créer une surface continue au travers du plus grand nombre possible de relations entre chaque alvéole et les autres alvéoles. Chacun des hexagones est en contact avec six autres hexagones alors qu’une surface composée de carrés ne permet de travailler que quatre proximités. </p
+></note
+>. Ces médiateurs sembleraient avoir pour fonction d’affiner la limite – de la rendre subtile, pourrions-nous dire, à la manière d’un <hi
+rend="italic"
+>inframince duchampien</hi
+>. Ils sont des formes de la relation, la limite même de l’être tendu dans la relation.</p
+><p
+xml:id="p18"
+>Un bloc de marbre blanc de Carrare posé au sol, un parallélépipède de quelques centimètres de hauteur et d’un demi-mètre de largeur dont la surface se tend sous nos yeux : la face supérieure de l’œuvre <hi
+rend="italic"
+>Milkstone </hi
+>(1978) de Wolfgang Laib<note
+n="5"
+place="foot"
+xml:id="ftn17"
+><p
+>Wolfgang Laib est un artiste allemand né en 1950, connu pour employer, dans ses œuvres, de grandes quantités de pollen qu’il tamise au sol pour créer des monochromes dont la tonalité est donnée par la couleur du pollen, faisant signe vers ce que l’artiste estime constituer « le début potentiel de la vie d’une plante » (« Pollen is the potential beginning of the life of the plant. It is as simple, as beautiful, and as complex as this. And of course, it has so many meanings. I think everybody who lives knows that pollen is important », site internet du MoMA, Musée d’art moderne de New York, <ref
+target="https://www.moma.org/calendar/exhibitions/1315"
+>https://www.moma.org/calendar/exhibitions/1315</ref
+>, consulté le 1<hi
+rend="sup"
+>er</hi
+> juillet 2025).</p
+></note
+> possède la même blancheur immaculée que les autres faces de la sculpture, mais contrairement à celles-ci, elle présente une tension. La surface de l’œuvre est liquide. Légèrement creusée, elle est remplie d’une couche de lait dont le travail consiste à tendre, presque imperceptiblement, cette face supérieure. Toute entière tendue, la surface anime le marbre par ailleurs intemporel. Versé sur l’intemporalité de cette roche âgée de millions d’années, le lait amène une autre notion de temps, celle d’un temps éphémère qui s’évapore en quelques heures. Ces deux temporalités disparates – apparemment incompatibles, et pourtant composant le corps de l’œuvre – sont maintenues ensemble dans son unité, précisément par le phénomène de tension de surface.</p
+><p
+xml:id="p19"
+>Dans un court commentaire sous forme d’enregistrement audio réalisé par le Museum of Modern Art de New York, l’artiste s’exprime à leur sujet en ces termes :</p
+><cit
+xml:id="cit02"
+><quote
+>Cette pièce dont nous parlons est une pierre de lait (<hi
+rend="italic"
+>Milkstone</hi
+>). C’est une de mes toutes premières œuvres. C’est une petite dalle de marbre blanc pur avec une indentation très, très fine sur le dessus, entourée d’un rebord. Je commence à travailler avec une petite machine, mais la plupart du rebord et du reste, je les ponce à la main avec du papier de verre et de l’eau, ce qui demande beaucoup de travail. Mais c’est un travail méditatif d’une grande beauté, que j’aime toujours faire. Je participe à quelque chose que je ressens comme très indépendant de moi-même et qui possède aussi une signification universelle. On verse du lait à la surface, mais il ne reste que quelques heures, puis il faut le remplacer. Cette pierre a des millions d’années, et le lait n’est là que durant quelques heures. C’est une chose très, très simple, mais la surface du lait peut contenir tout ce que vous pouvez penser<note
+n="6"
+place="foot"
+xml:id="ftn18"
+><p
+>« This piece we are talking about is a Milkstone. It’s one of my very early pieces. It’s a small slab of pure white marble which has a very, very fine indention on the top with a rim. I work first with a small machine, but most of the rim and everything I grind by hand with sandpaper and water, which is a lot of work. But it’s a very beautiful, meditative work, which I always like to do. I participate in something which I feel is very independent of myself and also has a universal meaning. And you pour milk into this on the surface, which is only for some hours, and then it has to be replaced. I mean the stone is like millions of years old and the milk is just there for some hours. It’s a very very simple thing, but the milk surface can contain everything you can think of. » Pour la transcription et la captation audio de la déclaration de Wolfgang Laib, voir le site internet du MoMA : <ref
+target="https://www.moma.org/audio/playlist/50/754"
+>https://www.moma.org/audio/playlist/50/754</ref
+> (consulté le 1er juillet 2025). Notre traduction.</p
+></note
+>.</quote
+></cit
+><p
+xml:id="p20"
+>Du film de lait qui tend la surface du marbre du <hi
+rend="italic"
+>Milkstone</hi
+>, Wolfgang Laib estime qu’il contient <hi
+rend="italic"
+>tout ce que l’on peut penser </hi
+>: tout le potentiel, tout ce qui n’est pas encore dit, mais relève de l’ordre du pensable – de la puissance de penser. Cette surface devient l’image même du potentiel – non pas celui de l’œuvre en soi, mais de l’œuvre en train de se faire, à travers ce travail de tension qui s’exerce à la surface, devenue agent de la limite.</p
+><p
+xml:id="p21"
+>Pour que le potentiel puisse agir, il faut lui faire une place : creuser le marbre, y inscrire une indentation – quelque chose comme un alinéa, cet espace qui signale le début d’un nouveau paragraphe, entendu ici comme un commencement inscrit dans la continuité de l’existence.</p
+><p
+xml:id="p22"
+>Le creux empli de lait permet au marbre de revenir à un état de potentialité, de se « repotentialiser » dans une relation au sein de laquelle deux temporalités disparates deviennent co-présentes. Une relation qui permet à la pierre de se liquéfier – au sens de la <hi
+rend="italic"
+>liquefactio</hi
+> des alchimistes chère à Jung. Image de la vie qui se tend dans le devenir, cette relation s’avère être un état de liquéfaction où tout devient co-présent.</p
+><p
+xml:id="p23"
+>On pourrait dire, en mobilisant vocabulaire simondonien, que la surface tendue du lait de <hi
+rend="italic"
+>Milkstone</hi
+> – cette peau liquide sur un corps de pierre – est l’image même de la <hi
+rend="italic"
+>limite tendue de l’être.</hi
+></p
+><p
+xml:id="p24"
+>L’histoire de l’art ne manque pas d’exemples d’artistes ayant tenté d’animer le marbre, de lui insuffler une forme de vitalité. Aux galeries de la Villa Borghese à Rome, une sculpture commandée par le cardinal Scipione Borghese est installée au centre d’une salle, disposée de manière à permettre la déambulation autour d’elle : <hi
+rend="italic"
+>Le Rapt de Proserpine,</hi
+> sculptée entre 1621 et 1622 par un tout jeune Gian Lorenzo Bernini – âgé de seulement vingt-trois ans lors de son achèvement. Celui qui, plus tard, animera les façades des palais romains en modulant les volumes comme nul architecte avant lui, représente ici l’enlèvement de Proserpine par Pluton, le maître des Enfers. Divinité chthonienne, premier fils de Cronos et Rhéa, Pluton porte plusieurs noms : <hi
+rend="italic"
+>Ploutôn</hi
+>, <hi
+rend="italic"
+>Hadès</hi
+> ou encore <hi
+rend="italic"
+>Haïdès</hi
+> – « celui que l’on ne voit pas » ou bien, selon d’autres interprétations, « celui qui rend invisible ». C’est lui qui rend Proserpine invisible en l’enlevant – fille de Zeus et de Déméter – pour l’emmener dans son royaume souterrain. Chaque année, avec le printemps, Proserpine refait surface, accueillie sur Terre par un tapis de fleurs. Elle symbolise la saison du renouveau, le retour de la vie végétale, à laquelle les œuvres de Laib rendent hommage à travers le pollen.</p
+><p
+xml:id="p25"
+>Elle redevient visible sous la forme d’un potentiel : celui d’une vie qui recommence après le long sommeil de l’hiver – comme après une mue imaginale. Un détail dans la sculpture de Bernini ne cesse d’attirer le regard : l’emprise de Pluton sur le corps de la jeune femme, ses doigts qui s’enfoncent dans la chair de Proserpine, modulant sa surface. Dans ce détail, qui s’apparente à la tension du lait de <hi
+rend="italic"
+>Milkstone</hi
+>, se tiennent ensemble trois tensions : celle de Pluton pour le corps de Proserpine, celle de Proserpine pour la surface de la Terre et celle de Bernini pour la surface du marbre.</p
+><p
+xml:id="p26"
+>La dynamique qui s’annonce dans le marbre de Bernini, et qui devient conscience matérielle dans le lait de <hi
+rend="italic"
+>Milkstone</hi
+>, est de même nature que celle qui rend possible la formation d’une bulle de savon. Ensemble, ces tensions font signe vers cette force superficielle – en laquelle réside ce qui importe le plus dans la vie<note
+n="7"
+place="foot"
+xml:id="ftn19"
+><p
+>Un développement ultérieur de ce texte pourra préciser en quoi le sujet mythologique choisi dans l’œuvre de Bernini demeure partiellement inachevé pour les besoins de notre analyse, en raison de sa mise en scène d’une relation non consensuelle. C’est précisément ce désaccord que l’œuvre d’art contemporaine engage, assumant ce que le sujet mythologique de Bernini laisse en suspens.</p
+></note
+>.</p
+><p
+xml:id="p27"
+>Elle constitue aussi le dispositif qui est au cœur d’une proposition esthétique d’une grande originalité, une proposition qui refuse de cantonner la question esthétique au seul niveau de la perception pour la déplacer sur le terrain ouvert de la relation. C’est ce déplacement qu’opère Gilbert Simondon dans son ouvrage <hi
+rend="italic"
+>Du mode d’existence des objets techniques</hi
+><note
+n="8"
+place="foot"
+xml:id="ftn20"
+><p
+>Gilbert Simondon, Du mode d’existence des objets techniques [1958], Paris, Aubier, 1989.</p
+></note
+>, où il élabore une théorie esthétique novatrice : la beauté y est pensée non comme une qualité perçue, mais comme un mode d’être relationnel.</p
+><p
+xml:id="p28"
+>Mais c’est d’abord la réalité esthétique elle-même qui se trouve redéfinie, envisagée comme une médiation capable de créer un monde – un monde logiquement antérieur à l’objet autant qu’au sujet, où la relation prime. Cette réflexion s’inscrit, chez Simondon, dans le cadre plus large d’une ontologie de la relation. Dans le prolongement de cette pensée, la beauté se trouve requalifiée : non plus comme une propriété intrinsèque à un objet, mais comme le fruit d’un agencement relationnel. Cette reconfiguration prend forme notamment dans l’étude des individus techniques, que Simondon envisage à travers le prisme de l’esthétique. Selon lui, « les objets techniques ne sont pas directement beaux en eux-mêmes<note
+n="9"
+place="foot"
+xml:id="ftn21"
+><p
+><hi
+rend="italic"
+>Ibid</hi
+>, p. 254.</p
+></note
+> », mais le deviennent lorsqu’ils « sont insérés dans un monde, soit géographique, soit humain<note
+n="10"
+place="foot"
+xml:id="ftn22"
+><p
+><hi
+rend="italic"
+>Ibid</hi
+>.</p
+></note
+> ». Autrement dit, la beauté n’émerge que lorsque l’objet dépasse sa fonction pure pour devenir un geste – un vecteur de relation. Si certains objets, y compris techniques, peuvent être considérés beaux, ce n’est donc qu’en raison de leur insertion dans un univers, de leur capacité à se transformer en points de convergence dans une trame qui organise le monde en un lieu vivant, un espace ouvert à la relation :</p
+><cit
+xml:id="cit03"
+><quote
+>[U]n outil, une machine ou un ensemble technique sont beaux quand ils s’insèrent dans un monde humain et le recouvrent en l’exprimant ; si l’alignement des tableaux d’un central téléphonique est beau, ce n’est pas en lui-même ni par sa relation au monde géographique, car il peut être n’importe où ; c’est parce que ces voyants lumineux qui tracent d’instant en instant des constellations multicolores et mouvantes représentent des gestes réels d’une multitude d’êtres humains, rattachés les uns aux autres par l’entrecroisement des circuits. Le central téléphonique est beau en action, parce qu’il est à tout instant l’expression et la réalisation d’un aspect de la vie d’une cité et d’une région ; une lumière, c’est une attente, une intention, un désir, une nouvelle imminente, une sonnerie qu’on n’entendra pas, mais qui va retentir au loin dans une autre maison<note
+n="11"
+place="foot"
+xml:id="ftn23"
+><p
+><hi
+rend="italic"
+>Ibid</hi
+>., p. 256 et 257.</p
+></note
+>.</quote
+></cit
+><p
+xml:id="p29"
+>Cette beauté réside non pas dans l’objectualité, dont elle s’écarte, ni, a fortiori, dans le paradigme de l’imitation, que Simondon remplace par celui de l’insertion. Elle réside dans le potentiel relationnel du réel, une réalité qui est esthétique dans la mesure où elle incarne « le sens du devenir » car c’est en elle que tout ce qui est stable peut se mettre en mouvement, bourgeonner, rayonner, devenir relation créatrice – et non plus simplement terme d’une relation inessentielle, ou fonctionnelle à l’établissement d’un sujet fixe, voire à la représentation inadéquate d’un idéal inatteignable.</p
+><p
+xml:id="p30"
+>C’est ainsi qu’il convient d’entendre la proposition selon laquelle tout geste médiateur est un geste esthétique<note
+n="12"
+place="foot"
+xml:id="ftn24"
+><p
+><hi
+rend="italic"
+>Ibid.</hi
+>, p. 268.</p
+></note
+>, et d’admettre également que « tout ce qui intervient comme intermédiaire entre sujet et objet peut prendre la valeur d’image<note
+n="13"
+place="foot"
+xml:id="ftn25"
+><p
+>Gilbert Simondon, <hi
+rend="italic"
+>Imagination et invention</hi
+>,<hi
+rend="italic"
+> op. cit.</hi
+>, p. 12. Si tant est qu’il soit possible de désigner Proserpine comme « la jeune fille indicible », c’est uniquement en ce sens : dans la mesure où elle incarne une tension qui ne relève pas de l’ordre du discours, mais de celui de l’image – image au sein de laquelle, et d’elle seule, la relation devient première. Voir, pour une analyse de la dimension du mystère, entendu ici comme indicible, dans le mythe de Proserpine, Giorgio Agamben et Monica Ferrando, <hi
+rend="italic"
+>La ragazza indicibile. Mito e mistero di Kore</hi
+>, Milan, Mondadori Electa, 2010.</p
+></note
+> ». Cette perspective s’applique pleinement à l’œuvre d’art, à condition toutefois de cesser de la concevoir comme une substance figée, réduite à l’un des termes d’une relation sujet/objet.</p
+><p
+xml:id="p31"
+>Certaines œuvres, en effet, fonctionnent davantage comme des champs relationnels : elles fondent leur principe sur la primauté de la relation. Ce sont ces œuvres qui nous invitent à repenser à la fois nos catégories esthétiques et nos priorités philosophiques.</p
+><p
+xml:id="p32"
+>Ainsi, une œuvre d’art peut être saisie comme une relation vivante, à l’image d’une bulle de savon, toute entière tension de surface. Elle incarne la promesse de reconfigurer, dans la rencontre, tout réel – et ne sera belle que dans la mesure où elle portera la tension même de cette possible rencontre.</p
+></body
+></text
+></TEI
+>

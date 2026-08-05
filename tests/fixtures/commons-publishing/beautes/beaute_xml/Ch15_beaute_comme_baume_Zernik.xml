@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI
+change="commons_edition"
+xmlns="http://www.tei-c.org/ns/1.0"
+xmlns:ns42="http://www.w3.org/2001/XInclude"
+xmlns:ns4="http://www.w3.org/1999/xlink"
+xmlns:ns3="http://www.w3.org/1998/Math/MathML"
+xmlns:ns="http://www.tei-c.org/ns/1.0"
+><teiHeader
+><fileDesc
+><titleStmt
+><title
+type="main"
+>La beauté comme baume, après la catastrophe</title
+><author
+role="aut"
+><persName
+><forename
+>Clelia</forename
+><surname
+>Zernik</surname
+></persName
+><affiliation
+><orgName
+>École nationale supérieure des Beaux-arts de Paris, France </orgName
+></affiliation
+><affiliation
+><orgName
+>Université PSL, chaire Beauté·s, France</orgName
+></affiliation
+></author
+></titleStmt
+><publicationStmt
+><ab
+type="expression"
+><bibl
+><publisher
+></publisher
+><availability
+><licence
+target="#"
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+type="book"
+><bibl
+><date
+type="publishing"
+></date
+><biblScope
+from=""
+unit="page"
+></biblScope
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+subtype="PDF"
+type="digital_download"
+><bibl
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><distributor
+></distributor
+><date
+type="publishing"
+></date
+><dim
+extent=""
+type="weight"
+unit="Mo"
+></dim
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+><ab
+subtype="EPUB"
+type="digital_download"
+><bibl
+><idno
+type="ISBN-13"
+></idno
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><distributor
+></distributor
+><date
+type="publishing"
+></date
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+><dim
+extent=""
+type="weight"
+unit="Ko"
+></dim
+></bibl
+><desc
+type="accessMode"
+>textual</desc
+><desc
+type="accessibilityFeature"
+>ARIA</desc
+><desc
+type="accessibilityFeature"
+>highContrastDisplay</desc
+><desc
+type="accessibilityFeature"
+>readingOrder</desc
+><desc
+type="accessibilityFeature"
+>structuralNavigation</desc
+><desc
+type="accessibilityFeature"
+>tableOfContents</desc
+><desc
+type="accessibilityFeature"
+>unlocked</desc
+><desc
+type="accessibilityFeature"
+>alternativeText</desc
+><desc
+subtype="soundHazard"
+type="accessibilityHazard"
+>noSoundHazard</desc
+><desc
+subtype="flashingHazard"
+type="accessibilityHazard"
+>noFlashingHazard</desc
+><desc
+subtype="motionSimulationHazard"
+type="accessibilityHazard"
+>noMotionSimulationHazard</desc
+><desc
+type="accessModeSufficient"
+>textual</desc
+><desc
+type="accessibilitySummary"
+>Cette publication est conforme aux normes d’accessibilité WCAG 2.0, au moins au niveau A.</desc
+></ab
+><ab
+subtype="HTML"
+type="digital_online"
+><bibl
+><distributor
+></distributor
+><name
+type="CMS"
+></name
+><idno
+subtype="-"
+type="DOI"
+></idno
+><ref
+type="DOI"
+></ref
+><ref
+type="site"
+></ref
+><date
+type="publishing"
+></date
+><date
+type="embargoend"
+></date
+><idno
+type="documentnumber"
+></idno
+><availability
+><licence
+></licence
+><p
+></p
+></availability
+></bibl
+></ab
+></publicationStmt
+><sourceDesc
+><p
+>COMMONS/Métopes : 1.0</p
+></sourceDesc
+></fileDesc
+><encodingDesc
+><appInfo
+><application
+ident="Word-tpl"
+version="1.0"
+><label
+>Word template</label
+><desc
+>Version of MS Word template used</desc
+><ref
+target="#"
+></ref
+></application
+><application
+ident="circe-Metopes"
+version="0.0.103"
+><label
+>Circé</label
+><desc
+>Document converted into TEI using Circé application (doc2tei pipeline)</desc
+><ref
+target="#"
+></ref
+></application
+></appInfo
+><editorialDecl
+><normalization
+rendition="notes"
+><p
+rendition="note"
+select="restart"
+></p
+><p
+rendition="table"
+select="restart"
+></p
+><p
+rendition="annexe"
+select="restart"
+></p
+><p
+rendition="floatingText"
+select="restart"
+></p
+></normalization
+></editorialDecl
+></encodingDesc
+><profileDesc
+><langUsage
+><language
+ident="fr-FR"
+></language
+></langUsage
+></profileDesc
+><revisionDesc
+><listChange
+><change
+type="creation"
+when="2025-09-17"
+>XML-TEI file creation</change
+></listChange
+></revisionDesc
+></teiHeader
+><text
+type="chapter"
+xml:id="text"
+><front
+><div
+type="titlePage"
+><p
+rend="title-main"
+>La beauté comme baume, après la catastrophe</p
+><p
+rend="author-aut"
+>Clelia <hi
+rend="small-caps"
+>Zernik</hi
+></p
+><p
+rend="authority_affiliation"
+>École nationale supérieure des Beaux-arts de Paris, France</p
+><p
+rend="authority_affiliation"
+>Université PSL, chaire Beauté·s, France</p
+></div
+></front
+><body
+><p
+xml:id="p1"
+>Dans <hi
+rend="italic"
+>Retour à Tokyo</hi
+>, Philippe Forest écrit :</p
+><cit
+xml:id="cit01"
+><quote
+>Je ne me sens pas vraiment le cœur d’écrire quoi que ce soit des terrifiantes et magnifiques images avec lesquelles Naoya Hatakeyama témoigne à sa manière d’artiste du tsunami qui a ravagé le village de son enfance et qui a touché sa famille. Il y a une beauté dans l’horreur. C’est ainsi. […] Le pur ravage que le monde inflige aux hommes fait éclore une sorte de sidérante splendeur parmi un paysage de pleurs<note
+n="1"
+place="foot"
+xml:id="ftn1"
+><p
+>Philippe Forest, <hi
+rend="italic"
+>Retour à Tokyo</hi
+>, Paris, Cécile Defaut, 2014.</p
+></note
+>. </quote
+></cit
+><p
+xml:id="p2"
+>« Terrifiantes et magnifiques », « beauté dans l’horreur ». Que nous disent ces oxymores ?</p
+><figure
+xml:id="figure01"
+><head
+>Figure 24. Couverture de l’ouvrage de Naoya Hatakeyama, <hi
+rend="italic"
+>Kesengawa</hi
+>, Lille, Éditions Light Motiv, 2013. Courtoisie de l’auteur.</head
+></figure
+><p
+xml:id="p3"
+>Dans un ouvrage photographique intitulé <hi
+rend="italic"
+>Kesengawa</hi
+><note
+n="2"
+place="foot"
+xml:id="ftn7"
+><p
+>Naoya Hatakeyama, <hi
+rend="italic"
+>Kesengawa</hi
+> [<hi
+rend="italic"
+>La Madeleine</hi
+>], Lille, Light Motiv, 2013.</p
+></note
+>, évoqué ici par Philippe Forest, Naoya Hatakeyama a regroupé des photographies de sa ville natale, Rikuzentakata, paisible bourgade au bord de la rivière Kesen qui débouche sur la mer non loin, photographies prises avant 2011, puis après 2011 une fois la région dévastée par le tsunami survenu le 11 mars. L’ouvrage est composé de deux parties bien distinctes, séparées d’une page blanche. La première partie regroupe les photographies d’avant 2011, très sereines et solaires, et s’accompagne d’un texte écrit par le photographe pendant son voyage en moto depuis Tokyo le lendemain de la catastrophe pour rejoindre sa famille (sa mère est décédée dans un centre d’évacuation en hauteur qui n’a pas résisté à la force inattendue de la vague) ; la deuxième partie est une succession d’images sans texte, qui révèlent les ruines laissées par le tsunami. Si la page centrale laissée blanche interrompt la lecture du récit et double l’horreur des paysages dévastés d’un mutisme sidéré, l’ouvrage malgré sa division entre un avant heureux et un après horrifié conserve cependant une très grande unité. Cette unité tient à la composition rigoureuse de chaque photographie et pour le dire avec Philippe Forest, à leur très grande beauté. Les mots de Forest soulignent ce scandale de la beauté dans l’horreur, comme si le drame, la catastrophe humaine, la destruction se devaient d’associer la désolation à la laideur. Comment la beauté pourrait-elle coexister avec le drame humain ? Sans doute la beauté ne ressortit pas directement des destructions massives faites par le tsunami ; il existe cependant une beauté des ruines qui convoque une mélancolie spécifique dont l’âme romantique se repaît. Ce n’est pas cet état d’esprit qui préside aux photographies de Naoya Hatakeyama. En effet, ce ne sont pas les ruines en elles-mêmes qui sont belles, mais les photographies. Leur composition est extrêmement soignée et rigoureuse et c’est de cette composition que naît la beauté. La composition s’appuie sur des lignes de coupe très nettes qui segmentent l’image ou la doublent : la ligne d’horizon, la ligne de crête des montagnes, la ligne de signalisation des routes, la ligne du pont, la ligne d’un banc ou d’une canne à pêche. Plus exactement, les images sont souvent composées de trois parties de masses assez identiques : le ciel, le brouillard, la verdure ou l’eau, éléments naturels qui semblent ainsi à l’image s’équilibrer et confèrent ordre et apaisement au paysage. Cet équilibre est accentué par la présence fréquente d’un élément central : un personnage, une barque, un cygne, un pliage ou une bretelle d’autoroute. Quelque chose se noue au cœur, au centre, amarrant l’image et lui donnant une immobilité et comme une éternité. Les images de Naoya Hatakeyama sont donc extrêmement composées, et d’une beauté très épurée. Les surfaces photographiées sont souvent vides. De nombreuses surfaces planes et sans figures, que ce soit la surface de la mer, du ciel ou de la nuit, introduisent comme un aplat uniforme et abstrait dans l’image.</p
+><figure
+xml:id="figure02"
+><head
+>Figure 25. <hi
+rend="italic"
+>27 juillet 2004 : Kesenchô – Imaizumi, vue de la colline</hi
+>. Courtoisie de l’auteur.</head
+></figure
+><figure
+xml:id="figure03"
+><head
+>Figure 26. <hi
+rend="italic"
+>04 avril 2011 : Kesenchô – Imaizumi, vue de la colline</hi
+>. Courtoisie de l’auteur.</head
+></figure
+><p
+xml:id="p4"
+>Après le 11 mars, il semble dans un premier temps que cette composition très rigoureuse vole précisément en éclats. La première photographie après la page blanche présente en effet un trop-plein de débris, un désordre des couleurs, qui rompent avec la stabilité des compositions précédentes. Toutefois, dès cette première image, il est à souligner la permanence de la structure tripartite de l’image et la large surface du ciel qui fait respirer l’image en dépit de l’étouffement des gravats au sol. Plus encore, des compositions similaires à celles de la première partie, tripartites ou coupées par des lignes de fuite nettes, se retrouvent assez vite : les gravats, l’eau et les montagnes ; les ruines, la forêt et le ciel ; la rivière, la terre et le ciel. De la même manière, on retrouve des photographies organisées selon un élément central, ce qu’il reste du pont, d’une maison. Là non plus, l’image ne bouge pas, comme si elle semblait arrêtée en une simple surface, refermée sur sa rigoureuse structure en aplats. Mer liquide et mer de gravats s’équilibrent et échangent leurs caractéristiques. Avant comme après, les compositions plastiques des photographies sont ponctuées de rimes et de symétries, accentuées par le reflet de l’eau qui dédouble l’image. Les images ont une direction, un pli, mais en même temps une ligne vient toujours la couper comme si l’image était toujours double. Le ciel se reflète sur la mer, sur la rivière. Avant la page blanche, ces deux canoteurs qui rament au même rythme levant la pagaie ensemble et se mirant ensemble dans le reflet de l’eau construisent à la fois une image d’une grande stabilité et sérénité et en même temps poussent le principe du dédoublement à un point tel qu’il semble que la faille soit déjà là, montée à la surface, à l’ultime bord de la catastrophe. Le reflet, c’est un double inversé, modifié. Le feu d’artifice dans le ciel fait écho à l’étoile de mer au sol. L’envers et l’endroit, l’avant et l’après, le haut et le bas, tout se construit autour d’un axe de symétrie, cette cassure qui est aussi celle du récit. En effet, à la structure très nette – l’opposition entre un passé idéalisé et l’horreur du présent – il faut introduire une nuance qui est de taille. Si les premières photos de ruine évoquent un chaos sans ordre et sans espoir, peu à peu au cours du livre des images à nouveau très composées apparaissent, très structurées et évoquant finalement le même apaisement que dans les photographies de la première partie, une même sérénité. Ce sentiment s’appuie sur un très grand sens du cadrage, une très grande beauté des lumières, des miroitements et des reflets, tout à fait similaire à celle de la première partie, et donc qui ne peut pas être sans l’évoquer.</p
+><p
+xml:id="p5"
+>Aussi, si l’ouvrage se construit bien sur une opposition nette entre deux parties, articulée autour d’une page blanche, lieu d’une ontologie négative de la catastrophe, il y a également derrière cette opposition une continuité, un caractère commun qui est celui de la beauté, sous-tendue par cette présence continue de l’eau et de sa surface en miroir. De fait, la beauté n’est pas tant la caractéristique de la représentation des décombres suite à la catastrophe, mais celle de la continuité du regard du photographe. C’est peut-être également le signe de la continuité du paysage, de son identité propre, de la beauté singulière d’un territoire qui, en dépit de son complet bouleversement, conserve une topologie particulière, un tempérament particulier, lié à la présence de l’eau dans le cas de Rikuzentakata, et que le photographe retrouve au milieu des gravats. On peut se demander cependant pourquoi ce dernier maintient sur son pays natal dévasté cette exigence compositionnelle, cette beauté de surface en dépit de la profonde désolation, et de la catastrophe qui l’a atteint personnellement. Pourquoi maintenir la beauté dans l’horreur ? Comment justifier cette « sidérante splendeur parmi un paysage de pleurs » ?</p
+><p
+xml:id="p6"
+>Il faut prendre au sérieux ce mouvement instinctif de refus de voir de la beauté dans l’horreur. Et à la gêne que l’on peut éprouver face à ces horreurs magnifiques, Naoya Hatakeyama fait cette réponse elle-même magnifique et terrible : « c’est comme maquiller les morts ».</p
+><p
+xml:id="p7"
+>On est en droit d’interroger la dimension morale ou immorale de la beauté. Cette beauté des ruines n’a-t-elle pas le parfum immoral de celui qui se repaît de l’horreur, bien à l’abri de ses atteintes ? N’y a-t-il pas quelque chose de malsain à transformer le désastre en spectacle, à esthétiser l’horreur ? Naoya Hatakeyama n’essaie pas de donner un statut particulier à cette beauté. Le spectateur ressent bien qu’il ne s’agit pas d’un effet de beauté, mais d’un besoin originaire que ce soit beau. Naoya Hatakeyama est très conscient du fait qu’il y a beaucoup de sentiment, de nostalgie, dans ses images et que cela passe par le soin apporté au cadrage. Jamais Naoya Hatakeyama n’a eu l’idée de déconstruire la beauté, mais en même temps ce n’est jamais l’effet de beauté qui est recherché. Jamais l’horreur n’est mise au service d’un effet spectaculaire ou séduisant. Bien au contraire, ce sont le cadrage, la beauté de la composition qui confèrent aux photographies leur intériorité, leur épaisseur d’émotion et de sens. S’il faut parler d’instrumentalisation, c’est bien plutôt la beauté qui est instrumentalisée et non l’horreur. La beauté est l’instrument utilisé pour exprimer toute l’horreur et l’effroi du désastre. Plus exactement, cette beauté dit en même temps l’horreur et la réconciliation possible. Pour expliquer son utilisation de la beauté, Hatakeyama rapporte une tradition d’Okinawa. Il est d’usage, à Okinawa, de déterrer les os des morts et de les laver. Par le lavement s’exprime une nostalgie plus pure et sublimée. Hatakeyama raconte qu’en traversant les ruines du tsunami, c’était tellement horrible qu’il demandait à la photographie d’apporter un peu de beauté. C’est, pour lui, un peu comme maquiller les morts. Trouver les gestes, trouver le cadrage qui redonne de la beauté à ce qui l’a définitivement perdue. Les ruines, les os, sont pour Hatakeyama mieux que la disparition totale, c’est un lien vers le passé. Aussi, cette beauté ouvre la surface de l’image pour accompagner le spectateur vers les strates d’histoire personnelle qu’elle recouvre. Et l’eau a cette fonction rituelle de purification et d’apaisement. Si l’eau, la mer et la rivière sont si présentes dans les photographies de Hatakeyama, c’est précisément aussi peut-être pour cette ultime raison : exprimer, au moment même où l’horreur la plus ultime nous touche, ce besoin premier de s’en laver et de se réconcilier. L’eau agit à la manière d’un filtre magique qui d’image en image nous apaise et nous soigne. La photographie n’est plus alors un simple rectangle de papier posé à distance, mais bel et bien un acte, un geste d’apaisement, un rite de purification proposé au spectateur.</p
+><p
+xml:id="p8"
+>Dans ses derniers travaux, Hatakeyama photographie les différentes étapes de la reconstruction de la région. De manière quasi cyclique, il referme son projet photographique sur des images qui pointent vers le futur de la ville. Là encore, la ruine, le présent sont comme pris en étau entre l’avant et l’après, entre ce qui a été perdu et ce qui se reconstruit. Parfois, Naoya Hatakeyama dit culpabiliser un peu par rapport à d’autres artistes dont les préoccupations sont plus engagées dans l’effort de reconstruction de la société, et lui aussi se demande ce qu’il peut faire en tant qu’artiste. Mais ce qui se trame dans ses images, cette façon de réinscrire le désastre dans un cycle qui englobe un passé et un futur apaisés, est déjà un geste de reconstruction, en ce qu’il a une action évidente de consolation des populations. Et, même si son travail n’est pas de directement aider les gens, il contribue au relèvement de la région en apportant – par cette beauté précisément – l’espoir. Il y a des personnes âgées en particulier qui ont beaucoup apprécié ses photographies, qui ont été très vivement émues et lui ont dit merci. L’eau, après avoir tout englouti, retrouve sa fonction lustrale d’absolution.</p
+><p
+xml:id="p9"
+>Maurice Pinguet, dans son texte « Transparence et profondeur », compare les films d’Ozu à :</p
+><cit
+xml:id="cit02"
+><quote
+>une eau limpide et profonde, parfaitement tranquille. Si d’un rocher à pic, nous plongeons nos regards dans la mer, il faut que l’eau soit calme et pure pour que sa profondeur devienne visible. Et pour que sa transparence apparaisse, il faut que cette eau soit profonde. Alors notre vision ne s’arrête pas à la surface, elle ne vient pas non plus buter contre le fond trop proche, elle pénètre librement dans l’intimité de l’élément. Sans rencontrer d’obstacle, notre regard va toujours plus loin, nous voyons alors la transparence même, qui n’a ni forme ni couleur, nous saisissons ce qui est sans substance, nous saisissons la profondeur même<note
+n="3"
+place="foot"
+xml:id="ftn8"
+><p
+>Maurice Pinguet, « Transparence et profondeur d’Ozu », dans Alain Jouffroy (dir.), <hi
+rend="italic"
+>Écritures japonaises. Cahiers pour un temps</hi
+>, Paris, Centre Georges Pompidou, 1986, p. 109. </p
+></note
+>.</quote
+></cit
+><p
+xml:id="p10"
+>Et cette profondeur, c’est la dimension affective même de ce monde d’objets, l’envers ou la doublure de ce qui est offert à notre regard en surface, ces images d’objets, ces écailles, ces brisures de verre sans épaisseur. L’image ozuienne n’est pas tant un vide qu’une surface, la pellicule externe d’un quotidien vide ou dépeuplé. Si l’image ozuienne est cette surface sans ombre pleinement disponible, qui d’elle-même amoindrit sa propre densité, c’est précisément pour laisser voir en transparence cette doublure affective, qui est la vie même. « Notre attention fascinée par les films d’Ozu plonge dans la transparence de la forme et dans la profondeur de la vie<note
+n="4"
+place="foot"
+xml:id="ftn9"
+><p
+><hi
+rend="italic"
+>Ibid</hi
+>.</p
+></note
+> », écrit Maurice Pinguet. Image plate, géométrique, discrète, précise ou évidente, la surface des films d’Ozu n’atteint cette épure que pour nous laisser plonger dans le mouvement affectif de la vie humaine, ces douleurs et ces tourments, ce que Maurice Pinguet appelle dans un autre texte sur Ozu, « la dialectique de l’amour et du temps ». « Entre les êtres qui se sont aimés, les liens se dénouent s’ils ne se brisent pas, toutes les intensités se nivellent sous l’effet de l’inexorable entropie<note
+n="5"
+place="foot"
+xml:id="ftn10"
+><p
+>Maurice Pinguet, « <hi
+rend="italic"
+>Voyage à Tokyo</hi
+> d’Ozu », dans <hi
+rend="italic"
+>Le texte Japon. Introuvables et inédits</hi
+>, réunis et présentés par Michaël Ferrier, Paris, Éditions du Seuil, 2009, p. 148. </p
+></note
+>. » Dans la trame du temps du film, dans les dessous de ses lignes géométriques, se meuvent les « cruautés impersonnelles de la vie ». Et si cette profondeur vivante est à ce point lisible, sensible dans les films d’Ozu, au point de nous émouvoir aux larmes, c’est qu’elle s’appuie sur une esthétique de la surface, de l’image transparente et évidente, sur une beauté et une splendeur incontestables.</p
+><p
+xml:id="p11"
+>Suite à la catastrophe du 11 mars 2011, un grand nombre de conférences, de colloques au Japon ou ailleurs ont posé la question de la rupture radicale que l’événement introduisait dans la pensée ou dans l’image que le pays se faisait de lui-même. Et donc, il me semble que le premier point important à noter est que, si la catastrophe est absolue rupture et non-sens, elle appelle plus que jamais le sens et la figure. Figurer la catastrophe donc, avant d’être possible ou non, est une exigence. La catastrophe est un non-sens qui appelle immédiatement l’expression. Et cette exigence n’est pourtant pas sans soulever cas de conscience et paradoxe. De fait, l’événement catastrophique semble déborder aussi bien les catégories de l’entendement que les limites de l’imagination, ou encore le cadre photographique. Plus encore, c’est la question même du figurable et de la visibilité qu’il pose. Comment rendre compte d’une telle catastrophe dans son ampleur et dans la césure qu’elle fonde ? C’est à ce nouveau défi, inédit et vertigineux, que se trouvent confrontés les artistes qui traitent du 11 mars. Comment répertorier, évoquer, représenter le réel quand il atteint ce stade de démesure et d’innommable ? Si les mots manquent, les images dans leur prolifération indéfinie pourront-elles figurer la catastrophe ? Figurer, c’est-à-dire donner un cadre à ce qui déborde tout cadre, donner une figure à ce qui n’en a pas, assigner une image, à ce qui les multiplie sans fin. Un photographe comme Naoya Hatakeyama lève ou contourne l’aporie en faisant de la coupe plate de l’image une surface vivante et sensible ouverte aux fantômes d’autres temps et hantée de ces différents possibles. Une photographie comme une réserve de sens, une objectivité doublée d’une intériorité, une image doublée d’un geste d’absolution. Comme ce pli de la vague sur la couverture de <hi
+rend="italic"
+>Kesengawa</hi
+> qui, à la manière d’une doublure de manteau, rappelle la profondeur de cette beauté tout en surface. La facture classique et épurée des images d’Hatakeyama console en appliquant sur le chaos de la destruction le baume de la beauté. D’une manière un peu similaire, la dessinatrice Catherine Meurisse, après l’expérience traumatisante de l’attentat de Charlie Hebdo, se rattache au mot « beauté », comme à une bouée de secours.</p
+><cit
+xml:id="cit03"
+><quote
+>Dans <hi
+rend="italic"
+>La Légèreté</hi
+>, j’ai formulé une quête de beauté. C’était la première fois que je le faisais, après avoir mûrement réfléchi, après avoir constaté que dans les chroniques qu’écrivait Philippe Lançon dans « Charlie » depuis l’hôpital, très blessé, il parlait de la beauté, et j’étais sciée, je ressentais aussi un besoin de beauté. Alors qu’on est dans l’horreur absolue, dans le chaos, qu’est-ce qui fait que soudain, ce mot arrive… ? Je me suis accrochée à ce mot<note
+n="6"
+place="foot"
+xml:id="ftn11"
+><p
+>Catherine Meurisse, dans <hi
+rend="italic"
+>Cours particulier</hi
+>, épisode 20, entretien sur France Culture du 21 janvier 2022 : <ref
+target="https://www.radiofrance.fr/franceculture/podcasts/les-chemins-de-la-philosophie/catherine-meurisse-1787131"
+>https://www.radiofrance.fr/franceculture/podcasts/les-chemins-de-la-philosophie/catherine-meurisse-1787131</ref
+> (consulté le 3 juillet 2025).</p
+></note
+>.</quote
+></cit
+><p
+xml:id="p12"
+>Il y aurait donc deux manières de justifier cette horreur magnifique, cette beauté plastique et formelle au sein d’un paysage de larmes.</p
+><p
+xml:id="p13"
+>Il faudrait tout d’abord dire que la beauté n’est pas coupée de la vie, de ses tourments, de ses mouvements agités. Comme Maurice Pinguet l’a dit au sujet d’Ozu, surface et profondeur sont solidaires et, à la manière d’un dispositif optique, la beauté de surface permet de saisir avec la plus grande acuité, la plus grande clarté, les douleurs de l’existence, l’entropie des sentiments, les déchirements des départs et des disparitions. Ainsi la beauté des images d’Hatakeyama ni ne gomme ni n’émousse la douleur du drame humain et l’horreur de la dévastation. À l’inverse, elle permet, à la manière d’une loupe ou d’un microscope, d’en ressaisir la trame, le fil, les ramifications fines d’une catastrophe intime.</p
+><p
+xml:id="p14"
+>Mais secondement, et peut-être de manière un peu paradoxale par rapport à la première raison, la beauté est compatible avec l’horreur, non seulement parce qu’elle nous la fait voir, mais également parce qu’elle nous en soulage. La beauté, tel un baume, calme la douleur, restaure l’identité propre d’un territoire à moitié disparu, apaise les tourments liés à la disparition. La beauté agit comme un remède contre la douleur et il faut donner au mot « contre » toute son intensité. La beauté refait ce que la catastrophe a défait. La composition très pure et géométrique des images redonne, malgré le chaos, après le chaos, une continuité à une topographie centrée sur l’eau, redonne à voir l’éclat des lumières, le miroitement des reflets, et fait ainsi revivre le territoire que la catastrophe avait détruit. La beauté relève du soin et de l’attention au tissu du vivant.</p
+><p
+xml:id="p15"
+>La beauté n’est donc pas un ordre géométrique et transcendant en dehors ou à rebours de la vie, elle est la digue qui donne à la vie toute son intensité et permet à la vie de retrouver un chemin dans le chaos. Tout comme dans la première image après la catastrophe prise par Hatakeyama, la beauté permet de retrouver une ligne, une voie au sein des décombres, et permet à l’image comme aux humains d’à nouveau « tenir debout ».</p
+></body
+></text
+></TEI
+>

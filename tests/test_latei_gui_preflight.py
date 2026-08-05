@@ -182,6 +182,30 @@ def test_assets_structure_help_documents_xml_controlled_paths_briefly() -> None:
     assert "../icono/highres/image1.jpg" in ASSETS_STRUCTURE_HELP
 
 
+def test_gui_main_window_is_scrollable() -> None:
+    """Vérification humaine directe, 2026-08-06 : le formulaire dépasse la
+    hauteur de fenêtre quelle que soit la taille choisie (déjà agrandie une
+    fois, 2026-08-04, sans que ça suffise durablement) — un ascenseur
+    (Canvas + Scrollbar) reste nécessaire, en particulier pour lire le
+    journal en bas de fenêtre."""
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    assert "_build_scrollable_form" in source
+    assert "tk.Canvas(" in source
+    assert "ttk.Scrollbar(" in source
+    assert "self.form = self._build_scrollable_form()" in source
+
+
+def test_latei_explanation_label_precedes_the_pdf_export_selector() -> None:
+    """Vérification humaine directe, 2026-08-06 : la ligne "LaTEI est le
+    fichier de composition du livre" doit apparaître juste au-dessus du
+    sélecteur "Aucun export/LaTEI monofichier/LaTEI monofichier + PDF"
+    — elle se lisait auparavant après lui, sous le sélecteur de format."""
+    source = Path("purh_site/gui.py").read_text(encoding="utf-8")
+    explanation_pos = source.index("LaTEI est le fichier de composition du livre")
+    pdf_controls_call_pos = source.index("self._add_pdf_export_controls(15)")
+    assert explanation_pos < pdf_controls_call_pos
+
+
 def test_assets_structure_help_documents_special_folders() -> None:
     """Vérification humaine directe, 2026-08-06 : la boîte omettait les
     dossiers spéciaux reconnus automatiquement (logos, quatrième, PDF,

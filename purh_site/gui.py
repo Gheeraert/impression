@@ -176,17 +176,60 @@ class App(ttk.Frame):
         self._build_ui()
         self.master.protocol("WM_DELETE_WINDOW", self._on_close)
 
+    def _build_scrollable_form(self) -> ttk.Frame:
+        """Canvas + Scrollbar + Frame interne (vérification humaine directe,
+        2026-08-06) : quelle que soit la hauteur de fenêtre choisie, le
+        formulaire (encore allongé depuis par le sélecteur de format et le
+        bouton Colophon) finit par dépasser un écran normal, coupant le
+        journal en bas — jamais résolu de façon durable en agrandissant
+        simplement la fenêtre (voir le commentaire au-dessus, 2026-08-04).
+        Le canvas est le seul widget packé directement dans self ; tous les
+        widgets du formulaire (self.form) vivent dedans et défilent."""
+        container = ttk.Frame(self)
+        container.pack(fill="both", expand=True)
+        canvas = tk.Canvas(container, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        form = ttk.Frame(canvas, padding=12)
+        form_window = canvas.create_window((0, 0), window=form, anchor="nw")
+
+        def _update_scrollregion(_event: object = None) -> None:
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        def _sync_form_width(event: object) -> None:
+            canvas.itemconfigure(form_window, width=event.width)
+
+        form.bind("<Configure>", _update_scrollregion)
+        canvas.bind("<Configure>", _sync_form_width)
+
+        def _on_mousewheel(event: object) -> None:
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        canvas.bind("<Enter>", lambda _e: canvas.bind_all("<MouseWheel>", _on_mousewheel))
+        canvas.bind("<Leave>", lambda _e: canvas.unbind_all("<MouseWheel>"))
+
+        return form
+
     def _build_ui(self) -> None:
         self.master.title("IMPRESSIONS — livre web TEI")
         # Agrandi de 780 à 900 (vérification humaine directe, 2026-08-04) :
         # les boutons du bas (bar_bar) étaient coupés à la hauteur d'origine,
         # avant même l'ajout du sélecteur de format et du bouton Colophon.
+        # Un ascenseur (2026-08-06) reste nécessaire malgré tout : le
+        # formulaire a continué de grandir depuis, et aucune hauteur de
+        # fenêtre fixe ne suffit sur tous les écrans — voir
+        # _build_scrollable_form ci-dessous, dont dépend tout le reste de
+        # cette méthode (self.form remplace self comme parent des widgets).
         self.master.geometry("1080x900")
         self._build_menu()
         self.pack(fill="both", expand=True)
+        self.form = self._build_scrollable_form()
 
         title = ttk.Label(
-            self,
+            self.form,
             text="IMPRESSIONS — génération d’un livre web à partir de TEI Métopes",
             font=("TkDefaultFont", 12, "bold"),
         )
@@ -194,40 +237,40 @@ class App(ttk.Frame):
 
         self._add_path_selector(1, "Fichier XML maître", self.master_xml_var, self._choose_master_xml, "Choisir…")
         ttk.Label(
-            self,
+            self.form,
             text="Choisir le fichier XML principal du livre. Dans le cas le plus courant, c’est le fichier complet ou normalisé du livre.",
             foreground="gray",
         ).grid(row=2, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
-        files_label = ttk.Label(self, text="Fichiers XML indépendants (optionnel)")
+        files_label = ttk.Label(self.form, text="Fichiers XML indépendants (optionnel)")
         files_label.grid(row=3, column=0, sticky="nw", pady=(0, 6))
-        self.files_list = tk.Listbox(self, height=6)
+        self.files_list = tk.Listbox(self.form, height=6)
         self.files_list.grid(row=3, column=1, sticky="nsew", pady=(0, 6))
-        files_buttons = ttk.Frame(self)
+        files_buttons = ttk.Frame(self.form)
         files_buttons.grid(row=3, column=2, sticky="n")
         ttk.Button(files_buttons, text="Ajouter…", command=self._choose_xml_files).grid(row=0, column=0, sticky="ew")
         ttk.Button(files_buttons, text="Vider", command=self._clear_xml_files).grid(row=1, column=0, sticky="ew", pady=(6, 0))
         ttk.Label(
-            self,
+            self.form,
             text="À utiliser seulement si le livre est fourni en plusieurs fichiers XML séparés. Sinon, laisser vide.",
             foreground="gray",
         ).grid(row=4, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
         self._add_path_selector(5, "Dossier assets", self.assets_dir_var, self._choose_assets_dir, "Choisir…")
         ttk.Label(
-            self,
+            self.form,
             text="Choisir le dossier qui contient les images et fichiers liés au livre. Il sera copié dans le site de sortie sous le nom assets.",
             foreground="gray",
         ).grid(row=6, column=1, sticky="w", pady=(0, 6))
         ttk.Button(
-            self,
+            self.form,
             text="Structure attendue du dossier assets…",
             command=self._show_assets_structure_help,
         ).grid(row=6, column=2, sticky="ew", pady=(0, 6))
 
         self._add_path_selector(7, "Quatrième de couverture (optionnel)", self.back_cover_var, self._choose_back_cover, "Choisir…")
         ttk.Label(
-            self,
+            self.form,
             text="Si le XML contient déjà une quatrième de couverture, elle sera utilisée en priorité. Ce champ sert seulement à fournir un fichier de repli.\nFormats acceptés : .md, .markdown, .html, .txt.",
             foreground="gray",
         ).grid(row=8, column=1, columnspan=2, sticky="w", pady=(0, 6))
@@ -236,27 +279,33 @@ class App(ttk.Frame):
         self._add_entry_row(10, "Numéro dans la collection (optionnel)", self.collection_number_var)
         self._add_entry_row(11, "ISSN de la collection (optionnel)", self.collection_issn_var)
         ttk.Label(
-            self,
+            self.form,
             text="Ces champs ne sont utilisés que si l’information n’est pas déjà présente dans le XML.",
             foreground="gray",
         ).grid(row=12, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
         self._add_path_selector(13, "Dossier de sortie", self.output_dir_var, self._choose_output_dir, "Choisir…")
 
-        self._add_pdf_export_controls(14)
+        # Remontée juste au-dessus du sélecteur "Aucun export/LaTEI
+        # monofichier/LaTEI monofichier + PDF" (vérification humaine
+        # directe, 2026-08-06) : cette phrase explique CE QU'EST LaTEI avant
+        # que l'utilisatrice ne choisisse un mode d'export qui en dépend —
+        # elle se lisait auparavant après coup, sous le sélecteur de format
+        # ajouté depuis, ce qui l'éloignait de la question qu'elle éclaire.
         ttk.Label(
-            self,
+            self.form,
             text="LaTEI est le fichier de composition du livre. Il peut être relu, corrigé et compilé en PDF.",
             foreground="gray",
-        ).grid(row=15, column=1, columnspan=2, sticky="w", pady=(0, 6))
+        ).grid(row=14, column=1, columnspan=2, sticky="w", pady=(0, 6))
+        self._add_pdf_export_controls(15)
 
-        preview_bar = ttk.Frame(self)
+        preview_bar = ttk.Frame(self.form)
         preview_bar.grid(row=16, column=0, columnspan=3, sticky="w", pady=(0, 8))
         ttk.Label(preview_bar, text="Ports de prévisualisation").grid(row=0, column=0, sticky="w")
         ttk.Entry(preview_bar, textvariable=self.port_var, width=18).grid(row=0, column=1, sticky="w", padx=(8, 16))
         ttk.Checkbutton(preview_bar, text="Lancer le serveur local et ouvrir le navigateur après build", variable=self.auto_preview_var).grid(row=0, column=2, sticky="w")
 
-        button_bar = ttk.Frame(self)
+        button_bar = ttk.Frame(self.form)
         button_bar.grid(row=17, column=0, columnspan=3, sticky="w", pady=(8, 12))
         ttk.Button(button_bar, text="Charger config…", command=self._load_config).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(button_bar, text="Enregistrer config…", command=self._save_config).grid(row=0, column=1, padx=(0, 8))
@@ -266,14 +315,14 @@ class App(ttk.Frame):
         ttk.Button(button_bar, text="Ouvrir le dossier de sortie", command=self._open_output_dir).grid(row=0, column=4, padx=(0, 8))
         ttk.Button(button_bar, text="Effacer le journal", command=self._clear_log).grid(row=0, column=5)
 
-        log_label = ttk.Label(self, text="Journal")
+        log_label = ttk.Label(self.form, text="Journal")
         log_label.grid(row=18, column=0, sticky="w")
-        self.log = tk.Text(self, wrap="word", height=24)
+        self.log = tk.Text(self.form, wrap="word", height=24)
         self.log.grid(row=19, column=0, columnspan=3, sticky="nsew")
         self.log.configure(state="disabled")
 
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(19, weight=1)
+        self.form.columnconfigure(1, weight=1)
+        self.form.rowconfigure(19, weight=1)
         self._refresh_pdf_export_controls()
         self._log("Interface prête.")
 
@@ -302,17 +351,17 @@ class App(ttk.Frame):
         self.master.config(menu=menubar)
 
     def _add_path_selector(self, row: int, label: str, variable: tk.StringVar, browse_command, button_text: str) -> None:
-        ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
-        ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
-        ttk.Button(self, text=button_text, command=browse_command).grid(row=row, column=2, sticky="ew", pady=(0, 6))
+        ttk.Label(self.form, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
+        ttk.Entry(self.form, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
+        ttk.Button(self.form, text=button_text, command=browse_command).grid(row=row, column=2, sticky="ew", pady=(0, 6))
 
     def _add_entry_row(self, row: int, label: str, variable: tk.StringVar) -> None:
-        ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
-        ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
+        ttk.Label(self.form, text=label).grid(row=row, column=0, sticky="w", pady=(0, 6))
+        ttk.Entry(self.form, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=(0, 6))
 
     def _add_pdf_export_controls(self, row: int) -> None:
-        ttk.Label(self, text="Export LaTEI / PDF PURH").grid(row=row, column=0, sticky="nw", pady=(0, 6))
-        frame = ttk.Frame(self)
+        ttk.Label(self.form, text="Export LaTEI / PDF PURH").grid(row=row, column=0, sticky="nw", pady=(0, 6))
+        frame = ttk.Frame(self.form)
         frame.grid(row=row, column=1, columnspan=2, sticky="w", pady=(0, 6))
 
         options = [

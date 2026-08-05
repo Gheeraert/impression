@@ -494,6 +494,27 @@ blockquote .epigraph::before,
   width: 1em;
 }
 
+/* Une réplique de théâtre (<sp>) : espacée de la précédente, pour que des
+   locuteurs qui s'enchaînent restent visuellement distincts même sans
+   didascalie entre eux. */
+.speech {
+  margin: 0.9rem 0;
+}
+
+.speech + .speech {
+  margin-top: 1.1rem;
+}
+
+/* <lg> (strophe) : jusqu'ici sans règle du tout, un simple <div> sans
+   marge ni distinction du texte courant environnant. */
+.poem-block {
+  margin: 1rem 0 1rem 1.2rem;
+}
+
+.poem-block + .poem-block {
+  margin-top: 0.4rem;
+}
+
 .speaker {
   margin: 0 0 0.2rem;
   font-weight: 600;
